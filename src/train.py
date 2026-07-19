@@ -78,7 +78,7 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
                 loss = loss + traj_loss_from_batch(x0_hat, batch, tr, device)
             opt.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            torch.nn.utils.clip_grad_norm_(opt_params, 1.0)
             opt.step()
             losses.append(loss.item())
             if use_wandb and step % 50 == 0:
