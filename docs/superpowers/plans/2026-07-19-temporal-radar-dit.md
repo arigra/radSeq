@@ -14,7 +14,7 @@
 
 - Project root: `/truenas/home/arigra/permuter/ariGranevich/radSeq/` (git repo already initialized). All paths below are relative to it.
 - All code under `src/`, tests under `tests/`. Run pytest from project root: `python -m pytest tests/ -v`.
-- Radar grid is fixed: N=K=64, dR=dV=64, B=50e6 Hz, T0=1e-3 s, fc=9.39e9 Hz, c=3e8 m/s, range grid 0..189 step 3 m, velocity grid −7.8..7.8 step 0.249 m/s (copied from RDDiffusion).
+- Radar grid is fixed: N=K=64, dR=dV=64, B=50e6 Hz, T0=1e-3 s, fc=9.39e9 Hz, c=3e8 m/s, range grid 0..189 step 3 m, velocity grid `arange(-32,32)·dv` with `dv = c/(2·fc·K·T0) ≈ 0.2496 m/s` (must match `generate_doppler_steering_matrix` exactly — do NOT use the rounded −7.8/0.249 grid, it biases labels by ~1 bin).
 - Sequence spec: L=16 frames, inter-frame interval T_f=0.5 s, accelerations bounded so targets move ~1–2 bins/frame.
 - Model spec: p=8, s=4 → 15×15=225 patches/frame, d=256, B=8 blocks, H=8 heads, adaLN-Zero.
 - Diffusion: DDPM T=1000, cosine ᾱ schedule, ε-prediction.
@@ -286,9 +286,14 @@ class TemporalRadarSimulator:
         self.force_class = force_class
 
         self.r_min, self.r_max, self.dr = 0.0, 189.0, 3.0
-        self.v_min, self.v_max, self.dv = -7.8, 7.8, 0.249
+        # Doppler grid MUST match generate_doppler_steering_matrix exactly:
+        # vel_res = c/(2*fc*K*T0), bins arange(-K/2, K/2)*vel_res. Using the
+        # rounded (-7.8, 0.249) grid biases traj labels by up to ~1 bin.
+        self.dv = self.C_LIGHT / (2 * self.FC * self.K * self.T0)
+        self.v_min = -(self.K // 2) * self.dv
+        self.v_max = (self.K // 2 - 1) * self.dv
         self.R = torch.arange(self.r_min, self.r_max + self.dr, self.dr)
-        self.V = torch.arange(self.v_min, self.v_max + self.dv, self.dv)
+        self.V = torch.arange(-(self.K // 2), self.K // 2).float() * self.dv
         self.dR, self.dV = len(self.R), len(self.V)
         self.a_max = 0.5  # m/s^2 -> <=1 Doppler bin per frame at Tf=0.5
 
@@ -2132,7 +2137,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Consumes: checkpoint with `"encoder"` state (Task 12), `ConditionEncoder`, tracks from `link_tracks`.
 - Produces:
   - In `src/sample.py`: `generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0) -> Tensor` — classifier-free guidance: `eps = eps_null + g·(eps_cond − eps_null)` via a wrapper model calling the DiT twice; `batch` is a conditioning dict (same schema as dataset items, batched).
-  - In `src/eval/metrics.py`: `velocity_adherence(x_gen, v0_cmd, frame_interval=0.5, dv=0.249, v_min=-7.8) -> float` — for each sequence, take the longest track, convert its mean Doppler coordinate to m/s via `v = v_min + dv * doppler_bin`, compare to commanded `v0`; returns the Pearson correlation between commanded and measured velocity across the batch.
+  - In `src/eval/metrics.py`: `velocity_adherence(x_gen, v0_cmd, frame_interval=0.5, dv=0.2496006389776358, v_min=-7.987220447284345) -> float` (defaults = the steering-matrix Doppler grid, `dv = c/(2·fc·K·T0)`, `v_min = −32·dv`) — for each sequence, take the longest track, convert its mean Doppler coordinate to m/s via `v = v_min + dv * doppler_bin`, compare to commanded `v0`; returns the Pearson correlation between commanded and measured velocity across the batch.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2156,7 +2161,7 @@ def _blob_seq(dop_bin, L=16):
 def test_velocity_adherence_perfect():
     torch.manual_seed(0)
     v_cmd = torch.tensor([-5.0, -2.0, 1.0, 4.0, 7.0])
-    dop_bins = ((v_cmd - (-7.8)) / 0.249).round()
+    dop_bins = ((v_cmd - (-7.987220447284345)) / 0.2496006389776358).round()
     x = torch.stack([_blob_seq(b) for b in dop_bins])
     corr = velocity_adherence(x, v_cmd)
     assert corr > 0.95
@@ -2181,7 +2186,8 @@ Expected: FAIL with `ImportError`
 Append to `src/eval/metrics.py`:
 
 ```python
-def velocity_adherence(x_gen, v0_cmd, frame_interval=0.5, dv=0.249, v_min=-7.8):
+def velocity_adherence(x_gen, v0_cmd, frame_interval=0.5,
+                       dv=0.2496006389776358, v_min=-7.987220447284345):
     """Pearson correlation between commanded initial velocity and the
     velocity implied by the longest track's mean Doppler coordinate."""
     measured = []
