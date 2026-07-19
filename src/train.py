@@ -26,8 +26,15 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
     loader = DataLoader(ds, batch_size=tr["batch_size"], shuffle=True,
                         num_workers=0, drop_last=True)
     model = build_model(cfg, device)
+    encoder = None
+    if tr.get("phase", 1) >= 3:
+        from src.conditioning import ConditionEncoder
+        encoder = ConditionEncoder(dim=cfg["model"]["dim"]).to(device)
+        opt_params = list(model.parameters()) + list(encoder.parameters())
+    else:
+        opt_params = list(model.parameters())
     diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
-    opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
+    opt = torch.optim.AdamW(opt_params, lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     use_wandb = tr.get("wandb", False)
     if use_wandb:
@@ -55,7 +62,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
                 t = torch.randint(0, diff.T, (x0.shape[0],), device=device)
             eps = torch.randn_like(x0)
             xt = diff.q_sample(x0, t, eps)
-            eps_hat = model(xt, t)
+            cond = (encoder(batch, device, dropout_p=tr.get("cond_dropout", 0.1))
+                    if encoder is not None else None)
+            eps_hat = model(xt, t, cond)
             loss = diffusion_loss(eps, eps_hat)
             # Clamp the predicted clean frame before the smoothness term: at
             # high t and with an untrained model, pred_x0 divides by a
@@ -76,10 +85,14 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
                 wandb.log({"loss": loss.item(), "step": step})
             step += 1
             if max_steps is not None and step >= max_steps:
-                torch.save({"model": model.state_dict(), "config": cfg},
+                torch.save({"model": model.state_dict(),
+                           "encoder": encoder.state_dict() if encoder else None,
+                           "config": cfg},
                            ckpt_dir / "last.pt")
                 return losses if _record_losses else model
-        torch.save({"model": model.state_dict(), "config": cfg},
+        torch.save({"model": model.state_dict(),
+                   "encoder": encoder.state_dict() if encoder else None,
+                   "config": cfg},
                    ckpt_dir / "last.pt")
         epoch += 1
     return losses if _record_losses else model

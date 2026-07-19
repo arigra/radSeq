@@ -15,6 +15,8 @@ def _tiny_config(tmp_path):
     # within 150 steps; the config owns hyperparameters, not train().
     cfg["train"].update(batch_size=2, epochs=1, lr=3.0e-4,
                         ckpt_dir=str(tmp_path / "ckpt"))
+    # Pin to phase 1 so a future base.yaml phase flip cannot break this smoke test.
+    cfg["train"]["phase"] = 1
     return cfg
 
 
