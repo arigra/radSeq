@@ -1,0 +1,29 @@
+data:
+  n_train: 20000
+  n_val: 2000
+  seq_len: 16
+  frame_interval: 0.5        # seconds between frames
+  cache_dir: data/cache
+  shard_size: 1000
+  seed: 1234
+model:
+  patch: 8
+  stride: 4
+  dim: 256
+  depth: 8
+  heads: 8
+diffusion:
+  timesteps: 1000
+train:
+  batch_size: 16
+  lr: 1.0e-4
+  weight_decay: 0.0
+  epochs: 100
+  lambda_smooth: 0.1
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  phase: 1                   # 1: L_DiT+L_smooth, 2: +traj/doppler, 3: +conditioning
+  ckpt_dir: checkpoints
+  wandb: false
+sample:
+  ddim_steps: 50
