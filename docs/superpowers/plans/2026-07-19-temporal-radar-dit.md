@@ -168,7 +168,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: nothing from earlier tasks.
 - Produces: `TemporalRadarSimulator` class with:
-  - `__init__(self, seq_len=16, frame_interval=0.5, max_targets=5, rho_clutter=None, scnr=None, nu=None, clutter_mode="strip")` — `None` means "sample per sequence".
+  - `__init__(self, seq_len=16, frame_interval=0.5, max_targets=5, rho_clutter=None, scnr=None, nu=None, clutter_mode="strip", force_class=None)` — `None` means "sample per sequence"; `force_class` pins every target's class id (used by tests/eval).
   - `gen_sequence(self) -> dict` with keys:
     - `"x"`: float32 `(L, 64, 64)` log-magnitude RD sequence, `20*log10(|RD|+1e-6)`
     - `"traj"`: float32 `(M, L, 2)` continuous (range_bin, doppler_bin) per target per frame
@@ -220,10 +220,12 @@ def test_trajectory_within_grid():
 
 
 def test_peak_follows_trajectory():
-    """Single steady target, no clutter/noise floor dominance: the RD peak
-    must land within 1 bin of the analytic trajectory at every frame."""
+    """Single steady point target (class forced to 0), no clutter/noise floor
+    dominance: the RD peak must land within 1 bin of the analytic trajectory
+    at every frame."""
     torch.manual_seed(2)
-    sim = TemporalRadarSimulator(seq_len=16, max_targets=1, scnr=20.0)
+    sim = TemporalRadarSimulator(seq_len=16, max_targets=1, scnr=20.0,
+                                 force_class=0)
     out = sim.gen_sequence()
     assert out["n_targets"] == 1
     for l in range(16):
@@ -271,7 +273,8 @@ class TemporalRadarSimulator:
     CNR_DB = 15.0
 
     def __init__(self, seq_len=16, frame_interval=0.5, max_targets=5,
-                 rho_clutter=None, scnr=None, nu=None, clutter_mode="strip"):
+                 rho_clutter=None, scnr=None, nu=None, clutter_mode="strip",
+                 force_class=None):
         self.L = seq_len
         self.Tf = frame_interval
         self.max_targets = max_targets
@@ -279,6 +282,7 @@ class TemporalRadarSimulator:
         self.scnr = scnr
         self.nu = nu
         self.clutter_mode = clutter_mode
+        self.force_class = force_class
 
         self.r_min, self.r_max, self.dr = 0.0, 189.0, 3.0
         self.v_min, self.v_max, self.dv = -7.8, 7.8, 0.249
@@ -355,7 +359,8 @@ class TemporalRadarSimulator:
         n = int(torch.randint(1, self.max_targets + 1, (1,)).item())
         r0, v0, a, r, v = self._sample_kinematics(n)
         traj = self._to_bins(r, v)
-        cls = torch.randint(0, 3, (n,))
+        cls = (torch.randint(0, 3, (n,)) if self.force_class is None
+               else torch.full((n,), int(self.force_class), dtype=torch.long))
         base_gain = (torch.empty(n).uniform_(-5, 10) if self.scnr is None
                      else torch.full((n,), float(self.scnr)))
         rho = (float(torch.rand(1).item()) if self.rho_clutter is None
