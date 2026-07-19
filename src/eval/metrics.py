@@ -98,6 +98,28 @@ def evaluate_sequences(x_gen, x_real, seq_len=16):
     }
 
 
+def velocity_adherence(x_gen, v0_cmd, frame_interval=0.5,
+                       dv=0.2496006389776358, v_min=-7.987220447284345):
+    """Pearson correlation between commanded initial velocity and the
+    velocity implied by the longest track's mean Doppler coordinate."""
+    measured = []
+    for seq in x_gen:
+        tracks = link_tracks([detect_peaks(f) for f in seq])
+        if not tracks:
+            measured.append(float("nan"))
+            continue
+        tr = max(tracks, key=len)
+        dop = _positions(tr)[:, 1].mean()
+        measured.append(v_min + dv * float(dop))
+    m = torch.tensor(measured)
+    ok = torch.isfinite(m)
+    if ok.sum() < 3:
+        return float("nan")
+    a, b = m[ok], v0_cmd[ok].float()
+    a = a - a.mean(); b = b - b.mean()
+    return float((a * b).sum() / (a.norm() * b.norm() + 1e-12))
+
+
 def cfar_detection_stats(x_seqs, Pfa=1e-3, num_train=4, num_guard=2):
     """Mean CA-CFAR detections per frame over (B, L, N, K) log-mag input."""
     from src.eval.cfar import ca_cfar_2d

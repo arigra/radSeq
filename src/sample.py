@@ -23,6 +23,34 @@ def generate(ckpt_path, n_seq, device, steps=50, cond=None):
     return denormalize(x.cpu(), stats)
 
 
+def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0):
+    from src.conditioning import ConditionEncoder
+
+    ckpt = torch.load(ckpt_path, map_location=device)
+    cfg = ckpt["config"]
+    model = build_model(cfg, device)
+    model.load_state_dict(ckpt["model"])
+    encoder = ConditionEncoder(dim=cfg["model"]["dim"]).to(device)
+    encoder.load_state_dict(ckpt["encoder"])
+    model.eval(); encoder.eval()
+
+    B = batch["v0"].shape[0]
+    with torch.no_grad():
+        cond = encoder(batch, device)
+        null = encoder.null(B, device)
+
+    def guided(xt, t, _cond=None):
+        e_c = model(xt, t, cond)
+        e_n = model(xt, t, null)
+        return e_n + guidance * (e_c - e_n)
+
+    diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
+    L = cfg["data"]["seq_len"]
+    x = diff.ddim_sample(guided, (B, L, 64, 64), device, steps=steps)
+    stats = RadarSequenceDataset(cfg["data"]["cache_dir"], "val").stats
+    return denormalize(x.cpu(), stats)
+
+
 if __name__ == "__main__":
     from src.eval.metrics import evaluate_sequences
     from src.viz import sequence_gif, sequence_grid
