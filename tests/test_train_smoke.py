@@ -10,7 +10,11 @@ def _tiny_config(tmp_path):
     cfg["data"].update(cache_dir=str(tmp_path), n_train=4, n_val=2,
                        shard_size=4)
     cfg["model"].update(dim=64, depth=2, heads=4)
-    cfg["train"].update(batch_size=2, epochs=1, ckpt_dir=str(tmp_path / "ckpt"))
+    # The tiny single-batch overfit needs a higher lr than the production
+    # default (tuned for full-scale, many-epoch training) to visibly converge
+    # within 150 steps; the config owns hyperparameters, not train().
+    cfg["train"].update(batch_size=2, epochs=1, lr=3.0e-4,
+                        ckpt_dir=str(tmp_path / "ckpt"))
     return cfg
 
 

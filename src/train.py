@@ -27,11 +27,7 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
                         num_workers=0, drop_last=True)
     model = build_model(cfg, device)
     diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
-    # tr["lr"] is tuned for full-scale, many-epoch training; a single-batch
-    # debug overfit (_record_losses) needs a higher rate to visibly converge
-    # within a handful of steps. Only the debug path is affected.
-    opt_lr = tr["lr"] * 3 if _record_losses else tr["lr"]
-    opt = torch.optim.AdamW(model.parameters(), lr=opt_lr,
+    opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     use_wandb = tr.get("wandb", False)
     if use_wandb:
