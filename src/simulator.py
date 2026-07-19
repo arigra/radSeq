@@ -115,9 +115,14 @@ class TemporalRadarSimulator:
         self.force_class = force_class
 
         self.r_min, self.r_max, self.dr = 0.0, 189.0, 3.0
-        self.v_min, self.v_max, self.dv = -7.8, 7.8, 0.249
+        # Doppler grid MUST match generate_doppler_steering_matrix exactly:
+        # vel_res = c/(2*fc*K*T0), bins arange(-K/2, K/2)*vel_res. Using the
+        # rounded (-7.8, 0.249) grid biases traj labels by up to ~1 bin.
+        self.dv = self.C_LIGHT / (2 * self.FC * self.K * self.T0)
+        self.v_min = -(self.K // 2) * self.dv
+        self.v_max = (self.K // 2 - 1) * self.dv
         self.R = torch.arange(self.r_min, self.r_max + self.dr, self.dr)
-        self.V = torch.arange(self.v_min, self.v_max + self.dv, self.dv)
+        self.V = torch.arange(-(self.K // 2), self.K // 2).float() * self.dv
         self.dR, self.dV = len(self.R), len(self.V)
         self.a_max = 0.5  # m/s^2 -> <=1 Doppler bin per frame at Tf=0.5
 

@@ -48,3 +48,20 @@ def test_motion_magnitude():
     out = sim.gen_sequence()
     dr = (out["traj"][:, 1:, 0] - out["traj"][:, :-1, 0]).abs()
     assert dr.max() <= 2.0
+
+
+def test_extended_target_spans_range_bins():
+    """Class 2 (range-extended): flank scatterers at r±3 m put energy in
+    the range bins adjacent to the center, well above the noise floor."""
+    torch.manual_seed(4)
+    sim = TemporalRadarSimulator(seq_len=16, max_targets=1, scnr=20.0,
+                                 force_class=2)
+    out = sim.gen_sequence()
+    frame = out["x"][0]
+    r_gt = int(out["traj"][0, 0, 0].round())
+    v_gt = int(out["traj"][0, 0, 1].round())
+    floor = frame.median()
+    for dr in (-1, 0, 1):
+        r = min(max(r_gt + dr, 0), 63)
+        vicinity = frame[r, max(v_gt - 1, 0):min(v_gt + 2, 64)].max()
+        assert vicinity > floor + 10, f"no energy at range offset {dr}"
