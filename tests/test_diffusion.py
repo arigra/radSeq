@@ -31,3 +31,15 @@ def test_ddim_sample_shape_and_finite():
     out = d.ddim_sample(dummy_model, (1, 16, 64, 64), torch.device("cpu"), steps=10)
     assert out.shape == (1, 16, 64, 64)
     assert torch.isfinite(out).all()
+
+
+def test_p_sample_loop_shape_and_finite():
+    torch.manual_seed(0)
+    d = GaussianDiffusion(timesteps=50)
+
+    def dummy_model(xt, t, cond=None):
+        return torch.zeros_like(xt)
+
+    out = d.p_sample_loop(dummy_model, (1, 4, 16, 16), torch.device("cpu"))
+    assert out.shape == (1, 4, 16, 16)
+    assert torch.isfinite(out).all()
