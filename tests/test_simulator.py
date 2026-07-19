@@ -1,5 +1,5 @@
 import torch
-from src.simulator import TemporalRadarSimulator
+from src.simulator import TemporalRadarSimulator, create_rd_map
 
 
 def test_output_shapes_and_keys():
@@ -50,18 +50,23 @@ def test_motion_magnitude():
     assert dr.max() <= 2.0
 
 
-def test_extended_target_spans_range_bins():
-    """Class 2 (range-extended): flank scatterers at r±3 m put energy in
-    the range bins adjacent to the center, well above the noise floor."""
+def test_extended_target_flanks_vs_point():
+    """Class 2 vs class 0, same on-grid position: on-grid adjacent range
+    bins are exact nulls for a point target (bin-orthogonal steering), so
+    flank energy at r±1 bins cleanly separates the range-extended class."""
     torch.manual_seed(4)
-    sim = TemporalRadarSimulator(seq_len=16, max_targets=1, scnr=20.0,
-                                 force_class=2)
-    out = sim.gen_sequence()
-    frame = out["x"][0]
-    r_gt = int(out["traj"][0, 0, 0].round())
-    v_gt = int(out["traj"][0, 0, 1].round())
-    floor = frame.median()
-    for dr in (-1, 0, 1):
-        r = min(max(r_gt + dr, 0), 63)
-        vicinity = frame[r, max(v_gt - 1, 0):min(v_gt + 2, 64)].max()
-        assert vicinity > floor + 10, f"no energy at range offset {dr}"
+    sim = TemporalRadarSimulator(seq_len=1)
+    r = torch.tensor([90.0])                      # on-grid: range bin 30
+    v = torch.tensor([sim.V[40].item()])          # on-grid: doppler bin 40
+    g = torch.tensor([10.0])
+
+    def rd_db(cls_id):
+        iq = sim._frame_targets(r, v, g, torch.tensor([cls_id]))
+        rd = create_rd_map(iq)
+        return 20 * torch.log10(rd.abs() + 1e-6)
+
+    m0, m2 = rd_db(0), rd_db(2)
+    flank0 = torch.maximum(m0[29, 40], m0[31, 40])
+    flank2 = torch.maximum(m2[29, 40], m2[31, 40])
+    assert m0[30, 40] - flank0 > 20, "point target should null adjacent bins"
+    assert m2[30, 40] - flank2 < 8, "extended target flanks should be ~3 dB down"
