@@ -185,9 +185,41 @@ class TemporalRadarSimulator:
         return self._target_iq(torch.stack(ranges), torch.stack(vels),
                                torch.stack(gains))
 
-    # ---------------- clutter (replaced in Task 3) ----------------
-    def _clutter_frames(self, rho, nu):
-        return torch.zeros(self.L, self.N, self.K, dtype=torch.cfloat)
+    # ---------------- clutter (AR(1) SIRP, Task 3) ----------------
+    def _sample_texture(self, nu):
+        """K-distribution texture: Gamma(nu, nu), E[s]=1, shape (dR,)."""
+        nu_t = torch.tensor(float(nu))
+        return torch.distributions.Gamma(nu_t, nu_t).sample((self.dR,)).view(self.dR)
+
+    def _clutter_frames(self, rho, nu, sigma_f=0.05):
+        """Strip clutter with AR(1) speckle evolution across frames.
+
+        SIRP skeleton per RDDiffusion: per-frame speckle w = A @ z with
+        A = V sqrt(E) from eigh of the Doppler covariance M; the Gaussian
+        innovations z evolve as z_l = rho*z_{l-1} + sqrt(1-rho^2)*eps_l,
+        so consecutive frames share correlated speckle. Texture s and the
+        clutter Doppler velocity are fixed for the whole sequence.
+        """
+        clutter_vel = torch.empty(1).uniform_(self.v_min, self.v_max)
+        fd = 2 * torch.pi * (2 * self.FC * clutter_vel) / self.C_LIGHT
+        pq = _get_pq_diff(self.N, self.K)
+        M = torch.exp(-2 * torch.pi ** 2 * sigma_f ** 2 * pq ** 2
+                      - 1j * pq * fd * self.T0)
+        e, Vm = torch.linalg.eigh(M)
+        A = Vm @ torch.diag(torch.sqrt(torch.clamp(e.real, min=0.0))).to(Vm.dtype)
+        steer = _get_clutter_range_steer(self.N, self.R, self.B_HZ, self.C_LIGHT)
+        s = torch.clamp(self._sample_texture(nu), min=0.0)             # (dR,)
+
+        rho_t = torch.tensor(float(rho))
+        z = torch.randn(self.K, self.dR, dtype=torch.cfloat) / torch.sqrt(torch.tensor(2.0))
+        frames = []
+        for _ in range(self.L):
+            w = A @ z                                                  # (K, dR)
+            c_t = torch.sqrt(s).unsqueeze(0) * w
+            frames.append(steer @ c_t.transpose(0, 1))                 # (N, K)
+            eps = torch.randn(self.K, self.dR, dtype=torch.cfloat) / torch.sqrt(torch.tensor(2.0))
+            z = rho_t * z + torch.sqrt(1 - rho_t ** 2) * eps
+        return torch.stack(frames)
 
     # ---------------- sequence assembly ----------------
     def gen_sequence(self):
