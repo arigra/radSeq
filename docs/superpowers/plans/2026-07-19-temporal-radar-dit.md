@@ -1153,7 +1153,11 @@ def _tiny_config(tmp_path):
     cfg["data"].update(cache_dir=str(tmp_path), n_train=4, n_val=2,
                        shard_size=4)
     cfg["model"].update(dim=64, depth=2, heads=4)
-    cfg["train"].update(batch_size=2, epochs=1, ckpt_dir=str(tmp_path / "ckpt"))
+    # lr=3e-4: tiny model overfitting a single batch converges too slowly at
+    # the production 1e-4 within 150 steps; the config owns the lr, train()
+    # has no debug-only hyperparameters
+    cfg["train"].update(batch_size=2, epochs=1, lr=3.0e-4,
+                        ckpt_dir=str(tmp_path / "ckpt"))
     return cfg
 
 
@@ -1284,7 +1288,10 @@ def train(cfg, device=None, max_steps=None, _record_losses=False):
             xt = diff.q_sample(x0, t, eps)
             eps_hat = model(xt, t)
             loss = diffusion_loss(eps, eps_hat)
-            x0_hat = diff.pred_x0(xt, t, eps_hat)
+            # clamp matches the samplers' convention; unclamped pred_x0
+            # explodes at high t (divide by sqrt(abar)->0) and destabilizes
+            # the smoothness loss
+            x0_hat = diff.pred_x0(xt, t, eps_hat).clamp(-4, 4)
             loss = loss + tr["lambda_smooth"] * smooth_loss(x0_hat, diff.loss_weight(t))
             if tr.get("phase", 1) >= 2:
                 from src.losses import traj_loss_from_batch  # added in Task 11
