@@ -1394,7 +1394,10 @@ def test_linking_and_consistency_constant_velocity():
     x = _synthetic_sequence()
     tracks = link_tracks([detect_peaks(f) for f in x])
     assert persistence(tracks, 16) > 0.99
-    assert velocity_consistency(tracks) < 0.5   # ~0 for constant velocity
+    # integer-pixel peak detection of a blob moving 0.5 px/frame produces
+    # alternating +/-1 rounding jitter in the second difference (~0.7);
+    # still orders of magnitude below teleporting motion
+    assert velocity_consistency(tracks) < 1.0
 
 
 def test_consistency_penalizes_teleporting():
