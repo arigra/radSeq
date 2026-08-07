@@ -1,7 +1,7 @@
 import torch
 import yaml
 from src.dataset import generate_cache
-from src.train import train
+from src.train import early_stop_update, train
 
 
 def _tiny_config(tmp_path):
@@ -39,7 +39,45 @@ def test_checkpoint_written(tmp_path):
     generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16,
                    seed=7, shard_size=4)
     train(cfg, device=torch.device("cpu"), max_steps=3)
-    assert (tmp_path / "ckpt" / "last.pt").exists()
+    path = tmp_path / "ckpt" / "last.pt"
+    assert path.exists()
+    state = torch.load(path, map_location="cpu")
+    assert state["format_version"] == 2
+    assert state["step"] == 3
+    assert "optimizer" in state
+
+
+def test_resume_continues_step_count(tmp_path):
+    torch.manual_seed(0)
+    cfg = _tiny_config(tmp_path)
+    generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16,
+                   seed=7, shard_size=4)
+    path = tmp_path / "ckpt" / "last.pt"
+    train(cfg, device=torch.device("cpu"), max_steps=2)
+    train(cfg, device=torch.device("cpu"), max_steps=4, resume=path)
+    state = torch.load(path, map_location="cpu")
+    assert state["step"] == 4
+
+
+def test_early_stopping_requires_meaningful_improvement():
+    best, bad, improved = early_stop_update(0.5, 0.49, 3, min_delta=0.001)
+    assert improved and best == 0.49 and bad == 0
+    best, bad, improved = early_stop_update(best, 0.4895, bad, min_delta=0.001)
+    assert not improved and best == 0.49 and bad == 1
+
+
+def test_validation_writes_best_checkpoint(tmp_path):
+    cfg = _tiny_config(tmp_path)
+    cfg["train"].update(
+        val_every_epochs=1, val_batch_size=2, val_seed=9,
+        log_file=str(tmp_path / "train.log"))
+    generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16,
+                   seed=7, shard_size=4)
+    train(cfg, device=torch.device("cpu"))
+    state = torch.load(tmp_path / "ckpt" / "best.pt", map_location="cpu")
+    assert state["epoch"] == 1
+    assert state["best_val"] < float("inf")
+    assert state["bad_epochs"] == 0
 
 
 def test_viz_writes_files(tmp_path):

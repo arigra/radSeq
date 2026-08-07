@@ -24,6 +24,10 @@ train:
   lambda_doppler: 0.01
   phase: 1                   # 1: L_DiT+L_smooth, 2: +traj/doppler, 3: +conditioning
   ckpt_dir: checkpoints
+  log_file: logs/phase1.log
+  log_every_steps: 50
+  save_every_steps: 250
+  snapshot_every_epochs: 10
   wandb: false
 sample:
   ddim_steps: 50
