@@ -1,3 +1,4 @@
+import pytest
 import torch
 from src.simulator import TemporalRadarSimulator, create_rd_map
 
@@ -70,3 +71,45 @@ def test_extended_target_flanks_vs_point():
     flank2 = torch.maximum(m2[29, 40], m2[31, 40])
     assert m0[30, 40] - flank0 > 20, "point target should null adjacent bins"
     assert m2[30, 40] - flank2 < 8, "extended target flanks should be ~3 dB down"
+
+
+def test_explicit_kinematics_places_target_exactly():
+    """gen_sequence(r0=..., v0=..., a=...) must honor the requested
+    constant-acceleration trajectory instead of sampling one, while the
+    rest of the pipeline (clutter, noise, labels) works as usual."""
+    torch.manual_seed(5)
+    sim = TemporalRadarSimulator(seq_len=16, scnr=20.0, force_class=0)
+    r0 = torch.tensor([90.0])
+    v0 = torch.tensor([-3.0])
+    a = torch.tensor([0.0])
+    out = sim.gen_sequence(r0=r0, v0=v0, a=a)
+
+    assert out["n_targets"] == 1
+    assert torch.allclose(out["v0"], v0) and torch.allclose(out["acc"], a)
+    ell = torch.arange(16, dtype=torch.float) * sim.Tf
+    rb_expected = (r0 + v0 * ell - sim.r_min) / sim.dr
+    vb_expected = (v0.expand(16) - sim.v_min) / sim.dv
+    assert torch.allclose(out["traj"][0, :, 0], rb_expected, atol=1e-4)
+    assert torch.allclose(out["traj"][0, :, 1], vb_expected, atol=1e-4)
+    for l in range(16):
+        idx = out["x"][l].flatten().argmax()
+        r_pk, v_pk = (idx // 64).item(), (idx % 64).item()
+        assert abs(r_pk - out["traj"][0, l, 0]) <= 1.5, f"frame {l}"
+        assert abs(v_pk - out["traj"][0, l, 1]) <= 1.5, f"frame {l}"
+
+
+def test_explicit_kinematics_multi_target_and_validation():
+    """Multiple explicit targets are all honored; a trajectory that walks
+    off the grid raises ValueError instead of silently clipping."""
+    torch.manual_seed(6)
+    sim = TemporalRadarSimulator(seq_len=16)
+    out = sim.gen_sequence(r0=torch.tensor([60.0, 120.0]),
+                           v0=torch.tensor([2.0, -2.0]),
+                           a=torch.tensor([0.1, -0.1]))
+    assert out["n_targets"] == 2
+    assert out["traj"].shape == (2, 16, 2)
+
+    with pytest.raises(ValueError):
+        sim.gen_sequence(r0=torch.tensor([185.0]),
+                         v0=torch.tensor([7.0]),
+                         a=torch.tensor([0.0]))

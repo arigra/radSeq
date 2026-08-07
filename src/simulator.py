@@ -221,10 +221,32 @@ class TemporalRadarSimulator:
             z = rho_t * z + torch.sqrt(1 - rho_t ** 2) * eps
         return torch.stack(frames)
 
+    def _explicit_kinematics(self, r0, v0, a):
+        """Evaluate the constant-acceleration trajectory for caller-supplied
+        (r0, v0, a), for exact placement in tests/diagnostics. Raises if any
+        frame would fall outside the RD grid (mirrors the rejection-sampling
+        bound used for random kinematics)."""
+        ell = torch.arange(self.L, dtype=torch.float) * self.Tf
+        r = r0[:, None] + v0[:, None] * ell + 0.5 * a[:, None] * ell ** 2
+        v = v0[:, None] + a[:, None] * ell
+        ok = ((r >= self.r_min) & (r <= self.r_max)
+              & (v >= self.v_min) & (v <= self.v_max)).all()
+        if not ok:
+            raise ValueError("explicit kinematics leave the RD grid")
+        return r0, v0, a, r, v
+
     # ---------------- sequence assembly ----------------
-    def gen_sequence(self):
-        n = int(torch.randint(1, self.max_targets + 1, (1,)).item())
-        r0, v0, a, r, v = self._sample_kinematics(n)
+    def gen_sequence(self, r0=None, v0=None, a=None):
+        """r0/v0/a: optional (n,) tensors for exact target placement
+        (constant-acceleration kinematics), bypassing random sampling.
+        All three must be given together; omit for normal random generation."""
+        explicit = r0 is not None or v0 is not None or a is not None
+        if explicit:
+            n = r0.shape[0]
+            r0, v0, a, r, v = self._explicit_kinematics(r0, v0, a)
+        else:
+            n = int(torch.randint(1, self.max_targets + 1, (1,)).item())
+            r0, v0, a, r, v = self._sample_kinematics(n)
         traj = self._to_bins(r, v)
         cls = (torch.randint(0, 3, (n,)) if self.force_class is None
                else torch.full((n,), int(self.force_class), dtype=torch.long))
