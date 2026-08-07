@@ -58,6 +58,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--n", type=int, default=8)
+    ap.add_argument("--n-real", type=int, default=4,
+                    help="real val sequences to render with GT markers")
     ap.add_argument("--out", default="samples")
     ap.add_argument("--steps", type=int, default=50)
     args = ap.parse_args()
@@ -72,6 +74,13 @@ if __name__ == "__main__":
 
     cfg = torch.load(args.ckpt, map_location="cpu")["config"]
     val = RadarSequenceDataset(cfg["data"]["cache_dir"], "val")
+    for i in range(min(args.n_real, len(val))):
+        item = val[i]
+        seq = denormalize(item["x"], val.stats)
+        sequence_grid(seq, out / f"real_seq_{i}.png",
+                      traj=item["traj"], n_targets=item["n_targets"])
+        sequence_gif(seq, out / f"real_seq_{i}.gif",
+                     traj=item["traj"], n_targets=item["n_targets"])
     x_real = torch.stack([denormalize(val[i]["x"], val.stats)
                           for i in range(min(len(val), args.n * 4))])
     metrics = evaluate_sequences(x, x_real, seq_len=cfg["data"]["seq_len"])
