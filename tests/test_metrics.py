@@ -1,7 +1,7 @@
 import torch
 from src.eval.metrics import (detect_peaks, link_tracks, velocity_consistency,
                               doppler_drift, persistence, marginal_l1,
-                              evaluate_sequences)
+                              evaluate_sequences, filter_tracks)
 
 
 def _synthetic_sequence(vel=(1.0, 0.5), start=(10.0, 20.0), L=16, noise=0.1):
@@ -61,3 +61,54 @@ def test_evaluate_sequences_keys():
     for k in ("velocity_consistency", "doppler_drift", "persistence",
               "marginal_l1", "mean_tracks_per_seq"):
         assert k in out
+
+
+def _target_plus_clutter_sequence(L=16):
+    """One bright blob on a smooth constant-velocity track, plus three dim
+    specks that wander erratically for the first six frames only.
+
+    Mirrors the real failure mode: short-lived clutter detections vastly
+    outnumber the target, and their erratic motion swamps track-averaged
+    kinematic metrics.
+    """
+    torch.manual_seed(3)
+    rr, cc = torch.meshgrid(torch.arange(64.), torch.arange(64.), indexing="ij")
+    starts = torch.tensor([[40.0, 15.0], [45.0, 40.0], [20.0, 50.0]])
+    walks = torch.randint(-2, 3, (3, 6, 2)).float()
+    frames = []
+    for l in range(L):
+        r, c = 10.0 + 1.0 * l, 20.0 + 0.5 * l
+        f = 40 * torch.exp(-((rr - r) ** 2 + (cc - c) ** 2) / 2.0)
+        if l < 6:
+            for s in range(3):
+                p = starts[s] + walks[s, :l + 1].sum(dim=0)
+                f = f + 25 * torch.exp(-((rr - p[0]) ** 2 + (cc - p[1]) ** 2) / 2.0)
+        frames.append(f + 0.1 * torch.randn(64, 64))
+    return torch.stack(frames)
+
+
+def test_filter_tracks_drops_short_tracks():
+    tracks = [[(0, (1.0, 1.0))],
+              [(l, (float(l), 2.0)) for l in range(5)],
+              [(l, (float(l), 3.0)) for l in range(12)]]
+    kept = filter_tracks(tracks, min_len=5)
+    assert len(kept) == 2
+    assert all(len(t) >= 5 for t in kept)
+
+
+def test_target_track_count_excludes_transient_clutter():
+    """The sequence holds exactly one persistent target; raw linking reports
+    several tracks, the filtered count must recover the single target."""
+    x = _target_plus_clutter_sequence()[None]
+    out = evaluate_sequences(x, x, min_track_len=8)
+    assert out["mean_tracks_per_seq"] > out["n_target_tracks_per_seq"]
+    assert out["n_target_tracks_per_seq"] == 1
+
+
+def test_kinematic_metrics_ignore_erratic_clutter():
+    """velocity_consistency must describe the smooth target, not the specks."""
+    x = _target_plus_clutter_sequence()
+    tracks = link_tracks([detect_peaks(f, max_peaks=5) for f in x])
+    unfiltered = velocity_consistency(tracks)
+    filtered = velocity_consistency(filter_tracks(tracks, min_len=8))
+    assert filtered < 0.5 * unfiltered

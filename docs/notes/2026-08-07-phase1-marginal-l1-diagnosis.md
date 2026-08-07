@@ -125,6 +125,49 @@ motion" is not supported by this evidence.
   temporal coherence* and *insufficient for unconditional spatial synthesis*.
   That is a real, defensible finding either way it gets resolved.
 
+## Rescoring under corrected metrics (`scripts/rescore_phase1.py`)
+
+Detection now uses `max_peaks=5` with a `min_track_len = seq_len // 2` filter.
+Validated on 64 real val sequences against ground truth: **93.5% track
+precision, 90.7% target recall, 3.11 tracks/seq against 3.20 true targets**
+(was 19.9% precision at 45.4 tracks/seq).
+
+Protocol is the plan's own: `evaluate_sequences(xs[:32], xs[32:])`.
+
+| metric | reference (real vs real) | generated (best.pt) | old reference | old generated |
+|---|---:|---:|---:|---:|
+| velocity_consistency ↓ | **1.358** | **2.147** | 3.040 | 2.241 |
+| doppler_drift ↓ | 0.508 | 0.469 | 0.706 | 0.432 |
+| persistence ↑ | **0.1437** | **0.0589** | 0.0753 | 0.0770 |
+| marginal_l1 ↓ | 0.0647 | 0.4084 | 0.0647 | 0.4084 |
+| target tracks/seq | 3.09 | 2.59 | — | — |
+
+**The Phase-1 read inverts.** Under the old clutter-dominated metrics generated
+*beat* real on `velocity_consistency` (2.24 vs 3.04), which was read as "motion
+is smooth, possibly too smooth". Measured on target-level tracks it is **58%
+worse than real** (2.147 vs 1.358), and `persistence` is **2.4× worse**
+(0.059 vs 0.144) where it previously looked equal. Generated sequences also
+yield fewer target-like tracks than real (2.59 vs 3.09).
+
+So the backbone is worse than real data on every target-level kinematic measure,
+not better. The one metric where it stays competitive is `doppler_drift`.
+
+### Exit criteria: passes the letter, but the gate is weak
+
+The spec's Phase-1 criteria are: overfit test passed, `persistence` within 0.2
+of reference, `velocity_consistency` finite, and GIFs showing targets persisting.
+
+| criterion | result |
+|---|---|
+| persistence within 0.2 | |0.1437 − 0.0589| = 0.0847 → pass |
+| velocity_consistency finite | 2.147 → pass |
+| overfit test (Task 8) | passed |
+
+It technically passes — but **the 0.2 tolerance exceeds the reference value
+itself (0.1437)**, so any persistence in [0, 0.34] passes, including zero. That
+criterion cannot fail and should not be treated as evidence. Tightening it is a
+prerequisite for Phase 2's exit check meaning anything.
+
 ## Open question (needs a control run)
 
 The diagnosis — no spatial information flow — is established by code inspection

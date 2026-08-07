@@ -70,6 +70,17 @@ def persistence(tracks, seq_len):
     return float((spans >= 0.8 * seq_len).float().mean())
 
 
+def filter_tracks(tracks, min_len):
+    """Keep only tracks spanning at least min_len frames.
+
+    Clutter detections are short-lived; real targets persist. Measured on the
+    val split against ground truth, raw linking gives 45.4 tracks/sequence at
+    19.9% precision, while max_peaks=5 with min_len=8 gives 3.09 tracks at
+    96.0% precision against 3.41 true targets (docs/notes/2026-08-07-*).
+    """
+    return [t for t in tracks if len(t) >= min_len]
+
+
 def marginal_l1(x_gen, x_real, bins=64):
     lo = min(x_gen.min().item(), x_real.min().item())
     hi = max(x_gen.max().item(), x_real.max().item())
@@ -78,14 +89,27 @@ def marginal_l1(x_gen, x_real, bins=64):
     return float((hg / hg.sum() - hr / hr.sum()).abs().sum())
 
 
-def evaluate_sequences(x_gen, x_real, seq_len=16):
-    vc, dd, ps, nt = [], [], [], []
+def evaluate_sequences(x_gen, x_real, seq_len=16, max_peaks=5,
+                       min_track_len=None):
+    """Physics metrics over generated sequences.
+
+    The kinematic metrics (velocity_consistency, doppler_drift) are computed
+    over tracks surviving the min_track_len filter, so they describe targets
+    rather than clutter. persistence and mean_tracks_per_seq stay on the raw
+    track set — they characterize the track-length distribution the filter is
+    derived from, so filtering first would make them circular.
+    """
+    if min_track_len is None:
+        min_track_len = seq_len // 2
+    vc, dd, ps, nt, ntt = [], [], [], [], []
     for seq in x_gen:
-        tracks = link_tracks([detect_peaks(f) for f in seq])
-        vc.append(velocity_consistency(tracks))
-        dd.append(doppler_drift(tracks))
+        tracks = link_tracks([detect_peaks(f, max_peaks=max_peaks) for f in seq])
+        kept = filter_tracks(tracks, min_track_len)
+        vc.append(velocity_consistency(kept))
+        dd.append(doppler_drift(kept))
         ps.append(persistence(tracks, seq_len))
         nt.append(len(tracks))
+        ntt.append(len(kept))
     def _nanmean(v):
         v = [x for x in v if x == x]
         return sum(v) / len(v) if v else float("nan")
@@ -95,6 +119,7 @@ def evaluate_sequences(x_gen, x_real, seq_len=16):
         "persistence": _nanmean(ps),
         "marginal_l1": marginal_l1(x_gen, x_real),
         "mean_tracks_per_seq": sum(nt) / len(nt),
+        "n_target_tracks_per_seq": sum(ntt) / len(ntt),
     }
 
 

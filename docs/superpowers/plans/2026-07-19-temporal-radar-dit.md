@@ -1790,6 +1790,24 @@ print(evaluate_sequences(xs[:32], xs[32:]))
 
 Exit criteria (spec §8 Phase 1): overfit test passed (Task 8); generated GIFs show targets persisting and moving smoothly across frames; `samples/phase1/metrics.yaml` has `persistence` within 0.2 of the real-data reference and finite `velocity_consistency`. Record both metric dicts in the commit message or a `samples/phase1/README.md`. **Stop and review with the user before starting Phase 2.**
 
+> **Amendment (2026-08-07)** — see `docs/notes/2026-08-07-phase1-marginal-l1-diagnosis.md`.
+>
+> 1. `evaluate_sequences` now defaults to `max_peaks=5` and filters tracks to
+>    `min_track_len = seq_len // 2` before computing the kinematic metrics.
+>    Unfiltered linking gave 45.4 tracks/sequence at 19.9% target precision, so
+>    the original numbers described clutter; the new settings give 3.11
+>    tracks/sequence at 93.5% precision. **Metric values recorded before this
+>    date are not comparable to values recorded after it.**
+> 2. The `persistence` criterion is unfalsifiable as written — a 0.2 tolerance
+>    around a reference of 0.1437 admits any value in [0, 0.34], including zero.
+>    Use it only alongside the target-level numbers (`n_target_tracks_per_seq`,
+>    and persistence as a ratio to the reference), not as a standalone gate.
+>
+> Rescored `checkpoints/phase1_wandb/best.pt`: passes the letter of the
+> criteria, but is worse than the real reference on `velocity_consistency`
+> (2.147 vs 1.358) and `persistence` (0.059 vs 0.144). Reproduce with
+> `python -m scripts.rescore_phase1`.
+
 ---
 
 ### Task 11: Phase 2 — soft-argmax trajectory + Doppler losses
