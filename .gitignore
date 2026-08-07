@@ -5,3 +5,5 @@ checkpoints/
 samples/
 wandb/
 .superpowers/
+logs/
+*.log
