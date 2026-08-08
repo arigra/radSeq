@@ -1,0 +1,38 @@
+data:
+  n_train: 20000
+  n_val: 2000
+  seq_len: 16
+  frame_interval: 0.5
+  cache_dir: data/cache
+  shard_size: 1000
+  seed: 1234
+model:
+  patch: 8
+  stride: 4
+  dim: 256
+  depth: 6
+  heads: 8
+  attn_mode: factorized
+diffusion:
+  timesteps: 1000
+train:
+  seed: 2026
+  batch_size: 16
+  lr: 0.0001
+  weight_decay: 0.0
+  epochs: 10
+  lambda_smooth: 0.1
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  phase: 1
+  ckpt_dir: checkpoints/ctrl_factorized_d6
+  log_file: logs/ctrl_factorized_d6.log
+  log_every_steps: 50
+  save_every_steps: 250
+  snapshot_every_epochs: 5
+  val_every_epochs: 1
+  val_batch_size: 16
+  val_seed: 4321
+  wandb: false
+sample:
+  ddim_steps: 50

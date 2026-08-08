@@ -20,6 +20,18 @@ def _tiny_config(tmp_path):
     return cfg
 
 
+def test_build_model_honors_attn_mode(tmp_path):
+    """The control experiment selects its architecture from config alone, so
+    nothing else about the training run can differ between the two arms."""
+    from src.dit import FactorizedBlock, TemporalBlock
+    from src.train import build_model
+    cfg = _tiny_config(tmp_path)
+    dev = torch.device("cpu")
+    assert isinstance(build_model(cfg, dev).blocks[0], TemporalBlock)
+    cfg["model"]["attn_mode"] = "factorized"
+    assert isinstance(build_model(cfg, dev).blocks[0], FactorizedBlock)
+
+
 def test_single_batch_overfit(tmp_path):
     """Loss on a fixed batch and fixed t must drop substantially."""
     torch.manual_seed(0)

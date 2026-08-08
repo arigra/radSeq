@@ -17,7 +17,8 @@ def build_model(cfg, device):
     m = cfg["model"]
     return TemporalDiT(seq_len=cfg["data"]["seq_len"], patch=m["patch"],
                        stride=m["stride"], dim=m["dim"], depth=m["depth"],
-                       heads=m["heads"]).to(device)
+                       heads=m["heads"],
+                       attn_mode=m.get("attn_mode", "temporal")).to(device)
 
 
 def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
