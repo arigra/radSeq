@@ -1,0 +1,6 @@
+cfar_detections_per_frame: 116.8046875
+doppler_drift: 0.7059514191932976
+marginal_l1: 0.06467437744140625
+mean_tracks_per_seq: 45.375
+persistence: 0.07531136967008933
+velocity_consistency: 3.039933083578944

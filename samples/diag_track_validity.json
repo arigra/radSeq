@@ -1,0 +1,35 @@
+{
+  "config": {
+    "cache": "data/cache",
+    "ckpt": "checkpoints/phase1_wandb/best.pt",
+    "n": 32,
+    "tol": 2.0,
+    "out": "samples/diag_track_validity.json"
+  },
+  "real_detection_validity": {
+    "sequences": 32,
+    "true_targets_total": 109,
+    "mean_true_targets_per_seq": 3.41,
+    "detected_peaks_total": 4096,
+    "peaks_matching_a_target": 1898,
+    "peak_precision": 0.4634,
+    "tracks_total": 1452,
+    "tracks_starting_on_a_target": 289,
+    "track_precision": 0.199,
+    "mean_tracks_per_seq": 45.38
+  },
+  "bright_structure": {
+    "real": {
+      "label": "real",
+      "bright_frac": 0.181667,
+      "blobs_per_frame": 46.23,
+      "mean_blob_px": 17.36
+    },
+    "generated": {
+      "label": "generated",
+      "bright_frac": 0.054421,
+      "blobs_per_frame": 47.89,
+      "mean_blob_px": 4.83
+    }
+  }
+}

@@ -2,7 +2,11 @@ __pycache__/
 *.pyc
 data/
 checkpoints/
-samples/
+# samples/* rather than samples/ so git descends and the negations below apply
+samples/*
+# ...keeping the small diagnostic reports the notebook and notes cite
+!samples/*.json
+!samples/*.yaml
 wandb/
 .superpowers/
 logs/

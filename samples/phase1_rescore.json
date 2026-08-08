@@ -1,0 +1,80 @@
+{
+  "config": {
+    "ckpt": "checkpoints/phase1_wandb/best.pt",
+    "cache": "data/cache",
+    "n": 32,
+    "steps": 50,
+    "out": "samples/phase1_rescore.json"
+  },
+  "detector_validity": {
+    "old_max_peaks8_no_filter": {
+      "tracks_per_seq": 46.09,
+      "true_targets_per_seq": 3.2,
+      "track_precision": 0.1617,
+      "target_recall": 1.0
+    },
+    "new_max_peaks5_min_len8": {
+      "tracks_per_seq": 3.11,
+      "true_targets_per_seq": 3.2,
+      "track_precision": 0.9347,
+      "target_recall": 0.9073
+    }
+  },
+  "reference_real_vs_real": {
+    "new": {
+      "velocity_consistency": 1.358168475329876,
+      "doppler_drift": 0.5075290573295206,
+      "persistence": 0.14367364550707862,
+      "marginal_l1": 0.06467437744140625,
+      "mean_tracks_per_seq": 23.65625,
+      "n_target_tracks_per_seq": 3.09375
+    },
+    "old": {
+      "velocity_consistency": 3.039933083578944,
+      "doppler_drift": 0.7059514191932976,
+      "persistence": 0.07531136967008933,
+      "marginal_l1": 0.06467437744140625,
+      "mean_tracks_per_seq": 45.375,
+      "n_target_tracks_per_seq": 45.375
+    }
+  },
+  "generated": {
+    "new": {
+      "velocity_consistency": 2.1470991875976324,
+      "doppler_drift": 0.4694957504980266,
+      "persistence": 0.058935497247148305,
+      "marginal_l1": 0.4084177017211914,
+      "mean_tracks_per_seq": 26.8125,
+      "n_target_tracks_per_seq": 2.59375
+    },
+    "old": {
+      "velocity_consistency": 2.240500831976533,
+      "doppler_drift": 0.43191729579120874,
+      "persistence": 0.0769565342925489,
+      "marginal_l1": 0.4084177017211914,
+      "mean_tracks_per_seq": 39.03125,
+      "n_target_tracks_per_seq": 39.03125
+    }
+  },
+  "generated_ckpt": {
+    "epoch": 63,
+    "step": 78750
+  },
+  "exit_criteria": {
+    "persistence_within_0.2_of_reference": {
+      "reference": 0.1437,
+      "generated": 0.0589,
+      "abs_diff": 0.0847,
+      "pass": true
+    },
+    "velocity_consistency_finite": {
+      "value": 2.1470991875976324,
+      "pass": true
+    },
+    "target_track_count_matches_reference": {
+      "reference": 3.09,
+      "generated": 2.59,
+      "note": "not a spec criterion; the clearest target-level signal"
+    }
+  }
+}

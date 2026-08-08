@@ -7,7 +7,7 @@ Answers, with numbers rather than argument:
   4. What IS the real-vs-real floor at the protocol actually used (16 gen vs 64 real)?
      The committed samples/reference_metrics.yaml has no recorded recipe.
 
-Writes a YAML report; prints a summary. Read-only w.r.t. the repo.
+Writes a JSON report; prints a summary. Read-only w.r.t. the repo.
 """
 import argparse
 import json
@@ -68,7 +68,7 @@ def main():
     ap.add_argument("--n-real", type=int, default=64)
     ap.add_argument("--steps", type=int, default=50)
     ap.add_argument("--floor-draws", type=int, default=8)
-    ap.add_argument("--out", default="samples/diag_marginal_l1.yaml")
+    ap.add_argument("--out", default="samples/diag_marginal_l1.json")
     args = ap.parse_args()
 
     report = {"config": vars(args)}
