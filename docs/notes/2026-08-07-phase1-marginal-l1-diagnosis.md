@@ -168,10 +168,45 @@ itself (0.1437)**, so any persistence in [0, 0.34] passes, including zero. That
 criterion cannot fail and should not be treated as evidence. Tightening it is a
 prerequisite for Phase 2's exit check meaning anything.
 
-## Open question (needs a control run)
+## The control experiment (pre-registered 2026-08-09, before any results)
 
 The diagnosis — no spatial information flow — is established by code inspection
 and matches every measurement. The *fix* is still a hypothesis: adding factorized
-spatial attention should restore the tail, but that has not been tested. A short
-run of a spatial+temporal variant on a data subset, compared on generated std and
-`marginal_l1`, would settle it.
+spatial attention should restore the tail, but that has not been tested.
+
+`FactorizedBlock` (`src/dit.py`) adds a spatial-attention sublayer, selected by
+`model.attn_mode: factorized`. Everything else is shared code, so the arms differ
+in attention alone.
+
+**Design.** Two control arms bracket the baseline's parameter count from both
+sides, so a positive result cannot be explained by added capacity:
+
+| Arm | Attention | Depth | Params | vs baseline |
+|---|---|---:|---:|---:|
+| baseline | temporal-only | 8 | 9.83 M | — |
+| control d5 | factorized | 5 | 8.58 M | **−12.7%** |
+| control d6 | factorized | 6 | 10.22 M | +4.0% |
+
+The **depth-5 arm carries the argument** — fewer parameters than the baseline.
+
+All arms run a fixed **12 500 steps** (10 epochs at batch 16 over 20 000
+sequences) with early stopping removed, on the same data and seed 2026. That
+matches `checkpoints/phase1_wandb/epoch_0010.pt`, which serves as the baseline
+arm without a re-run. The budget is sufficient because the baseline's generated
+std reached its final 0.659 by epoch 10 and never moved through epoch 70.
+
+Measured throughput on the RTX 3090: baseline 4.21 steps/s, d5 3.73, d6 3.14 —
+so the factorized model costs ~1.3×, not the ~3× a naive attention-FLOP count
+suggests (the MLP dominates at this size). About 2 h for both arms.
+
+**Pre-registered decision rule** — fixed before the runs, so the outcome cannot
+be rationalized after the fact:
+
+- Generated std rises **above 0.85** (from the baseline's 0.655, against real
+  1.003) in either arm → the diagnosis is confirmed and the architectural path is
+  justified.
+- Both arms remain near 0.66 → the diagnosis is incomplete; something beyond
+  spatial coordination is responsible, and the investigation reopens.
+
+Reproduce with `scripts/compare_control.py`, which also reports tail percentiles,
+`marginal_l1`, and the corrected kinematic metrics for every arm.
