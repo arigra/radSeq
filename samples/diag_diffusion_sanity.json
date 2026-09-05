@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "purpose": "Trained-model-independent checks of q_sample, pred_x0, and DDIM against analytically known one-dimensional distributions.",
+  "config": {
+    "device": "cpu",
+    "dtype_sampling": "float32",
+    "n": 16384,
+    "timesteps": 1000,
+    "ddim_steps": 50,
+    "seed": 20260815
+  },
+  "checks": {
+    "schedule": {
+      "alpha_bar_first": 0.9999586939811707,
+      "alpha_bar_last": 2.428766965323348e-09,
+      "monotone_nonincreasing": true,
+      "passed": true
+    },
+    "forward_process": {
+      "distribution": {
+        "name": "normal",
+        "x0_mean": 0.25,
+        "x0_std": 0.5
+      },
+      "timesteps": {
+        "0": {
+          "alpha_bar": 0.9999586939811707,
+          "expected_mean": 0.24999483669432687,
+          "observed_mean": 0.2546608639273815,
+          "mean_error_standard_scores": 1.194428968296325,
+          "expected_std": 0.5000309785544512,
+          "observed_std": 0.5019171602423875,
+          "std_error_standard_scores": 0.6828075687286645,
+          "roundtrip_max_abs_error": 2.220446049250313e-16
+        },
+        "250": {
+          "alpha_bar": 0.8458879590034485,
+          "expected_mean": 0.22993041868729663,
+          "observed_mean": 0.23253686886557035,
+          "mean_error_standard_scores": 0.5517797894419434,
+          "expected_std": 0.6046354527708524,
+          "observed_std": 0.6034216163233691,
+          "std_error_standard_scores": 0.3633944404759997,
+          "roundtrip_max_abs_error": 4.440892098500626e-16
+        },
+        "500": {
+          "alpha_bar": 0.4922851622104645,
+          "expected_mean": 0.1754075900243602,
+          "observed_mean": 0.17559584023157537,
+          "mean_error_standard_scores": 0.030339216807237085,
+          "expected_std": 0.7942204532383635,
+          "observed_std": 0.7909705846379976,
+          "std_error_standard_scores": 0.7406899435073634,
+          "roundtrip_max_abs_error": 4.440892098500626e-16
+        },
+        "750": {
+          "alpha_bar": 0.14317864179611206,
+          "expected_mean": 0.09459738427809199,
+          "observed_mean": 0.09233957144373832,
+          "mean_error_standard_scores": 0.3058902038583733,
+          "expected_std": 0.9447835829717386,
+          "observed_std": 0.9410275790489955,
+          "std_error_standard_scores": 0.7196236247098097,
+          "roundtrip_max_abs_error": 1.1102230246251565e-15
+        },
+        "999": {
+          "alpha_bar": 2.428766965323348e-09,
+          "expected_mean": 1.2320630476266596e-05,
+          "observed_mean": -0.004345512389920963,
+          "mean_error_standard_scores": 0.5578026271188851,
+          "expected_std": 0.9999999990892123,
+          "observed_std": 0.9969171394127547,
+          "std_error_standard_scores": 0.5580401812572836,
+          "roundtrip_max_abs_error": 8.2430728909344e-12
+        }
+      },
+      "q_marginals": {
+        "max_mean_error_standard_scores": 1.194428968296325,
+        "max_std_error_standard_scores": 0.7406899435073634,
+        "threshold_standard_scores": 5.0,
+        "passed": true
+      },
+      "q_pred_x0_roundtrip": {
+        "dtype": "float64",
+        "max_abs_error": 8.2430728909344e-12,
+        "threshold": 1e-10,
+        "passed": true
+      }
+    },
+    "ddim_gaussian_oracle": {
+      "distribution": {
+        "name": "normal",
+        "target_mean": 0.25,
+        "target_std": 0.5
+      },
+      "observed_mean": 0.24362540245056152,
+      "observed_std": 0.4868769347667694,
+      "mean_abs_error": 0.0063745975494384766,
+      "std_relative_error": 0.02624613046646118,
+      "thresholds": {
+        "mean_abs_error": 0.04,
+        "std_relative_error": 0.07
+      },
+      "passed": true
+    },
+    "ddim_two_point_oracle": {
+      "distribution": {
+        "name": "equal_two_point_mixture",
+        "support": [
+          -2.0,
+          2.0
+        ],
+        "target_positive_fraction": 0.5,
+        "target_mean": 0.0,
+        "target_std": 2.0
+      },
+      "observed_positive_fraction": 0.50146484375,
+      "observed_mean": 0.005859375,
+      "observed_std": 1.9999914169311523,
+      "support_mean_abs_error": 0.0,
+      "balance_abs_error": 0.00146484375,
+      "std_relative_error": 4.291534423828125e-06,
+      "thresholds": {
+        "support_mean_abs_error": 0.0001,
+        "balance_abs_error": 0.03,
+        "std_relative_error": 0.01
+      },
+      "passed": true
+    }
+  },
+  "passed": true,
+  "scope_limit": "This does not test a learned denoiser, optimization, radar data, conditioning, patch aggregation, or model capacity.",
+  "interpretation": "PASS: q_sample, pred_x0, and DDIM reproduce the analytic CPU controls. A radar sampling failure is therefore not explained by a basic diffusion-plumbing error covered by these tests."
+}
