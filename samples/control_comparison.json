@@ -1,0 +1,103 @@
+{
+  "decision_threshold_std": 0.85,
+  "real": {
+    "std": 1.0043,
+    "mean": -0.0072,
+    "p50": -0.1863,
+    "p75": 0.6556,
+    "p99": 2.4855,
+    "p999": 3.8744
+  },
+  "real_reference_metrics": {
+    "velocity_consistency": 1.358168475329876,
+    "doppler_drift": 0.5075290573295206,
+    "persistence": 0.14367364550707862,
+    "marginal_l1": 0.06467437744140625,
+    "mean_tracks_per_seq": 23.65625,
+    "n_target_tracks_per_seq": 3.09375
+  },
+  "arms": {
+    "baseline_temporal_d8": {
+      "checkpoint": "checkpoints/phase1_wandb/epoch_0010.pt",
+      "attn_mode": "temporal",
+      "depth": 8,
+      "params_M": 9.83,
+      "epoch": 10,
+      "step": 12500,
+      "generated": {
+        "std": 0.6554,
+        "mean": -0.2657,
+        "p50": -0.2675,
+        "p75": 0.143,
+        "p99": 1.3241,
+        "p999": 1.9056
+      },
+      "metrics": {
+        "velocity_consistency": 3.7985024452209473,
+        "doppler_drift": 0.8906453430652619,
+        "persistence": 0.025766564824152738,
+        "marginal_l1": 0.38042736053466797,
+        "mean_tracks_per_seq": 38.375,
+        "n_target_tracks_per_seq": 1.59375
+      }
+    },
+    "control_factorized_d5": {
+      "checkpoint": "checkpoints/ctrl_factorized_d5/last.pt",
+      "attn_mode": "factorized",
+      "depth": 5,
+      "params_M": 8.58,
+      "epoch": 10,
+      "step": 12500,
+      "generated": {
+        "std": 0.7043,
+        "mean": 0.7773,
+        "p50": 0.7795,
+        "p75": 1.2305,
+        "p99": 2.4886,
+        "p999": 3.303
+      },
+      "metrics": {
+        "velocity_consistency": 4.173080409115011,
+        "doppler_drift": 0.6135072396560148,
+        "persistence": 0.0018446180620230734,
+        "marginal_l1": 0.9091320037841797,
+        "mean_tracks_per_seq": 37.1875,
+        "n_target_tracks_per_seq": 1.09375
+      }
+    },
+    "control_factorized_d6": {
+      "checkpoint": "checkpoints/ctrl_factorized_d6/last.pt",
+      "attn_mode": "factorized",
+      "depth": 6,
+      "params_M": 10.22,
+      "epoch": 10,
+      "step": 12500,
+      "generated": {
+        "std": 0.6999,
+        "mean": -0.5421,
+        "p50": -0.539,
+        "p75": -0.1003,
+        "p99": 1.1282,
+        "p999": 1.7792
+      },
+      "metrics": {
+        "velocity_consistency": 3.507776274283727,
+        "doppler_drift": 0.8212314178546269,
+        "persistence": 0.01577190589159727,
+        "marginal_l1": 0.45616626739501953,
+        "mean_tracks_per_seq": 37.40625,
+        "n_target_tracks_per_seq": 1.71875
+      }
+    }
+  },
+  "verdict": {
+    "baseline_std": 0.6554,
+    "real_std": 1.0043,
+    "arms_over_threshold": {
+      "control_factorized_d5": false,
+      "control_factorized_d6": false
+    },
+    "diagnosis_confirmed": false,
+    "d5_confirms_not_capacity": false
+  }
+}
