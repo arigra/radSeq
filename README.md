@@ -72,3 +72,17 @@ Resume both training and its original W&B run with:
 python -u -m src.train --config configs/phase1_wandb.yaml \
   --resume checkpoints/phase1_wandb/last.pt
 ```
+
+## Working on this node
+
+This machine has no direct internet egress, which affects git and anything that
+fetches at runtime.
+
+- **Push over SSH, not HTTPS.** The stored HTTPS credential authenticates but has
+  no write access to `arigra/*` and returns 403. The remote must be
+  `git@github.com:arigra/radSeq.git`.
+- **SSH needs the proxy helper.** Port 22 is refused and 443 is reset, so
+  `~/.ssh/config` routes GitHub through an HTTP-CONNECT helper at
+  `~/.ssh/proxy_connect.py` (original config backed up at `~/.ssh/config.bak`).
+  With it in place, plain `git push` works. There is no `nc`, `socat` or `gh`
+  installed to fall back on.
