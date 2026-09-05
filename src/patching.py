@@ -21,9 +21,35 @@ def patchify(x: torch.Tensor, p: int = 8, s: int = 4) -> torch.Tensor:
 
 
 def unpatchify(tokens: torch.Tensor, N: int = 64, K: int = 64,
-               p: int = 8, s: int = 4) -> torch.Tensor:
-    """(B, L, P, p*p) -> (B, L, N, K), averaging overlaps."""
+               p: int = 8, s: int = 4,
+               reduction: str = "mean") -> torch.Tensor:
+    """Reassemble ``(B, L, P, p*p)`` patch predictions.
+
+    ``mean`` is the training/default path and averages every prediction for an
+    overlapped pixel. ``tile`` is a diagnostic path: it chooses the patches
+    starting at ``(0, 0), (0, p), ...`` and stitches that non-overlapping
+    subset. Comparing the two on the same checkpoint and initial diffusion
+    noise directly measures how much overlap averaging changes a sample.
+    """
     B, L, P, d = tokens.shape
+    if reduction == "tile":
+        if p % s or N % p or K % p:
+            raise ValueError(
+                "tile reduction requires stride to divide patch size and "
+                "patch size to divide both output dimensions")
+        pr, pc = num_patches(N, K, p, s)
+        if P != pr * pc or d != p * p:
+            raise ValueError("token shape is incompatible with output geometry")
+        grid = tokens.reshape(B, L, pr, pc, p, p)
+        step = p // s
+        tiled = grid[:, :, ::step, ::step]
+        expected = (N // p, K // p)
+        if tiled.shape[2:4] != expected:
+            raise ValueError("selected patches do not tile the output")
+        return (tiled.permute(0, 1, 2, 4, 3, 5)
+                .reshape(B, L, N, K))
+    if reduction != "mean":
+        raise ValueError(f"unknown overlap reduction {reduction!r}")
     u = tokens.reshape(B * L, P, d).transpose(1, 2)          # (B*L, p*p, P)
     out = F.fold(u, (N, K), kernel_size=p, stride=s)
     cnt = F.fold(torch.ones_like(u), (N, K), kernel_size=p, stride=s)

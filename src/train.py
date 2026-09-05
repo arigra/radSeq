@@ -10,15 +10,28 @@ from torch.utils.data import DataLoader
 from src.dataset import RadarSequenceDataset
 from src.diffusion import GaussianDiffusion
 from src.dit import TemporalDiT
+from src.ema import make_ema, update_ema
 from src.losses import diffusion_loss, smooth_loss
 
 
 def build_model(cfg, device):
     m = cfg["model"]
-    return TemporalDiT(seq_len=cfg["data"]["seq_len"], patch=m["patch"],
-                       stride=m["stride"], dim=m["dim"], depth=m["depth"],
-                       heads=m["heads"],
-                       attn_mode=m.get("attn_mode", "temporal")).to(device)
+    architecture = m.get("architecture", "temporal_dit")
+    if architecture == "temporal_dit":
+        model = TemporalDiT(
+            seq_len=cfg["data"]["seq_len"], patch=m["patch"],
+            stride=m["stride"], dim=m["dim"], depth=m["depth"],
+            heads=m["heads"], attn_mode=m.get("attn_mode", "temporal"),
+            patch_reduction=m.get("patch_reduction", "mean"))
+    elif architecture == "unet2d":
+        from src.unet import SpatialUNet
+        model = SpatialUNet(
+            seq_len=cfg["data"]["seq_len"],
+            base_channels=m.get("base_channels", 64),
+            time_dim=m.get("dim", 256))
+    else:
+        raise ValueError(f"unknown model architecture {architecture!r}")
+    return model.to(device)
 
 
 def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
@@ -130,6 +143,19 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         epoch, step = state.get("epoch", 0), state.get("step", 0)
         best_val = state.get("best_val", float("inf"))
         bad_epochs = state.get("bad_epochs", 0)
+    ema_decay = tr.get("ema_decay")
+    if ema_decay is not None and not 0.0 <= ema_decay < 1.0:
+        raise ValueError("train.ema_decay must be in [0, 1)")
+    ema_model = make_ema(model) if ema_decay is not None else None
+    ema_encoder = (make_ema(encoder)
+                   if ema_decay is not None and encoder is not None else None)
+    ema_updates = 0
+    if ema_model is not None and resume_state is not None:
+        if resume_state.get("ema_model") is not None:
+            ema_model.load_state_dict(resume_state["ema_model"])
+        if ema_encoder is not None and resume_state.get("ema_encoder") is not None:
+            ema_encoder.load_state_dict(resume_state["ema_encoder"])
+        ema_updates = resume_state.get("ema_updates", 0)
     use_wandb = tr.get("wandb", False)
     wandb_run = None
     if use_wandb:
@@ -158,9 +184,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         with open(log_path, "a") as fh:
             fh.write(line + "\n")
 
-    report("start device={} phase={} epoch={} step={} params={}".format(
+    report("start device={} phase={} epoch={} step={} params={} ema_decay={}".format(
         device, tr.get("phase", 1), epoch, step,
-        sum(p.numel() for p in opt_params)))
+        sum(p.numel() for p in opt_params), ema_decay))
     losses = []
     fixed_batch = next(iter(loader)) if _record_losses else None
     fixed_t = (torch.randint(0, diff.T, (tr["batch_size"],), device=device)
@@ -172,7 +198,12 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
     def checkpoint_meta():
         return {
             "best_val": best_val, "bad_epochs": bad_epochs,
-            "wandb_run_id": wandb_run.id if wandb_run is not None else None}
+            "wandb_run_id": wandb_run.id if wandb_run is not None else None,
+            "ema_model": (ema_model.state_dict()
+                          if ema_model is not None else None),
+            "ema_encoder": (ema_encoder.state_dict()
+                            if ema_encoder is not None else None),
+            "ema_updates": ema_updates}
     # When max_steps is set, keep cycling epochs until it is reached, even if
     # that exceeds tr["epochs"] (e.g. a tiny smoke-test dataset with few
     # batches per epoch). Without max_steps, honor tr["epochs"] as normal.
@@ -203,6 +234,11 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             loss.backward()
             grad_norm = torch.nn.utils.clip_grad_norm_(opt_params, 1.0)
             opt.step()
+            if ema_model is not None:
+                update_ema(ema_model, model, ema_decay)
+                if ema_encoder is not None:
+                    update_ema(ema_encoder, encoder, ema_decay)
+                ema_updates += 1
             losses.append(loss.item())
             step += 1
             if use_wandb and step % log_every == 0:

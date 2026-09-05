@@ -89,7 +89,8 @@ class FactorizedBlock(nn.Module):
 
 class TemporalDiT(nn.Module):
     def __init__(self, seq_len=16, N=64, K=64, patch=8, stride=4,
-                 dim=256, depth=8, heads=8, attn_mode="temporal"):
+                 dim=256, depth=8, heads=8, attn_mode="temporal",
+                 patch_reduction="mean"):
         super().__init__()
         self.N, self.K, self.p, self.s = N, K, patch, stride
         pr, pc = num_patches(N, K, patch, stride)
@@ -103,6 +104,9 @@ class TemporalDiT(nn.Module):
                                    nn.Linear(dim, dim))
         self.dim = dim
         self.attn_mode = attn_mode
+        if patch_reduction not in ("mean", "tile"):
+            raise ValueError(f"unknown patch_reduction {patch_reduction!r}")
+        self.patch_reduction = patch_reduction
         if attn_mode not in ("temporal", "factorized"):
             raise ValueError(f"unknown attn_mode {attn_mode!r}")
         block = TemporalBlock if attn_mode == "temporal" else FactorizedBlock
@@ -125,4 +129,5 @@ class TemporalDiT(nn.Module):
             z = blk(z, c)
         sh, sc = self.final_adaLN(c)[:, None, None].chunk(2, dim=-1)
         z = self.final_norm(z) * (1 + sc) + sh
-        return unpatchify(self.out(z), self.N, self.K, self.p, self.s)
+        return unpatchify(self.out(z), self.N, self.K, self.p, self.s,
+                          reduction=self.patch_reduction)

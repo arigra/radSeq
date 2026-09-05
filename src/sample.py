@@ -10,28 +10,65 @@ from src.diffusion import GaussianDiffusion
 from src.train import build_model
 
 
-def generate(ckpt_path, n_seq, device, steps=50, cond=None):
+def select_checkpoint_state(ckpt, component="model", weights=None):
+    """Select raw or EMA weights, honoring the checkpoint's sample config."""
+    if weights is None:
+        weights = ckpt.get("config", {}).get("sample", {}).get("weights", "raw")
+    if weights == "auto":
+        weights = "ema" if ckpt.get(f"ema_{component}") is not None else "raw"
+    if weights == "raw":
+        key = component
+    elif weights == "ema":
+        key = f"ema_{component}"
+    else:
+        raise ValueError(f"unknown checkpoint weights {weights!r}")
+    state = ckpt.get(key)
+    if state is None:
+        raise ValueError(f"checkpoint has no {weights} weights for {component}")
+    return state
+
+
+def _set_patch_reduction(model, reduction):
+    if reduction is None:
+        return
+    if reduction not in ("mean", "tile"):
+        raise ValueError(f"unknown patch reduction {reduction!r}")
+    if not hasattr(model, "patch_reduction"):
+        raise ValueError("patch reduction applies only to patch-based DiT models")
+    model.patch_reduction = reduction
+
+
+def generate(ckpt_path, n_seq, device, steps=50, cond=None, weights=None,
+             patch_reduction=None, seed=None):
     ckpt = torch.load(ckpt_path, map_location=device)
     cfg = ckpt["config"]
     model = build_model(cfg, device)
-    model.load_state_dict(ckpt["model"])
+    model.load_state_dict(select_checkpoint_state(ckpt, weights=weights))
+    _set_patch_reduction(model, patch_reduction)
     model.eval()
     diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
     L = cfg["data"]["seq_len"]
+    if seed is not None:
+        # Seed after model construction so different architectures receive the
+        # same initial diffusion noise in paired comparisons.
+        torch.manual_seed(seed)
     x = diff.ddim_sample(model, (n_seq, L, 64, 64), device, steps=steps, cond=cond)
     stats = RadarSequenceDataset(cfg["data"]["cache_dir"], "val").stats
     return denormalize(x.cpu(), stats)
 
 
-def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0):
+def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0,
+                         weights=None, patch_reduction=None, seed=None):
     from src.conditioning import ConditionEncoder
 
     ckpt = torch.load(ckpt_path, map_location=device)
     cfg = ckpt["config"]
     model = build_model(cfg, device)
-    model.load_state_dict(ckpt["model"])
+    model.load_state_dict(select_checkpoint_state(ckpt, weights=weights))
+    _set_patch_reduction(model, patch_reduction)
     encoder = ConditionEncoder(dim=cfg["model"]["dim"]).to(device)
-    encoder.load_state_dict(ckpt["encoder"])
+    encoder.load_state_dict(select_checkpoint_state(
+        ckpt, component="encoder", weights=weights))
     model.eval(); encoder.eval()
 
     B = batch["v0"].shape[0]
@@ -46,6 +83,8 @@ def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0):
 
     diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
     L = cfg["data"]["seq_len"]
+    if seed is not None:
+        torch.manual_seed(seed)
     x = diff.ddim_sample(guided, (B, L, 64, 64), device, steps=steps)
     stats = RadarSequenceDataset(cfg["data"]["cache_dir"], "val").stats
     return denormalize(x.cpu(), stats)
@@ -62,10 +101,18 @@ if __name__ == "__main__":
                     help="real val sequences to render with GT markers")
     ap.add_argument("--out", default="samples")
     ap.add_argument("--steps", type=int, default=50)
+    ap.add_argument("--weights", choices=("raw", "ema", "auto"),
+                    help="checkpoint weights (default: sample.weights, then raw)")
+    ap.add_argument("--patch-reduction", choices=("mean", "tile"),
+                    help="override DiT overlap reconstruction for diagnosis")
+    ap.add_argument("--seed", type=int,
+                    help="fix the initial sampling noise for paired comparisons")
     args = ap.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    x = generate(args.ckpt, args.n, device, steps=args.steps)
+    x = generate(args.ckpt, args.n, device, steps=args.steps,
+                 weights=args.weights, patch_reduction=args.patch_reduction,
+                 seed=args.seed)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for i, seq in enumerate(x):
