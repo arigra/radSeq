@@ -6,7 +6,7 @@ import torch
 import yaml
 
 from src.dataset import RadarSequenceDataset, denormalize
-from src.diffusion import GaussianDiffusion
+from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion
 from src.train import build_model
 
 
@@ -46,7 +46,10 @@ def generate(ckpt_path, n_seq, device, steps=50, cond=None, weights=None,
     model.load_state_dict(select_checkpoint_state(ckpt, weights=weights))
     _set_patch_reduction(model, patch_reduction)
     model.eval()
-    diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
+    diff = GaussianDiffusion(
+        cfg["diffusion"]["timesteps"],
+        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
+        parameterization=cfg["diffusion"].get("parameterization", "eps"))
     L = cfg["data"]["seq_len"]
     if seed is not None:
         # Seed after model construction so different architectures receive the
@@ -81,7 +84,10 @@ def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0,
         e_n = model(xt, t, null)
         return e_n + guidance * (e_c - e_n)
 
-    diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
+    diff = GaussianDiffusion(
+        cfg["diffusion"]["timesteps"],
+        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
+        parameterization=cfg["diffusion"].get("parameterization", "eps"))
     L = cfg["data"]["seq_len"]
     if seed is not None:
         torch.manual_seed(seed)

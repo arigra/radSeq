@@ -81,3 +81,43 @@ def test_smoothness_weight_modes_have_opposite_schedules():
     assert torch.allclose(high_noise_heavy + low_noise_heavy, torch.ones(3), atol=1e-6)
     with pytest.raises(ValueError):
         d.loss_weight(t, "made_up")
+
+
+def test_v_target_and_inverse_are_consistent():
+    """v-prediction must recover exactly the x0 and eps that produced xt."""
+    d = GaussianDiffusion(timesteps=1000, parameterization="v")
+    torch.manual_seed(0)
+    x0 = torch.randn(4, 2, 8, 8)
+    eps = torch.randn_like(x0)
+    t = torch.tensor([10, 300, 700, 999])
+    xt = d.q_sample(x0, t, eps)
+    v = d.v_target(x0, t, eps)
+    eps_hat, x0_hat = d.to_eps_x0(v, xt, t)
+    assert torch.allclose(x0_hat, x0, atol=1e-4)
+    assert torch.allclose(eps_hat, eps, atol=1e-4)
+
+
+def test_eps_parameterization_is_unchanged():
+    d = GaussianDiffusion(timesteps=1000)
+    assert d.parameterization == "eps"
+    torch.manual_seed(0)
+    x0, t = torch.randn(2, 2, 8, 8), torch.tensor([100, 800])
+    eps = torch.randn_like(x0)
+    xt = d.q_sample(x0, t, eps)
+    assert torch.equal(d.target(x0, t, eps), eps)
+    e, x = d.to_eps_x0(eps, xt, t)
+    assert torch.equal(e, eps) and torch.allclose(x, d.pred_x0(xt, t, eps))
+
+
+def test_min_snr_caps_the_easy_low_noise_steps():
+    d = GaussianDiffusion(timesteps=1000)
+    t = torch.tensor([0, 500, 999])
+    flat = d.objective_weights(t, "none")
+    capped = d.objective_weights(t, "min_snr", gamma=5.0)
+    assert torch.allclose(flat, torch.ones(3))
+    assert capped[0] < 0.01           # t=0 has enormous SNR, weight ~gamma/SNR
+    assert capped[-1] == pytest.approx(1.0, abs=1e-3)   # t=999: SNR << gamma
+    assert (capped[:-1] <= capped[1:]).all()          # non-decreasing in t
+    assert capped[1] == pytest.approx(1.0, abs=1e-3)  # SNR(500) < gamma: uncapped
+    with pytest.raises(ValueError):
+        d.objective_weights(t, "bogus")

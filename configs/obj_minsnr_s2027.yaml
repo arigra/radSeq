@@ -1,0 +1,41 @@
+# Objective arm: min-SNR loss weighting (gamma=5).
+data:
+  n_train: 20000
+  n_val: 2000
+  seq_len: 16
+  frame_interval: 0.5
+  cache_dir: data/cache
+  shard_size: 1000
+  seed: 1234
+model:
+  patch: 8
+  stride: 4
+  dim: 256
+  depth: 8
+  heads: 8
+diffusion:
+  timesteps: 1000
+train:
+  seed: 2027
+  batch_size: 16
+  lr: 0.0001
+  weight_decay: 0.0
+  epochs: 10
+  lambda_smooth: 0.1
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  phase: 1
+  ckpt_dir: checkpoints/obj_minsnr_s2027
+  log_file: logs/obj_minsnr_s2027.log
+  log_every_steps: 50
+  save_every_steps: 250
+  snapshot_every_epochs: 5
+  val_every_epochs: 1
+  val_batch_size: 16
+  val_seed: 4321
+  wandb: false
+  loss_weighting: min_snr
+  min_snr_gamma: 5.0
+sample:
+  ddim_steps: 50
+  weights: raw

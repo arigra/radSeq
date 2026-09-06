@@ -193,7 +193,8 @@ def evaluate_arm(
         clamp_setting = float(arm.clamp) if _is_number(arm.clamp) else arm.clamp
     x0_clamp = parse_x0_clamp(clamp_setting)
     diffusion = GaussianDiffusion(
-        config["diffusion"]["timesteps"], x0_clamp=x0_clamp)
+        config["diffusion"]["timesteps"], x0_clamp=x0_clamp,
+        parameterization=config["diffusion"].get("parameterization", "eps"))
     torch.manual_seed(seed)
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -218,6 +219,8 @@ def evaluate_arm(
         "patch_reduction": arm.reduction or model_config.get("patch_reduction", "mean"),
         "weights": effective_weights,
         "x0_clamp": list(x0_clamp) if x0_clamp is not None else None,
+        "parameterization": config["diffusion"].get("parameterization", "eps"),
+        "loss_weighting": config["train"].get("loss_weighting", "none"),
         "smooth_weight": config["train"].get(
             "smooth_weight", "one_minus_alpha_bar"),
         "lambda_smooth": config["train"].get("lambda_smooth"),

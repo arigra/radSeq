@@ -34,9 +34,13 @@ def _bc(v, x):
 
 
 class GaussianDiffusion:
-    def __init__(self, timesteps=1000, x0_clamp=DEFAULT_X0_CLAMP):
+    def __init__(self, timesteps=1000, x0_clamp=DEFAULT_X0_CLAMP,
+                 parameterization="eps"):
         self.T = timesteps
         self.x0_clamp = parse_x0_clamp(x0_clamp)
+        if parameterization not in ("eps", "v"):
+            raise ValueError(f"unknown parameterization {parameterization!r}")
+        self.parameterization = parameterization
         t = torch.arange(timesteps + 1, dtype=torch.float64) / timesteps
         f = torch.cos((t + 0.008) / 1.008 * math.pi / 2) ** 2
         abar = (f / f[0])
@@ -53,6 +57,51 @@ class GaussianDiffusion:
     def pred_x0(self, xt, t, eps_hat):
         ab = self._ab(t, xt)
         return (xt - (1 - ab).sqrt() * eps_hat) / ab.sqrt()
+
+    def v_target(self, x0, t, eps):
+        """v = sqrt(abar) * eps - sqrt(1 - abar) * x0 (Salimans & Ho, 2022)."""
+        ab = self._ab(t, x0)
+        return ab.sqrt() * eps - (1 - ab).sqrt() * x0
+
+    def target(self, x0, t, eps):
+        """What the network is trained to regress under this parameterization."""
+        return eps if self.parameterization == "eps" else self.v_target(x0, t, eps)
+
+    def to_eps_x0(self, out, xt, t):
+        """Map a raw network output to (eps_hat, x0_hat), unclamped.
+
+        Under eps-prediction the output is eps and x0 follows from pred_x0.
+        Under v-prediction both follow from v by rotation, which is the point:
+        at high noise the v target still carries the signal direction, where
+        eps is nearly all noise and says little about where structure belongs.
+        """
+        if self.parameterization == "eps":
+            return out, self.pred_x0(xt, t, out)
+        ab = self._ab(t, xt)
+        x0 = ab.sqrt() * xt - (1 - ab).sqrt() * out
+        eps = (1 - ab).sqrt() * xt + ab.sqrt() * out
+        return eps, x0
+
+    def snr(self, t):
+        ab = self.alphas_bar.to(t.device)[t]
+        return ab / (1 - ab).clamp(min=1e-20)
+
+    def objective_weights(self, t, mode="none", gamma=5.0):
+        """Per-sample weight on the main regression loss.
+
+        ``min_snr`` (Hang et al., 2023) caps the effective SNR at gamma so the
+        low-noise steps, where the task is nearly trivial, stop dominating the
+        gradient. The eps and v forms differ by the +1 in the denominator.
+        """
+        if mode == "none":
+            return torch.ones_like(self.alphas_bar.to(t.device)[t])
+        if mode != "min_snr":
+            raise ValueError(f"unknown loss weighting {mode!r}")
+        if gamma <= 0:
+            raise ValueError("min_snr_gamma must be positive")
+        snr = self.snr(t)
+        capped = snr.clamp(max=gamma)
+        return capped / (snr if self.parameterization == "eps" else snr + 1)
 
     def clamp_x0(self, x0):
         """Apply the configured x0 guard rail, or nothing when disabled."""
@@ -83,8 +132,8 @@ class GaussianDiffusion:
         ts = torch.linspace(self.T - 1, 0, steps, device=device).long()
         for i in range(steps):
             t = ts[i].repeat(shape[0])
-            eps = model(x, t, cond)
-            x0 = self.clamp_x0(self.pred_x0(x, t, eps))
+            eps, x0 = self.to_eps_x0(model(x, t, cond), x, t)
+            x0 = self.clamp_x0(x0)
             if i == steps - 1:
                 x = x0
             else:
@@ -98,8 +147,8 @@ class GaussianDiffusion:
         x = torch.randn(shape, device=device)
         for ti in reversed(range(self.T)):
             t = torch.full((shape[0],), ti, device=device, dtype=torch.long)
-            eps = model(x, t, cond)
-            x0 = self.clamp_x0(self.pred_x0(x, t, eps))
+            eps, x0 = self.to_eps_x0(model(x, t, cond), x, t)
+            x0 = self.clamp_x0(x0)
             if ti == 0:
                 x = x0
             else:

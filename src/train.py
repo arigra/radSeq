@@ -42,9 +42,12 @@ def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
     xt = diff.q_sample(x0, t, eps)
     cond = (encoder(batch, device, dropout_p=dropout_p)
             if encoder is not None else None)
-    eps_hat = model(xt, t, cond)
-    dit = diffusion_loss(eps, eps_hat)
-    x0_hat = diff.clamp_x0(diff.pred_x0(xt, t, eps_hat))
+    prediction = model(xt, t, cond)
+    dit = diffusion_loss(
+        diff.target(x0, t, eps), prediction,
+        weight=diff.objective_weights(
+            t, tr.get("loss_weighting", "none"), tr.get("min_snr_gamma", 5.0)))
+    x0_hat = diff.clamp_x0(diff.to_eps_x0(prediction, xt, t)[1])
     smooth = smooth_loss(
         x0_hat, diff.loss_weight(t, tr.get("smooth_weight", "one_minus_alpha_bar")))
     physics = torch.zeros((), device=device)
@@ -127,7 +130,8 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         opt_params = list(model.parameters())
     diff = GaussianDiffusion(
         cfg["diffusion"]["timesteps"],
-        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP))
+        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
+        parameterization=cfg["diffusion"].get("parameterization", "eps"))
     opt = torch.optim.AdamW(opt_params, lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     epoch, step = 0, 0
@@ -191,7 +195,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
            "smooth_weight={} x0_clamp={}".format(
                device, tr.get("phase", 1), epoch, step,
                sum(p.numel() for p in opt_params), ema_decay,
-               tr.get("smooth_weight", "one_minus_alpha_bar"), diff.x0_clamp))
+               tr.get("smooth_weight", "one_minus_alpha_bar"), diff.x0_clamp)
+           + " param={} loss_weighting={}".format(
+               diff.parameterization, tr.get("loss_weighting", "none")))
     losses = []
     fixed_batch = next(iter(loader)) if _record_losses else None
     fixed_t = (torch.randint(0, diff.T, (tr["batch_size"],), device=device)
@@ -225,10 +231,14 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             xt = diff.q_sample(x0, t, eps)
             cond = (encoder(batch, device, dropout_p=tr.get("cond_dropout", 0.1))
                     if encoder is not None else None)
-            eps_hat = model(xt, t, cond)
-            dit = diffusion_loss(eps, eps_hat)
+            prediction = model(xt, t, cond)
+            dit = diffusion_loss(
+                diff.target(x0, t, eps), prediction,
+                weight=diff.objective_weights(
+                    t, tr.get("loss_weighting", "none"),
+                    tr.get("min_snr_gamma", 5.0)))
             # Clamp x0 before regularization to avoid high-t numerical spikes.
-            x0_hat = diff.clamp_x0(diff.pred_x0(xt, t, eps_hat))
+            x0_hat = diff.clamp_x0(diff.to_eps_x0(prediction, xt, t)[1])
             smooth = smooth_loss(
                 x0_hat,
                 diff.loss_weight(t, tr.get("smooth_weight", "one_minus_alpha_bar")))

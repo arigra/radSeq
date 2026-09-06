@@ -2,8 +2,12 @@
 import torch
 
 
-def diffusion_loss(eps, eps_hat):
-    return ((eps - eps_hat) ** 2).mean()
+def diffusion_loss(target, prediction, weight=None):
+    """Mean squared regression loss, optionally weighted per sample."""
+    if weight is None:
+        return ((target - prediction) ** 2).mean()
+    per_sample = ((target - prediction) ** 2).flatten(1).mean(dim=1)
+    return (weight * per_sample).mean()
 
 
 def smooth_loss(x0_hat, weight):
