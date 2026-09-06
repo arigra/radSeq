@@ -8,7 +8,7 @@ tags:
 
 # radSeq
 
-**Status as of 2026-09-06.** This file supersedes every earlier status summary.
+**Status as of 2026-09-06 (revised 23:00).** This file supersedes every earlier status summary.
 Metric values recorded before 2026-08-07 used a broken detector and are not
 comparable to anything here.
 
@@ -28,7 +28,34 @@ labeled real data is scarce.
 - **Phases:** 1 backbone (trained), 2 physics losses (implemented, untrained),
   3 conditioning (implemented, untrained).
 
-## Bottom line
+## Bottom line (revised)
+
+**Target motion is solved by training budget.** Scored on the corrected detector
+across three sampling seeds, the 87,500-step checkpoint produces 3.15 target
+tracks per sequence against 3.09 real, with velocity consistency 1.46 against
+1.36. At the 12,500-step ablation budget it produced 1.81. The intensity
+distribution is unchanged across the same 7x (std 0.652 -> 0.655, marginal L1
+0.388 -> 0.398).
+
+So there is **one** open problem, the intensity distribution, and it has survived
+every structural change tried: 7x budget, spatial attention, a convolutional
+denoiser, EMA, every clamp width, every smoothness weighting and magnitude,
+v-prediction and min-SNR. The remaining suspects are the data representation
+itself — the dB log scaling and the fixed normalisation — not the model.
+
+Two corrections this forces:
+
+- **Every 12,500-step comparison in this project is budget-confounded on the
+  target metrics**, including the architecture control and the decode
+  comparison. Their distribution verdicts stand; their target verdicts do not.
+  The decode comparison in particular *reverses* at full budget: the plain mean
+  decode is calibrated (3.15 vs 3.09 real) while hann over-produces (3.99).
+- **`best.pt` is the wrong checkpoint.** Validation-selected at step 78,750, it
+  scores worse on target metrics than `epoch_0070` at step 87,500. The
+  validation objective is not aligned with target quality; train to a fixed
+  budget and keep the last checkpoint.
+
+## Bottom line (as written earlier on 2026-09-06)
 
 Phase 1 trains cleanly and **restores** near-perfectly, but **synthesizes** with
 roughly two thirds of the real intensity spread, and the bright tail where

@@ -1,6 +1,9 @@
 # radSeq — complete technical briefing
 
-*Self-contained as of 2026-09-06. Written to be handed to another reader (human
+*Self-contained as of 2026-09-06 (revised late the same day; see section 8.6,
+which overturns several earlier readings).*
+
+*Original header:* Written to be handed to another reader (human
 or model) with no other context. Every number here comes from a committed JSON
 result file in `samples/`, listed at the end.*
 
@@ -307,6 +310,63 @@ Consequences: both factorized control arms' leads (+0.049, +0.045) and EMA's
 (+0.058) are inside noise. Any single-seed difference below ~0.1 in std or ~0.2
 in tracks is not a result.
 
+### 8.6 Training budget — the confound under everything above
+
+Every arm in sections 8.1-8.5 was compared at 12,500 steps, chosen so arms would
+be matched and affordable. Nobody had checked what that budget was measuring.
+Scoring the finished 78-epoch Phase-1 run's epoch snapshots on the **corrected**
+detector (three sampling seeds; the epoch progression had only ever been checked
+on generated std) gives:
+
+| checkpoint | steps | tgt/seq | persistence | velocity ↓ | std | marg. L1 |
+|---|---:|---:|---:|---:|---:|---:|
+| real | - | 3.09 | 0.144 | 1.36 | 1.004 | 0.065 |
+| epoch 10 | 12,500 | 1.81 +/- 0.22 | 0.030 | 3.47 | 0.652 | 0.388 |
+| epoch 70 | 87,500 | **3.15 +/- 0.07** | 0.093 | **1.46** | 0.655 | 0.398 |
+
+**There are two failure modes, not one.**
+
+1. **Target kinematics converge with training.** At 7x the ablation budget the
+   model produces essentially the right number of target tracks (3.15 vs 3.09)
+   and near-real velocity consistency (1.46 vs 1.36). Persistence remains low
+   (0.093 vs 0.144).
+2. **The intensity deficit is immune to training.** std 0.652 -> 0.655 and
+   marginal L1 0.388 -> 0.398 across the same 7x. It does not move at all.
+
+Consequences for everything above:
+
+- **Every 12,500-step comparison is budget-confounded on the target metrics.**
+  The architecture control, the decode comparison, the smoothness arms and both
+  objective arms were judged where target quality was ~60% of its converged
+  value. Their *distribution* verdicts stand (that axis is budget-independent);
+  their *target* verdicts do not.
+- The 2026-08-07 claim that the backbone is "worse than real data on every
+  target-level kinematic metric" holds for `best.pt` but **not at full budget**.
+- `best.pt` (validation-selected, step 78,750) scores worse on target metrics
+  than `epoch_0070` (step 87,500). **The validation objective is not aligned
+  with target quality**, so early stopping on it halts training while the metric
+  that matters is still improving. Future runs should train to a fixed budget
+  and keep the last checkpoint.
+
+**The decode result reverses at full budget.** Re-running section 8.3's
+comparison on `epoch_0070`, three sampling seeds:
+
+| decode | tgt/seq | persistence | marg. L1 | std |
+|---|---:|---:|---:|---:|
+| real | 3.09 | 0.144 | 0.065 | 1.004 |
+| mean | 3.15 +/- 0.07 | 0.093 +/- 0.013 | 0.398 | 0.655 |
+| hann | 3.99 +/- 0.18 | 0.255 +/- 0.044 | 0.760 | 0.615 |
+
+The *effect* is real and larger than before (+0.85 tracks vs +0.59 at short
+budget) — but its *sign of benefit* flips. At 12,500 steps both decodes
+under-produced targets, so more was better. At full budget the mean decode is
+calibrated (3.15 against 3.09) and hann **over**-produces by 29% with persistence
+77% above real. At full budget the plain mean decode is the better choice.
+
+This is the clearest available illustration of why the budget confound matters:
+"hann decode is the most robust result in the project" was true of the evidence
+and wrong about the conclusion.
+
 ## 9. Claims that were made and then withdrawn
 
 Recorded because they are part of the evidence:
@@ -315,7 +375,11 @@ Recorded because they are part of the evidence:
    pre-registered control failed and a conv U-Net failed identically.
 2. **"Removing the x0 clamp is a free fix"** (2026-09-06). Withdrawn: removal
    makes sampling diverge.
-3. **"Distributional fidelity and detection utility are anti-correlated across
+3. **"The hann decode is an improvement"** (2026-09-06). Qualified, not fully
+   withdrawn: the effect on target yield is real and replicates, but at full
+   training budget it overshoots real data and the plain mean decode is better.
+   See section 8.6.
+4. **"Distributional fidelity and detection utility are anti-correlated across
    arms"** (2026-09-06). Withdrawn twice. Built initially from four hand-picked
    rows. Recomputed over all arms, dropping diverged runs and collapsing
    clamp-width variants of the same model+decode (these are one condition
@@ -333,25 +397,37 @@ Recorded because they are part of the evidence:
    analyses. **No correlation claim is supported.** The §8.3 decode result
    stands on its own as a single-variable comparison and needs no correlation.
 
-4. Phase 1's written exit criterion ("persistence within 0.2 of reference")
+5. Phase 1's written exit criterion ("persistence within 0.2 of reference")
    is **unfalsifiable** — the reference is 0.1437, so a 0.2 tolerance admits
    anything from 0 to 0.34, including a model producing no persistent tracks.
    It should never be cited as evidence.
 
 ## 10. Current state, in one paragraph
 
-Phase 1 trains cleanly and restores near-perfectly but synthesises at roughly
-two thirds of the real intensity spread with the target tail missing. The
-failure is confined to t >= 600 and is set in the first reverse steps. It is not
-the diffusion machinery, not the attention topology, not patch-transformers in
-general, not EMA, and not the clamp. Roughly half the intensity deficit is
-produced by the decode path; the auxiliary smoothness loss is the largest single
-lever on variance but trades directly against target coherence. The best
-configuration found is the baseline weights with raised-cosine decode: 2.34
-target tracks/sequence against 3.09 real, at a worse intensity histogram. No
-configuration is good at both.
+The project has **one** open problem, not the two it appeared to have. Target
+motion is solved by training budget alone: at 87,500 steps the model produces
+3.15 target tracks per sequence against 3.09 real, with velocity consistency
+1.46 against 1.36. What remains is the **intensity distribution**, which is
+immune to everything tried — 7x the training budget, spatial attention, a
+convolutional denoiser, EMA, every clamp width, every smoothness weighting and
+magnitude, v-prediction and min-SNR. Generated std sits at 0.65 against 1.004
+real and marginal L1 at 0.39 against a 0.065 floor, essentially unchanged across
+all of it. The failure is localised at t >= 600 and set in the first reverse
+steps. Since it survives every structural change, the remaining suspects are the
+data representation itself — the dB log scaling and the fixed normalisation —
+rather than the model or its objective.
 
-## 11. The next experiment (planned, not yet run)
+## 11. Superseded — see section 8.6 and the list below
+
+*The objective arms described here have since been run. v-prediction gives
+std 0.767 +/- 0.033 and marginal L1 0.268 +/- 0.029 over three seeds — the best
+distribution of any trained arm, and the first change to improve it without
+destroying targets — but fails the pre-registered bar (std > 0.85 AND
+tracks >= 1.75). min-SNR fails and is unstable across seeds (std 0.694 +/- 0.123,
+marginal L1 0.750 +/- 0.381, one seed degenerate). Both were judged at the
+confounded 12,500-step budget; v-prediction is being re-run at 87,500 steps.*
+
+## 11b. Original text of the planned experiment
 
 Every intervention so far has been *around* the denoiser — the clamp, the
 decode rule, the auxiliary loss, the architecture. The **objective itself is
