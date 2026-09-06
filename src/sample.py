@@ -31,7 +31,7 @@ def select_checkpoint_state(ckpt, component="model", weights=None):
 def _set_patch_reduction(model, reduction):
     if reduction is None:
         return
-    if reduction not in ("mean", "tile"):
+    if reduction not in ("mean", "tile", "hann"):
         raise ValueError(f"unknown patch reduction {reduction!r}")
     if not hasattr(model, "patch_reduction"):
         raise ValueError("patch reduction applies only to patch-based DiT models")
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     ap.add_argument("--steps", type=int, default=50)
     ap.add_argument("--weights", choices=("raw", "ema", "auto"),
                     help="checkpoint weights (default: sample.weights, then raw)")
-    ap.add_argument("--patch-reduction", choices=("mean", "tile"),
+    ap.add_argument("--patch-reduction", choices=("mean", "tile", "hann"),
                     help="override DiT overlap reconstruction for diagnosis")
     ap.add_argument("--seed", type=int,
                     help="fix the initial sampling noise for paired comparisons")

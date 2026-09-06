@@ -4,6 +4,8 @@ Patches of size p with stride s < p overlap; unpatchify averages
 contributions in overlapped regions (F.fold divided by hit counts),
 so patchify -> unpatchify is the identity on raw maps.
 """
+import math
+
 import torch
 import torch.nn.functional as F
 
@@ -18,6 +20,17 @@ def patchify(x: torch.Tensor, p: int = 8, s: int = 4) -> torch.Tensor:
     u = F.unfold(x.reshape(B * L, 1, N, K), kernel_size=p, stride=s)  # (B*L, p*p, P)
     P = u.shape[-1]
     return u.transpose(1, 2).reshape(B, L, P, p * p)
+
+
+def _raised_cosine_window(p: int, device, dtype) -> torch.Tensor:
+    """Separable raised-cosine weights over a p x p patch, flattened.
+
+    Sampled at half-integer positions so no weight is exactly zero: a border
+    pixel covered by a single patch still has that patch's prediction.
+    """
+    n = torch.arange(p, device=device, dtype=torch.float32)
+    w = 0.5 - 0.5 * torch.cos(2 * math.pi * (n + 0.5) / p)
+    return (w[:, None] * w[None, :]).reshape(-1).to(dtype)
 
 
 def unpatchify(tokens: torch.Tensor, N: int = 64, K: int = 64,
@@ -48,6 +61,18 @@ def unpatchify(tokens: torch.Tensor, N: int = 64, K: int = 64,
             raise ValueError("selected patches do not tile the output")
         return (tiled.permute(0, 1, 2, 4, 3, 5)
                 .reshape(B, L, N, K))
+    if reduction == "hann":
+        # Weighted overlap-add. A plain mean gives every patch an equal vote on
+        # a pixel, so four disagreeing predictions of one sharp peak average
+        # into something duller than any of them. Raised-cosine weights make a
+        # pixel be decided mostly by the patch that sees it centrally, while
+        # still blending across boundaries so no seam appears.
+        w = _raised_cosine_window(p, tokens.device, tokens.dtype)   # (p*p,)
+        u = (tokens.reshape(B * L, P, d) * w).transpose(1, 2)
+        out = F.fold(u, (N, K), kernel_size=p, stride=s)
+        weights = w.view(1, d, 1).expand(B * L, d, P)
+        cnt = F.fold(weights, (N, K), kernel_size=p, stride=s)
+        return (out / cnt).reshape(B, L, N, K)
     if reduction != "mean":
         raise ValueError(f"unknown overlap reduction {reduction!r}")
     u = tokens.reshape(B * L, P, d).transpose(1, 2)          # (B*L, p*p, P)

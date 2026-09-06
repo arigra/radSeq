@@ -37,3 +37,25 @@ def test_tile_reduction_exposes_overlap_disagreement():
     tile = unpatchify(t, N=16, K=16, p=8, s=4, reduction="tile")
     assert not torch.equal(mean, tile)
     assert tile[:, :, :8, :8].eq(2.0).all()
+
+
+def test_hann_reduction_roundtrip_identity():
+    """Weighted overlap-add still reconstructs consistent patches exactly."""
+    torch.manual_seed(0)
+    x = torch.randn(2, 3, 64, 64)
+    t = patchify(x, p=8, s=4)
+    y = unpatchify(t, N=64, K=64, p=8, s=4, reduction="hann")
+    assert torch.allclose(x, y, atol=1e-5)
+
+
+def test_hann_preserves_a_peak_the_mean_dilutes():
+    """When one patch predicts a peak and its neighbours predict nothing,
+    the mean splits the difference four ways; raised-cosine weighting lets the
+    patch that sees the pixel centrally dominate."""
+    pr, pc = num_patches(16, 16, 8, 4)
+    t = torch.zeros(1, 1, pr * pc, 64)
+    t[0, 0, 0] = 2.0                      # only the patch at (0, 0) sees a peak
+    mean = unpatchify(t, N=16, K=16, p=8, s=4, reduction="mean")
+    hann = unpatchify(t, N=16, K=16, p=8, s=4, reduction="hann")
+    # pixel (4, 4) is covered by four patches; it is central only to patch (0,0)
+    assert hann[0, 0, 4, 4] > mean[0, 0, 4, 4]

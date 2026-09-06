@@ -104,7 +104,7 @@ class TemporalDiT(nn.Module):
                                    nn.Linear(dim, dim))
         self.dim = dim
         self.attn_mode = attn_mode
-        if patch_reduction not in ("mean", "tile"):
+        if patch_reduction not in ("mean", "tile", "hann"):
             raise ValueError(f"unknown patch_reduction {patch_reduction!r}")
         self.patch_reduction = patch_reduction
         if attn_mode not in ("temporal", "factorized"):

@@ -1,0 +1,40 @@
+# Smoothness-term redesign: remove the schedule entirely, keep the magnitude.
+data:
+  n_train: 20000
+  n_val: 2000
+  seq_len: 16
+  frame_interval: 0.5
+  cache_dir: data/cache
+  shard_size: 1000
+  seed: 1234
+model:
+  patch: 8
+  stride: 4
+  dim: 256
+  depth: 8
+  heads: 8
+diffusion:
+  timesteps: 1000
+train:
+  seed: 2026
+  batch_size: 16
+  lr: 1.0e-4
+  weight_decay: 0.0
+  epochs: 10
+  lambda_smooth: 0.1
+  smooth_weight: uniform
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  phase: 1
+  ckpt_dir: checkpoints/abl_smooth_uniform
+  log_file: logs/abl_smooth_uniform.log
+  log_every_steps: 50
+  save_every_steps: 250
+  snapshot_every_epochs: 5
+  val_every_epochs: 1
+  val_batch_size: 16
+  val_seed: 4321
+  wandb: false
+sample:
+  ddim_steps: 50
+  weights: raw

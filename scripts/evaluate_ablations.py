@@ -2,7 +2,7 @@
 
 Each ``--arm`` has the form::
 
-    NAME=CHECKPOINT[,weights=raw|ema|auto][,reduction=mean|tile]
+    NAME=CHECKPOINT[,weights=raw|ema|auto][,reduction=mean|tile|hann][,clamp=off|VALUE]
 
 The same seed is reset before sampling every arm, so models with the same output
 shape receive identical initial Gaussian noise. Results are written after each
@@ -21,7 +21,7 @@ import time
 import torch
 
 from src.dataset import denormalize
-from src.diffusion import GaussianDiffusion
+from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion, parse_x0_clamp
 from src.eval.metrics import evaluate_sequences
 from src.sample import _set_patch_reduction, select_checkpoint_state
 from src.train import build_model
@@ -33,6 +33,7 @@ class Arm:
     checkpoint: Path
     weights: str | None = None
     reduction: str | None = None
+    clamp: str | None = None
 
 
 def parse_arm(value: str) -> Arm:
@@ -53,16 +54,27 @@ def parse_arm(value: str) -> Arm:
         if key in options:
             raise ValueError(f"duplicate arm option {key!r}")
         options[key] = option_value
-    unknown = set(options) - {"weights", "reduction"}
+    unknown = set(options) - {"weights", "reduction", "clamp"}
     if unknown:
         raise ValueError(f"unknown arm option(s): {', '.join(sorted(unknown))}")
     weights = options.get("weights")
     reduction = options.get("reduction")
     if weights not in (None, "raw", "ema", "auto"):
         raise ValueError(f"unknown weights {weights!r}")
-    if reduction not in (None, "mean", "tile"):
+    if reduction not in (None, "mean", "tile", "hann"):
         raise ValueError(f"unknown reduction {reduction!r}")
-    return Arm(name, Path(path), weights, reduction)
+    clamp = options.get("clamp")
+    if clamp is not None:
+        parse_x0_clamp(float(clamp) if _is_number(clamp) else clamp)
+    return Arm(name, Path(path), weights, reduction, clamp)
+
+
+def _is_number(value: str) -> bool:
+    try:
+        float(value)
+    except ValueError:
+        return False
+    return True
 
 
 def distribution_stats(x: torch.Tensor) -> dict[str, float]:
@@ -175,7 +187,13 @@ def evaluate_arm(
     if effective_weights == "auto":
         effective_weights = "ema" if checkpoint.get("ema_model") else "raw"
 
-    diffusion = GaussianDiffusion(config["diffusion"]["timesteps"])
+    if arm.clamp is None:
+        clamp_setting = config["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP)
+    else:
+        clamp_setting = float(arm.clamp) if _is_number(arm.clamp) else arm.clamp
+    x0_clamp = parse_x0_clamp(clamp_setting)
+    diffusion = GaussianDiffusion(
+        config["diffusion"]["timesteps"], x0_clamp=x0_clamp)
     torch.manual_seed(seed)
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -199,6 +217,10 @@ def evaluate_arm(
         "stride": model_config.get("stride"),
         "patch_reduction": arm.reduction or model_config.get("patch_reduction", "mean"),
         "weights": effective_weights,
+        "x0_clamp": list(x0_clamp) if x0_clamp is not None else None,
+        "smooth_weight": config["train"].get(
+            "smooth_weight", "one_minus_alpha_bar"),
+        "lambda_smooth": config["train"].get("lambda_smooth"),
         "parameters": sum(parameter.numel() for parameter in model.parameters()),
         "ema_updates": checkpoint.get("ema_updates"),
         "sample_seconds": elapsed,

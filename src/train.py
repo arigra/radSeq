@@ -8,7 +8,7 @@ import yaml
 from torch.utils.data import DataLoader
 
 from src.dataset import RadarSequenceDataset
-from src.diffusion import GaussianDiffusion
+from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion
 from src.dit import TemporalDiT
 from src.ema import make_ema, update_ema
 from src.losses import diffusion_loss, smooth_loss
@@ -44,8 +44,9 @@ def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
             if encoder is not None else None)
     eps_hat = model(xt, t, cond)
     dit = diffusion_loss(eps, eps_hat)
-    x0_hat = diff.pred_x0(xt, t, eps_hat).clamp(-4, 4)
-    smooth = smooth_loss(x0_hat, diff.loss_weight(t))
+    x0_hat = diff.clamp_x0(diff.pred_x0(xt, t, eps_hat))
+    smooth = smooth_loss(
+        x0_hat, diff.loss_weight(t, tr.get("smooth_weight", "one_minus_alpha_bar")))
     physics = torch.zeros((), device=device)
     if tr.get("phase", 1) >= 2:
         from src.losses import traj_loss_from_batch
@@ -124,7 +125,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         opt_params = list(model.parameters()) + list(encoder.parameters())
     else:
         opt_params = list(model.parameters())
-    diff = GaussianDiffusion(cfg["diffusion"]["timesteps"])
+    diff = GaussianDiffusion(
+        cfg["diffusion"]["timesteps"],
+        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP))
     opt = torch.optim.AdamW(opt_params, lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     epoch, step = 0, 0
@@ -184,9 +187,11 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         with open(log_path, "a") as fh:
             fh.write(line + "\n")
 
-    report("start device={} phase={} epoch={} step={} params={} ema_decay={}".format(
-        device, tr.get("phase", 1), epoch, step,
-        sum(p.numel() for p in opt_params), ema_decay))
+    report("start device={} phase={} epoch={} step={} params={} ema_decay={} "
+           "smooth_weight={} x0_clamp={}".format(
+               device, tr.get("phase", 1), epoch, step,
+               sum(p.numel() for p in opt_params), ema_decay,
+               tr.get("smooth_weight", "one_minus_alpha_bar"), diff.x0_clamp))
     losses = []
     fixed_batch = next(iter(loader)) if _record_losses else None
     fixed_t = (torch.randint(0, diff.T, (tr["batch_size"],), device=device)
@@ -223,8 +228,10 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             eps_hat = model(xt, t, cond)
             dit = diffusion_loss(eps, eps_hat)
             # Clamp x0 before regularization to avoid high-t numerical spikes.
-            x0_hat = diff.pred_x0(xt, t, eps_hat).clamp(-4, 4)
-            smooth = smooth_loss(x0_hat, diff.loss_weight(t))
+            x0_hat = diff.clamp_x0(diff.pred_x0(xt, t, eps_hat))
+            smooth = smooth_loss(
+                x0_hat,
+                diff.loss_weight(t, tr.get("smooth_weight", "one_minus_alpha_bar")))
             physics = torch.zeros((), device=device)
             if tr.get("phase", 1) >= 2:
                 from src.losses import traj_loss_from_batch
