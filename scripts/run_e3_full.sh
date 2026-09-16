@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Unattended full-data run with joint space-time attention.
+# Safe to rerun at any time: training resumes from the newest checkpoint
+# (last.pt, written atomically every 1000 steps and at each epoch end), and a
+# finished training run skips straight to scoring.
+# Progress: logs/e3_full_pipeline.log   Rule/verdict: docs/notes/2026-09-15-e3-full-attention.md
+set -u
+cd "$(dirname "$0")/.."
+export PYTHONPATH=.:scripts
+PY=/truenas/home/arigra/.venv/bin/python
+LOG=logs/e3_full_pipeline.log
+NOTE=docs/notes/2026-09-15-e3-full-attention.md
+say() { echo "$(date '+%F %T') | $*" | tee -a "$LOG"; }
+
+if pgrep -f "src.train --config configs/e3_full_bs" > /dev/null; then
+  say "REFUSED: an e3_full training process is already running"; exit 1
+fi
+say "start"
+if ! CUDA_VISIBLE_DEVICES= $PY -m pytest -q tests/test_diffusion.py tests/test_dit.py >> "$LOG" 2>&1; then
+  say "FAILED: unit tests"; exit 1
+fi
+
+CKPT=""
+for BS in 32 16 8; do
+  CFG=configs/e3_full_bs$BS.yaml
+  sed -e "s/^  batch_size: .*/  batch_size: $BS/" \
+      -e "s#checkpoints/e3_full\$#checkpoints/e3_full_bs$BS#" \
+      -e "s#logs/e3_full.log#logs/e3_full_bs$BS.log#" \
+      configs/e3_full.yaml > "$CFG"
+  RESUME=()
+  if [ -f "checkpoints/e3_full_bs$BS/last.pt" ]; then
+    RESUME=(--resume "checkpoints/e3_full_bs$BS/last.pt")
+  fi
+  say "training batch=$BS ($CFG) ${RESUME[*]}"
+  if $PY -m src.train --config "$CFG" "${RESUME[@]}" >> "logs/e3_full_bs$BS.console.log" 2>&1; then
+    CKPT=checkpoints/e3_full_bs$BS/last.pt; break
+  fi
+  if tail -50 "logs/e3_full_bs$BS.console.log" | grep -qiE "out of memory|OutOfMemoryError"; then
+    say "OOM at batch=$BS, retrying smaller"; continue
+  fi
+  say "FAILED: training crashed, see logs/e3_full_bs$BS.console.log (rerun this script to resume)"; exit 1
+done
+[ -z "$CKPT" ] && { say "FAILED: OOM at every batch size"; exit 1; }
+
+say "scoring $CKPT"
+if ! $PY scripts/score_hard_standard.py --ckpt "$CKPT" --steps 30,50 --seeds 1,2,3,4,5,6 \
+     --out samples/e3_full_scores.json --note "$NOTE" --png samples/e3_full.png >> "$LOG" 2>&1; then
+  say "FAILED: scoring (rerun this script; training will be skipped)"; exit 1
+fi
+say "DONE: verdict appended to $NOTE"

@@ -1,0 +1,388 @@
+{
+  "checkpoint": "checkpoints/e3_full_bs32/last.pt",
+  "step": 62500,
+  "config": {
+    "data": {
+      "n_train": 20000,
+      "n_val": 2000,
+      "seq_len": 16,
+      "frame_interval": 0.5,
+      "cache_dir": "data/cache",
+      "shard_size": 1000,
+      "seed": 1234
+    },
+    "model": {
+      "patch": 8,
+      "stride": 8,
+      "dim": 384,
+      "depth": 12,
+      "heads": 6,
+      "attn_mode": "full"
+    },
+    "diffusion": {
+      "timesteps": 1000,
+      "parameterization": "v",
+      "schedule_shift": 4.0,
+      "x0_clamp": "off",
+      "terminal_x0": "model"
+    },
+    "train": {
+      "seed": 2026,
+      "batch_size": 32,
+      "lr": 0.0001,
+      "weight_decay": 0.0,
+      "epochs": 100,
+      "lambda_smooth": 0.0,
+      "lambda_traj": 0.01,
+      "lambda_doppler": 0.01,
+      "amp": "bf16",
+      "ema_decay": 0.9999,
+      "phase": 1,
+      "ckpt_dir": "checkpoints/e3_full_bs32",
+      "log_file": "logs/e3_full_bs32.log",
+      "log_every_steps": 100,
+      "save_every_steps": 1000,
+      "snapshot_every_epochs": 10,
+      "val_every_epochs": 5,
+      "val_batch_size": 32,
+      "val_seed": 4321,
+      "wandb": false
+    },
+    "sample": {
+      "ddim_steps": 50,
+      "weights": "ema"
+    }
+  },
+  "real_vs_real": {
+    "velocity_consistency": 1.358168475329876,
+    "doppler_drift": 0.5075290573295206,
+    "persistence": 0.14367364550707862,
+    "marginal_l1": 0.06467437744140625,
+    "mean_tracks_per_seq": 23.65625,
+    "n_target_tracks_per_seq": 3.09375,
+    "mean": -0.00718726497143507,
+    "std": 1.0042940378189087
+  },
+  "arms": {
+    "raw_ddim30": {
+      "per_seed": {
+        "1": {
+          "velocity_consistency": 2.2871963785540674,
+          "doppler_drift": 0.5201556182676746,
+          "persistence": 0.05985429749125615,
+          "marginal_l1": 0.15167999267578125,
+          "mean_tracks_per_seq": 28.03125,
+          "n_target_tracks_per_seq": 2.46875,
+          "mean": -0.12553435564041138,
+          "std": 0.9229923486709595
+        },
+        "2": {
+          "velocity_consistency": 1.9526743553578854,
+          "doppler_drift": 0.5438372874632478,
+          "persistence": 0.08464021829422563,
+          "marginal_l1": 0.10015583038330078,
+          "mean_tracks_per_seq": 25.15625,
+          "n_target_tracks_per_seq": 3.09375,
+          "mean": -0.0638514906167984,
+          "std": 0.9243923425674438
+        },
+        "3": {
+          "velocity_consistency": 2.0645337868481874,
+          "doppler_drift": 0.5720190778374672,
+          "persistence": 0.05476130580063909,
+          "marginal_l1": 0.13870620727539062,
+          "mean_tracks_per_seq": 28.59375,
+          "n_target_tracks_per_seq": 2.59375,
+          "mean": -0.10494355112314224,
+          "std": 0.9219093918800354
+        },
+        "4": {
+          "velocity_consistency": 2.0264553651213646,
+          "doppler_drift": 0.5572601067833602,
+          "persistence": 0.07937070383923128,
+          "marginal_l1": 0.13843345642089844,
+          "mean_tracks_per_seq": 25.34375,
+          "n_target_tracks_per_seq": 3.0625,
+          "mean": -0.11550742387771606,
+          "std": 0.9158002138137817
+        },
+        "5": {
+          "velocity_consistency": 2.0845019966363907,
+          "doppler_drift": 0.5647936766035855,
+          "persistence": 0.0668796738027595,
+          "marginal_l1": 0.0923004150390625,
+          "mean_tracks_per_seq": 27.5625,
+          "n_target_tracks_per_seq": 2.75,
+          "mean": -0.04895502328872681,
+          "std": 0.9259876012802124
+        },
+        "6": {
+          "velocity_consistency": 1.9880824908614159,
+          "doppler_drift": 0.5914300689473748,
+          "persistence": 0.06739865709096193,
+          "marginal_l1": 0.09900093078613281,
+          "mean_tracks_per_seq": 26.875,
+          "n_target_tracks_per_seq": 2.875,
+          "mean": -0.06515786051750183,
+          "std": 0.9230440855026245
+        }
+      },
+      "mean_over_seeds": {
+        "mean": -0.08732495084404945,
+        "std": 0.9223543306191763,
+        "marginal_l1": 0.12004613876342773,
+        "n_target_tracks_per_seq": 2.8072916666666665,
+        "persistence": 0.06881747605317894,
+        "mean_tracks_per_seq": 26.927083333333332,
+        "velocity_consistency": 2.067240728896552
+      },
+      "checks": {
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": false
+      },
+      "passes": false
+    },
+    "raw_ddim50": {
+      "per_seed": {
+        "1": {
+          "velocity_consistency": 2.329411827748822,
+          "doppler_drift": 0.5726588695280014,
+          "persistence": 0.04829563497332856,
+          "marginal_l1": 0.13244342803955078,
+          "mean_tracks_per_seq": 31.21875,
+          "n_target_tracks_per_seq": 2.28125,
+          "mean": -0.12611335515975952,
+          "std": 0.9452421069145203
+        },
+        "2": {
+          "velocity_consistency": 2.114548798650503,
+          "doppler_drift": 0.5326134557835758,
+          "persistence": 0.07600111374631524,
+          "marginal_l1": 0.07725238800048828,
+          "mean_tracks_per_seq": 27.46875,
+          "n_target_tracks_per_seq": 2.96875,
+          "mean": -0.06608831882476807,
+          "std": 0.9471230506896973
+        },
+        "3": {
+          "velocity_consistency": 2.2267037745445006,
+          "doppler_drift": 0.5693936424870645,
+          "persistence": 0.049721627321559936,
+          "marginal_l1": 0.11674118041992188,
+          "mean_tracks_per_seq": 30.34375,
+          "n_target_tracks_per_seq": 2.5625,
+          "mean": -0.10563120245933533,
+          "std": 0.9435267448425293
+        },
+        "4": {
+          "velocity_consistency": 2.279315637424588,
+          "doppler_drift": 0.5955826905556023,
+          "persistence": 0.0604058054741472,
+          "marginal_l1": 0.11810493469238281,
+          "mean_tracks_per_seq": 28.3125,
+          "n_target_tracks_per_seq": 2.75,
+          "mean": -0.11671368032693863,
+          "std": 0.9381661415100098
+        },
+        "5": {
+          "velocity_consistency": 2.0609765592962503,
+          "doppler_drift": 0.5559786206576973,
+          "persistence": 0.05432960670441389,
+          "marginal_l1": 0.06535053253173828,
+          "mean_tracks_per_seq": 29.53125,
+          "n_target_tracks_per_seq": 2.625,
+          "mean": -0.0469222255051136,
+          "std": 0.9484855532646179
+        },
+        "6": {
+          "velocity_consistency": 1.8990020271270507,
+          "doppler_drift": 0.5572112832338579,
+          "persistence": 0.05643320706440136,
+          "marginal_l1": 0.07021713256835938,
+          "mean_tracks_per_seq": 28.4375,
+          "n_target_tracks_per_seq": 2.75,
+          "mean": -0.06365013867616653,
+          "std": 0.9448080658912659
+        }
+      },
+      "mean_over_seeds": {
+        "mean": -0.08751982015868028,
+        "std": 0.9445586105187734,
+        "marginal_l1": 0.09668493270874023,
+        "n_target_tracks_per_seq": 2.65625,
+        "persistence": 0.05753116588069437,
+        "mean_tracks_per_seq": 29.21875,
+        "velocity_consistency": 2.151659770798619
+      },
+      "checks": {
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": false
+      },
+      "passes": false
+    },
+    "ema_ddim30": {
+      "per_seed": {
+        "1": {
+          "velocity_consistency": 2.0737396804615855,
+          "doppler_drift": 0.4817843013443053,
+          "persistence": 0.06826111854752526,
+          "marginal_l1": 0.07060813903808594,
+          "mean_tracks_per_seq": 28.21875,
+          "n_target_tracks_per_seq": 2.8125,
+          "mean": -0.00859980471432209,
+          "std": 0.944180428981781
+        },
+        "2": {
+          "velocity_consistency": 2.0765093863010406,
+          "doppler_drift": 0.5058219656348228,
+          "persistence": 0.0837880049366504,
+          "marginal_l1": 0.08543586730957031,
+          "mean_tracks_per_seq": 25.53125,
+          "n_target_tracks_per_seq": 3.21875,
+          "mean": 0.0490819551050663,
+          "std": 0.9460988640785217
+        },
+        "3": {
+          "velocity_consistency": 2.349988155066967,
+          "doppler_drift": 0.5247258404269814,
+          "persistence": 0.07441247662063688,
+          "marginal_l1": 0.07445621490478516,
+          "mean_tracks_per_seq": 29.15625,
+          "n_target_tracks_per_seq": 2.65625,
+          "mean": -0.0035032550804316998,
+          "std": 0.9428730010986328
+        },
+        "4": {
+          "velocity_consistency": 2.3059561774134636,
+          "doppler_drift": 0.5267507066018879,
+          "persistence": 0.09380372887244448,
+          "marginal_l1": 0.07446575164794922,
+          "mean_tracks_per_seq": 25.28125,
+          "n_target_tracks_per_seq": 2.96875,
+          "mean": -0.004850978031754494,
+          "std": 0.939912736415863
+        },
+        "5": {
+          "velocity_consistency": 2.1650182213634253,
+          "doppler_drift": 0.49046650575473905,
+          "persistence": 0.08291562809608877,
+          "marginal_l1": 0.08756065368652344,
+          "mean_tracks_per_seq": 26.46875,
+          "n_target_tracks_per_seq": 2.96875,
+          "mean": 0.056587621569633484,
+          "std": 0.9481534957885742
+        },
+        "6": {
+          "velocity_consistency": 2.172177515923977,
+          "doppler_drift": 0.5660877665504813,
+          "persistence": 0.07501032325671986,
+          "marginal_l1": 0.08223533630371094,
+          "mean_tracks_per_seq": 26.8125,
+          "n_target_tracks_per_seq": 3.125,
+          "mean": 0.04597809538245201,
+          "std": 0.9473466873168945
+        }
+      },
+      "mean_over_seeds": {
+        "mean": 0.022448939038440585,
+        "std": 0.9447608689467112,
+        "marginal_l1": 0.07912699381510417,
+        "n_target_tracks_per_seq": 2.9583333333333335,
+        "persistence": 0.0796985467216776,
+        "mean_tracks_per_seq": 26.911458333333332,
+        "velocity_consistency": 2.1905648560884097
+      },
+      "checks": {
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": false
+      },
+      "passes": false
+    },
+    "ema_ddim50": {
+      "per_seed": {
+        "1": {
+          "velocity_consistency": 2.2723728343844414,
+          "doppler_drift": 0.48520388966426253,
+          "persistence": 0.06873242242727429,
+          "marginal_l1": 0.04095745086669922,
+          "mean_tracks_per_seq": 29.625,
+          "n_target_tracks_per_seq": 2.65625,
+          "mean": -0.006103863939642906,
+          "std": 0.9665968418121338
+        },
+        "2": {
+          "velocity_consistency": 2.193518441170454,
+          "doppler_drift": 0.5296667765360326,
+          "persistence": 0.07666929310653359,
+          "marginal_l1": 0.06559467315673828,
+          "mean_tracks_per_seq": 27.46875,
+          "n_target_tracks_per_seq": 3.03125,
+          "mean": 0.05262015759944916,
+          "std": 0.9696763753890991
+        },
+        "3": {
+          "velocity_consistency": 2.279595325070043,
+          "doppler_drift": 0.5427920328032586,
+          "persistence": 0.07069257879629731,
+          "marginal_l1": 0.045810699462890625,
+          "mean_tracks_per_seq": 30.4375,
+          "n_target_tracks_per_seq": 2.5625,
+          "mean": -0.005305424332618713,
+          "std": 0.966235339641571
+        },
+        "4": {
+          "velocity_consistency": 2.171983079984784,
+          "doppler_drift": 0.508165642619133,
+          "persistence": 0.0827629161067307,
+          "marginal_l1": 0.047080039978027344,
+          "mean_tracks_per_seq": 27.3125,
+          "n_target_tracks_per_seq": 2.78125,
+          "mean": -0.0020036380738019943,
+          "std": 0.9618830680847168
+        },
+        "5": {
+          "velocity_consistency": 2.0781622882932425,
+          "doppler_drift": 0.48484269715845585,
+          "persistence": 0.06904748431406915,
+          "marginal_l1": 0.06989574432373047,
+          "mean_tracks_per_seq": 27.875,
+          "n_target_tracks_per_seq": 2.84375,
+          "mean": 0.06012338772416115,
+          "std": 0.9708341360092163
+        },
+        "6": {
+          "velocity_consistency": 2.168681861832738,
+          "doppler_drift": 0.5640868535265326,
+          "persistence": 0.08053662476595491,
+          "marginal_l1": 0.06671428680419922,
+          "mean_tracks_per_seq": 27.65625,
+          "n_target_tracks_per_seq": 3.0625,
+          "mean": 0.052443403750658035,
+          "std": 0.9697749018669128
+        }
+      },
+      "mean_over_seeds": {
+        "mean": 0.025295670454700787,
+        "std": 0.967500110467275,
+        "marginal_l1": 0.05600881576538086,
+        "n_target_tracks_per_seq": 2.8229166666666665,
+        "persistence": 0.07474021991947666,
+        "mean_tracks_per_seq": 28.395833333333332,
+        "velocity_consistency": 2.194052305122617
+      },
+      "checks": {
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": false
+      },
+      "passes": false
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "checkpoint": "checkpoints/e0_standard_bs32/last.pt",
+  "n": 256,
+  "ddim_steps": 50,
+  "weights": "ema",
+  "path_nn_to_train_median": {
+    "generated": 0.34053897857666016,
+    "val": 0.3380204439163208
+  },
+  "pixel_nn_to_train_median": {
+    "generated": 156.1797637939453,
+    "val": 151.5417938232422
+  },
+  "pixel_nn_ratio_generated_over_val": 1.0306051969528198,
+  "path_feature_std": {
+    "generated": {
+      "r0": 14.497222900390625,
+      "dr": 0.6221601963043213,
+      "d0": 15.666801452636719,
+      "dd": 0.7270464301109314
+    },
+    "val": {
+      "r0": 15.455527305603027,
+      "dr": 0.6504714488983154,
+      "d0": 15.996715545654297,
+      "dd": 0.5224302411079407
+    }
+  },
+  "distinct_generated_paths": 254
+}
