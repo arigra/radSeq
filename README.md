@@ -86,3 +86,58 @@ fetches at runtime.
   `~/.ssh/proxy_connect.py` (original config backed up at `~/.ssh/config.bak`).
   With it in place, plain `git push` works. There is no `nc`, `socat` or `gh`
   installed to fall back on.
+## Exact easy-regime reference
+
+The noise-free one-target E0 experiment is a useful generator sanity check.
+Sample its known kinematic distribution directly with:
+
+```bash
+python -m src.sample --easy --n 8 --seed 1 --out samples/easy_reference
+```
+
+This uses the radar simulator, not a diffusion checkpoint. It writes the same
+sequence visualizations and metrics as checkpoint sampling, using
+`data/cache_easy` for the validation reference. The E0 diffusion checkpoint
+collapses toward the empty map despite its low denoising loss; direct E0
+sampling separates a learned-generation failure from a data-generation error.
+The peak detector overcounts persistent sidelobes on noise-free E0 data, so
+its target-track count should not be interpreted as the true target count.
+
+## Learned generator for the easy regime
+
+The pixel-space DiT checkpoint learns to denoise observed E0 targets but
+collapses when sampling from noise. `src.easy_latent` instead learns the
+two-variable velocity/acceleration distribution. It draws initial range
+uniformly from the physically valid interval and renders the sampled target
+with the radar simulator. This is a learned scene generator with a physics
+renderer, not a repaired pixel-space DiT.
+
+```bash
+python -m src.easy_latent --cache data/cache_easy --steps 50000 --out checkpoints/easy_latent.pt
+python -m src.sample --easy-latent checkpoints/easy_latent.pt --n 8 --seed 1 --out samples/easy_latent
+```
+
+On the existing 50,000-step checkpoint, three 32-sequence draws have normalized
+map standard deviations 1.020, 1.038 and 1.004; marginal-L1 distances to E0
+validation data are 0.054, 0.048 and 0.064 (real-vs-real: 0.062).
+The E0 peak detector still overcounts sidelobes, so generated image markers
+use the known trajectory labels instead.
+
+## Learned generator for the full regime
+
+The same scene-based approach handles 1–5 targets, all three target classes,
+varied target strength, clutter and receiver noise. It learns the accepted
+target-motion distribution and empirical target-count/class frequencies from
+`data/cache`; the simulator renders fresh target phases, amplitudes, clutter
+and noise. This targets the synthetic distribution used to train the original
+model. It does not repair the original pixel-space DiT checkpoint.
+
+```bash
+python -m src.hard_latent --cache data/cache --steps 50000 --out checkpoints/hard_latent.pt
+python -m src.sample --hard-latent checkpoints/hard_latent.pt --n 8 --seed 1 --out samples/hard_latent
+```
+
+On a 64-sequence held-out comparison, generated and real map marginal-L1 were
+0.0385 and 0.0374 respectively. Generated target tracks per sequence were
+3.16 versus 3.11 for real sequences, and velocity-consistency scores were
+1.64 versus 1.60. New samples include their true trajectory markers.

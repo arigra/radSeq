@@ -1,0 +1,92 @@
+[
+  {
+    "capture": "blockage1",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 49608,
+    "shuffled_mean": 49266.65,
+    "shuffled_min": 49223,
+    "shuffled_max": 49332
+  },
+  {
+    "capture": "blockage2",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 46953,
+    "shuffled_mean": 43531.35,
+    "shuffled_min": 43384,
+    "shuffled_max": 43616
+  },
+  {
+    "capture": "degrade0",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 47807,
+    "shuffled_mean": 44214.85,
+    "shuffled_min": 43946,
+    "shuffled_max": 44574
+  },
+  {
+    "capture": "degrade1",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 48503,
+    "shuffled_mean": 47977.95,
+    "shuffled_min": 47918,
+    "shuffled_max": 48064
+  },
+  {
+    "capture": "healthy",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 48743,
+    "shuffled_mean": 48637.45,
+    "shuffled_min": 48602,
+    "shuffled_max": 48729
+  },
+  {
+    "capture": "vib1",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 48199,
+    "shuffled_mean": 48355.25,
+    "shuffled_min": 48284,
+    "shuffled_max": 48476
+  },
+  {
+    "capture": "vib2",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002291932397959,
+    "ordered_paths": 49321,
+    "shuffled_mean": 48419.7,
+    "shuffled_min": 48334,
+    "shuffled_max": 48526
+  },
+  {
+    "capture": "yaw0",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002391581632653,
+    "ordered_paths": 48592,
+    "shuffled_mean": 47984.0,
+    "shuffled_min": 47923,
+    "shuffled_max": 48135
+  },
+  {
+    "capture": "yaw2",
+    "frames": 200,
+    "frame_idx_gap": 3.0,
+    "occupancy": 0.005002291932397959,
+    "ordered_paths": 47870,
+    "shuffled_mean": 46999.8,
+    "shuffled_min": 46881,
+    "shuffled_max": 47145
+  }
+]

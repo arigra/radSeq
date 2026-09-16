@@ -10,6 +10,20 @@ from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion
 from src.train import build_model
 
 
+def generate_easy(n_seq, seed=None, seq_len=16, frame_interval=0.5):
+    """Sample the known one-target, noise-free E0 distribution exactly.
+
+    This is a reference generator, independent of the learned denoiser.  It
+    returns dB maps in the same format as ``generate``.
+    """
+    from src.simulator import generate_sequences
+
+    return generate_sequences(
+        n=n_seq, seq_len=seq_len, frame_interval=frame_interval,
+        n_targets=1, target_class="steady", snr_db=20.0,
+        clutter=False, noise=False, seed=seed)["x"]
+
+
 def select_checkpoint_state(ckpt, component="model", weights=None):
     """Select raw or EMA weights, honoring the checkpoint's sample config."""
     if weights is None:
@@ -101,7 +115,17 @@ if __name__ == "__main__":
     from src.viz import sequence_gif, sequence_grid
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", required=True)
+    ap.add_argument("--ckpt", help="checkpoint for learned generation")
+    ap.add_argument("--easy", action="store_true",
+                    help="sample the exact one-target E0 simulator instead")
+    ap.add_argument("--easy-latent", metavar="CHECKPOINT",
+                    help="sample the learned E0 trajectory model and render RD maps")
+    ap.add_argument("--hard-latent", metavar="CHECKPOINT",
+                    help="sample the learned full-regime scene model")
+    ap.add_argument("--easy-cache", default="data/cache_easy",
+                    help="E0 validation cache used for reference metrics")
+    ap.add_argument("--hard-cache", default="data/cache",
+                    help="full-regime validation cache used for reference metrics")
     ap.add_argument("--n", type=int, default=8)
     ap.add_argument("--n-real", type=int, default=4,
                     help="real val sequences to render with GT markers")
@@ -115,17 +139,46 @@ if __name__ == "__main__":
                     help="fix the initial sampling noise for paired comparisons")
     args = ap.parse_args()
 
+    if sum((bool(args.ckpt), args.easy, bool(args.easy_latent),
+            bool(args.hard_latent))) != 1:
+        ap.error("specify exactly one of --ckpt, --easy, --easy-latent, or --hard-latent")
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    x = generate(args.ckpt, args.n, device, steps=args.steps,
-                 weights=args.weights, patch_reduction=args.patch_reduction,
-                 seed=args.seed)
+    cache_dir = (args.easy_cache if args.easy or args.easy_latent else
+                 args.hard_cache if args.hard_latent else None)
+    manifest = (yaml.safe_load((Path(cache_dir) / "manifest.yaml").read_text())
+                if cache_dir is not None else None)
+    generated_batch = None
+    if args.hard_latent:
+        from src.hard_latent import generate as generate_hard_latent
+        generated_batch = generate_hard_latent(args.hard_latent, args.n,
+                                                seed=args.seed, device=device)
+        x = generated_batch["x"]
+    elif args.easy_latent:
+        from src.easy_latent import generate as generate_latent
+        generated_batch = generate_latent(args.easy_latent, args.n, seed=args.seed,
+                                          device=device)
+        x = generated_batch["x"]
+    elif args.easy:
+        x = generate_easy(args.n, seed=args.seed,
+                          seq_len=manifest["seq_len"],
+                          frame_interval=manifest["frame_interval"])
+    else:
+        x = generate(args.ckpt, args.n, device, steps=args.steps,
+                     weights=args.weights, patch_reduction=args.patch_reduction,
+                     seed=args.seed)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for i, seq in enumerate(x):
-        sequence_grid(seq, out / f"seq_{i}.png")
-        sequence_gif(seq, out / f"seq_{i}.gif")
+        marks = ({"traj": generated_batch["traj"][i],
+                  "n_targets": generated_batch["n_targets"][i]}
+                 if generated_batch is not None else {})
+        sequence_grid(seq, out / f"seq_{i}.png", **marks)
+        sequence_gif(seq, out / f"seq_{i}.gif", **marks)
 
-    cfg = torch.load(args.ckpt, map_location="cpu")["config"]
+    cfg = ({"data": {"seq_len": manifest["seq_len"],
+                     "cache_dir": cache_dir}} if manifest is not None
+           else torch.load(args.ckpt, map_location="cpu")["config"])
     val = RadarSequenceDataset(cfg["data"]["cache_dir"], "val")
     for i in range(min(args.n_real, len(val))):
         item = val[i]

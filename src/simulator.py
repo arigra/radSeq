@@ -92,7 +92,8 @@ class TemporalRadarSimulator:
     Frame ell (0-indexed): r_l = r0 + v0*l*Tf + 0.5*a*(l*Tf)**2,
                            v_l = v0 + a*l*Tf.
     Sequences are rejection-sampled so every frame stays inside the RD grid.
-    Clutter is added by Task 3 (AR(1) evolution); here C=0.
+    `clutter` and `noise` switch the AR(1) clutter and the receiver noise off,
+    which gives the easy regimes (e.g. one target on an empty map).
     """
 
     N = K = 64
@@ -103,7 +104,7 @@ class TemporalRadarSimulator:
     CNR_DB = 15.0
 
     def __init__(self, seq_len=16, frame_interval=0.5, max_targets=5,
-                 rho_clutter=None, scnr=None, nu=None, clutter_mode="strip",
+                 rho_clutter=None, scnr=None, nu=None, clutter=True, noise=True,
                  force_class=None):
         self.L = seq_len
         self.Tf = frame_interval
@@ -111,7 +112,8 @@ class TemporalRadarSimulator:
         self.rho_clutter = rho_clutter
         self.scnr = scnr
         self.nu = nu
-        self.clutter_mode = clutter_mode
+        self.clutter = clutter
+        self.noise = noise
         self.force_class = force_class
 
         self.r_min, self.r_max, self.dr = 0.0, 189.0, 3.0
@@ -131,19 +133,28 @@ class TemporalRadarSimulator:
             self.N * self.K * (self.N // 2 + self.sigma2), dtype=torch.float))
 
     # ---------------- target kinematics ----------------
-    def _sample_kinematics(self, n):
-        """Rejection-sample (r0, v0, a) per target s.t. all frames in-grid."""
+    def _sample_kinematics(self, n, r0=None, v0=None, a=None):
+        """Rejection-sample (r0, v0, a) per target s.t. all frames in-grid.
+
+        Any of r0/v0/a passed as an (n,) tensor is held fixed and only the
+        rest are drawn. With none fixed the draws are exactly the original
+        ones, so default generation still reproduces the locked cache."""
         ell = torch.arange(self.L, dtype=torch.float) * self.Tf
         for _ in range(500):
-            r0 = torch.empty(n).uniform_(self.r_min + 10, self.r_max - 10)
-            v0 = torch.empty(n).uniform_(self.v_min + 0.5, self.v_max - 0.5)
-            a = torch.empty(n).uniform_(-self.a_max, self.a_max)
-            r = r0[:, None] + v0[:, None] * ell + 0.5 * a[:, None] * ell ** 2
-            v = v0[:, None] + a[:, None] * ell
+            r0_ = (r0 if r0 is not None
+                   else torch.empty(n).uniform_(self.r_min + 10, self.r_max - 10))
+            v0_ = (v0 if v0 is not None
+                   else torch.empty(n).uniform_(self.v_min + 0.5, self.v_max - 0.5))
+            a_ = (a if a is not None
+                  else torch.empty(n).uniform_(-self.a_max, self.a_max))
+            r = r0_[:, None] + v0_[:, None] * ell + 0.5 * a_[:, None] * ell ** 2
+            v = v0_[:, None] + a_[:, None] * ell
             ok = ((r >= self.r_min) & (r <= self.r_max)
                   & (v >= self.v_min) & (v <= self.v_max)).all()
             if ok:
-                return r0, v0, a, r, v  # r, v: (n, L)
+                return r0_, v0_, a_, r, v  # r, v: (n, L)
+        if any(t is not None for t in (r0, v0, a)):
+            raise ValueError("no in-grid trajectory exists for the fixed kinematics")
         raise RuntimeError("kinematics rejection sampling failed")
 
     def _to_bins(self, r, v):
@@ -236,33 +247,67 @@ class TemporalRadarSimulator:
         return r0, v0, a, r, v
 
     # ---------------- sequence assembly ----------------
-    def gen_sequence(self, r0=None, v0=None, a=None):
-        """r0/v0/a: optional (n,) tensors for exact target placement
-        (constant-acceleration kinematics), bypassing random sampling.
-        All three must be given together; omit for normal random generation."""
-        explicit = r0 is not None or v0 is not None or a is not None
-        if explicit:
-            n = r0.shape[0]
-            r0, v0, a, r, v = self._explicit_kinematics(r0, v0, a)
+    def gen_sequence(self, r0=None, v0=None, a=None, n_targets=None, cls=None,
+                     gain_db=None):
+        """One labelled L-frame sequence.
+
+        Every argument is optional; anything left as None is drawn at random
+        exactly as before. Per-target arguments take one value per target and
+        must agree in length (they also fix the number of targets):
+          r0, v0, a : initial range (m), radial velocity (m/s), acceleration (m/s^2)
+          cls       : class id per target (0 steady, 1 Swerling-1, 2 extended)
+          gain_db   : per-target SCNR gain in dB
+        Fully specified kinematics that leave the grid raise ValueError;
+        partially specified ones are completed by rejection sampling.
+        """
+        def as_vec(value, dtype):
+            return (None if value is None
+                    else torch.as_tensor(value, dtype=dtype).reshape(-1))
+
+        r0, v0, a = (as_vec(t, torch.float) for t in (r0, v0, a))
+        cls, gain_db = as_vec(cls, torch.long), as_vec(gain_db, torch.float)
+        lengths = {len(t) for t in (r0, v0, a, cls, gain_db) if t is not None}
+        if len(lengths) > 1:
+            raise ValueError("per-target arguments must have one value per target")
+        if n_targets is not None:
+            n = int(n_targets)
+            if lengths and lengths != {n}:
+                raise ValueError(f"n_targets={n} disagrees with per-target "
+                                 f"arguments of length {next(iter(lengths))}")
+        elif lengths:
+            n = next(iter(lengths))
         else:
             n = int(torch.randint(1, self.max_targets + 1, (1,)).item())
-            r0, v0, a, r, v = self._sample_kinematics(n)
+        if n < 1:
+            raise ValueError("a sequence needs at least one target")
+        if cls is not None and ((cls < 0) | (cls > 2)).any():
+            raise ValueError("class ids must be 0 (steady), 1 (Swerling-1) or 2 (extended)")
+
+        if r0 is not None and v0 is not None and a is not None:
+            r0, v0, a, r, v = self._explicit_kinematics(r0, v0, a)
+        else:
+            r0, v0, a, r, v = self._sample_kinematics(n, r0=r0, v0=v0, a=a)
         traj = self._to_bins(r, v)
-        cls = (torch.randint(0, 3, (n,)) if self.force_class is None
-               else torch.full((n,), int(self.force_class), dtype=torch.long))
-        base_gain = (torch.empty(n).uniform_(-5, 10) if self.scnr is None
-                     else torch.full((n,), float(self.scnr)))
+        if cls is None:
+            cls = (torch.randint(0, 3, (n,)) if self.force_class is None
+                   else torch.full((n,), int(self.force_class), dtype=torch.long))
+        if gain_db is None:
+            gain_db = (torch.empty(n).uniform_(-5, 10) if self.scnr is None
+                       else torch.full((n,), float(self.scnr)))
         rho = (float(torch.rand(1).item()) if self.rho_clutter is None
                else float(self.rho_clutter))
         nu = (float(torch.empty(1).uniform_(0.1, 1.5).item()) if self.nu is None
               else float(self.nu))
 
-        C = self._clutter_frames(rho, nu)
+        C = (self._clutter_frames(rho, nu) if self.clutter
+             else torch.zeros(self.L, self.N, self.K, dtype=torch.cfloat))
         frames, s_energy, cn_energy = [], 0.0, 0.0
         for l in range(self.L):
-            S = self._frame_targets(r[:, l], v[:, l], base_gain, cls)
+            S = self._frame_targets(r[:, l], v[:, l], gain_db, cls)
             W = (torch.randn(self.N, self.K, dtype=torch.cfloat)
                  / torch.sqrt(torch.tensor(2.0 * self.sigma2)))
+            if not self.noise:
+                W = torch.zeros_like(W)  # still drawn, so the random stream stays aligned
             X = S + C[l] + W
             s_energy += S.abs().pow(2).sum().item()
             cn_energy += (C[l] + W).abs().pow(2).sum().item()
@@ -277,3 +322,95 @@ class TemporalRadarSimulator:
             "env": torch.tensor([self.CNR_DB, scnr_dB.item(), rho]).float(),
             "n_targets": n,
         }
+
+
+# =====================================================================
+#                    One-call batch generation
+# =====================================================================
+CLASS_NAMES = {"steady": 0, "swerling1": 1, "extended": 2}
+
+
+def generate_sequences(n=1, seq_len=16, frame_interval=0.5, n_targets=None,
+                       target_class=None, snr_db=None, clutter=True, noise=True,
+                       rho=None, nu=None, r0=None, v0=None, a=None, seed=None):
+    """Generate a batch of labelled RD sequences in one call.
+
+    Anything left as None is random, drawn per sequence exactly as the
+    training data was. Per-target settings (target_class, snr_db, r0, v0, a)
+    take either one value, applied to every target, or a list with one value
+    per target; a list also fixes the number of targets.
+
+      n             number of sequences
+      seq_len       frames per sequence, frame_interval seconds apart
+      n_targets     exact targets per sequence (1-5); None = random 1-5
+      target_class  "steady" | "swerling1" | "extended" (or 0 / 1 / 2)
+      snr_db        target gain in dB; None = U(-5, 10) per target
+      clutter       AR(1) clutter on/off
+      noise         receiver noise on/off
+      rho, nu       clutter frame-to-frame correlation (0-1) and texture shape
+      r0, v0, a     initial range (m), radial velocity (m/s), acceleration (m/s^2)
+      seed          reseed torch first, for reproducible batches
+
+    Returns a dict of stacked tensors, target fields zero-padded to 5:
+      x (n, L, 64, 64) log-magnitude dB, traj (n, 5, L, 2) true
+      (range, Doppler) bins, v0 / acc / cls (n, 5), env (n, 3) as
+      [CNR dB, SCNR dB, rho], n_targets (n,).
+
+    Example, one static target on an empty map:
+      generate_sequences(n_targets=1, target_class="steady", snr_db=20,
+                         clutter=False, noise=False, r0=90, v0=0, a=0)
+    """
+    from src.dataset import MAX_TARGETS, _pad   # deferred: dataset imports this module
+
+    def class_id(value):
+        if isinstance(value, str):
+            if value not in CLASS_NAMES:
+                raise ValueError(f"unknown target_class {value!r}; "
+                                 f"use one of {sorted(CLASS_NAMES)}")
+            return CLASS_NAMES[value]
+        value = int(value)
+        if value not in CLASS_NAMES.values():
+            raise ValueError("class ids must be 0, 1 or 2")
+        return value
+
+    def normalise(value, cast):
+        if value is None:
+            return None
+        if isinstance(value, (list, tuple)) or (torch.is_tensor(value) and value.dim() > 0):
+            return [cast(v) for v in value]
+        return cast(value)
+
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    if rho is not None and not 0.0 <= rho <= 1.0:
+        raise ValueError("rho must be between 0 and 1")
+    if nu is not None and nu <= 0:
+        raise ValueError("nu must be positive")
+    per_target = {"cls": normalise(target_class, class_id),
+                  "gain_db": normalise(snr_db, float),
+                  "r0": normalise(r0, float), "v0": normalise(v0, float),
+                  "a": normalise(a, float)}
+    lengths = {len(v) for v in per_target.values() if isinstance(v, list)}
+    if len(lengths) > 1:
+        raise ValueError("per-target lists must all have one value per target")
+    if n_targets is None and lengths:
+        n_targets = next(iter(lengths))
+    elif n_targets is not None and lengths and lengths != {n_targets}:
+        raise ValueError(f"n_targets={n_targets} disagrees with per-target lists "
+                         f"of length {next(iter(lengths))}")
+    if n_targets is not None and not 1 <= n_targets <= MAX_TARGETS:
+        raise ValueError(f"n_targets must be between 1 and {MAX_TARGETS}")
+
+    if seed is not None:
+        torch.manual_seed(seed)
+    sim = TemporalRadarSimulator(seq_len=seq_len, frame_interval=frame_interval,
+                                 max_targets=MAX_TARGETS, rho_clutter=rho, nu=nu,
+                                 clutter=clutter, noise=noise)
+    items = []
+    for _ in range(n):
+        m = (n_targets if n_targets is not None
+             else int(torch.randint(1, MAX_TARGETS + 1, (1,)).item()))
+        args = {k: (None if v is None else (v if isinstance(v, list) else [v] * m))
+                for k, v in per_target.items()}
+        items.append(_pad(sim.gen_sequence(n_targets=m, **args)))
+    return {k: torch.stack([item[k] for item in items]) for k in items[0]}

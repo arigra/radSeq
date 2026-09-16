@@ -1,0 +1,213 @@
+{
+  "status": "complete",
+  "preregistration": "docs/notes/2026-09-12-easy-regime-preregistration.md",
+  "question": "Is the intensity deficit driven by data complexity, or intrinsic to the MSE-optimal denoiser and the stack around it?",
+  "regime": {
+    "name": "E0",
+    "detail": "1 target, class 0 steady point, fixed 20 dB gain, no clutter, no white noise",
+    "cache": "data/cache_easy",
+    "n_train": 20000,
+    "n_val": 2000,
+    "normalization_mean_db": 35.14721717044115,
+    "normalization_std_db": 15.652888536634443
+  },
+  "arm": {
+    "checkpoint": "checkpoints/easy_regime/last.pt",
+    "checkpoint_sha256": "8ec264d003f52fb5881da999c88a73608229602fb1f624ec9f4f2d3291d1fa82",
+    "step": 12500,
+    "epoch": 10,
+    "parameters": 9825856,
+    "config": "configs/easy_regime.yaml",
+    "single_variable": "data only; model, budget, optimiser, loss, seed unchanged"
+  },
+  "protocol": {
+    "n_generated_per_seed": 32,
+    "ddim_steps": 50,
+    "sampling_seeds": [
+      1,
+      2,
+      3
+    ],
+    "detector": "max_peaks=5, min_track_len=8 (corrected)",
+    "note": "12,500 steps is confounded for TARGET metrics (samples/budget_progression.json) but budget-independent for DISTRIBUTION metrics, which decide this question. Target metrics reported, not used in the decision."
+  },
+  "e0_real_reference": {
+    "normalized": {
+      "mean": -0.010526339523494244,
+      "std": 1.0375086069107056,
+      "p50": 0.01303764246404171,
+      "p75": 0.5483471155166626,
+      "p99": 2.5423827171325684,
+      "p999": 3.5710268020629883
+    },
+    "real_vs_real_metrics": {
+      "velocity_consistency": 0.6465961155481637,
+      "doppler_drift": 0.3518882837379351,
+      "persistence": 0.770907741971314,
+      "marginal_l1": 0.06228446960449219,
+      "mean_tracks_per_seq": 3.875,
+      "n_target_tracks_per_seq": 2.90625
+    },
+    "note": "E0's own floor. NOT comparable to the locked data's 0.065 marginal-L1 floor."
+  },
+  "per_seed": {
+    "1": {
+      "generated_normalized": {
+        "mean": -1.7144955396652222,
+        "std": 0.18428611755371094,
+        "p50": -1.7173720598220825,
+        "p75": -1.595211148262024,
+        "p99": -1.2626371383666992,
+        "p999": -1.0449057817459106
+      },
+      "metrics": {
+        "velocity_consistency": 0.0,
+        "doppler_drift": 0.0,
+        "persistence": 0.0034722222480922937,
+        "marginal_l1": 1.8246355056762695,
+        "mean_tracks_per_seq": 2.71875,
+        "n_target_tracks_per_seq": 0.03125
+      }
+    },
+    "2": {
+      "generated_normalized": {
+        "mean": -1.7058463096618652,
+        "std": 0.18007397651672363,
+        "p50": -1.7070386409759521,
+        "p75": -1.5888872146606445,
+        "p99": -1.2663733959197998,
+        "p999": -1.0748412609100342
+      },
+      "metrics": {
+        "velocity_consistency": null,
+        "doppler_drift": null,
+        "persistence": 0.0,
+        "marginal_l1": 1.8262395858764648,
+        "mean_tracks_per_seq": 2.0,
+        "n_target_tracks_per_seq": 0.0
+      }
+    },
+    "3": {
+      "generated_normalized": {
+        "mean": -1.7110867500305176,
+        "std": 0.17708484828472137,
+        "p50": -1.7130799293518066,
+        "p75": -1.5976351499557495,
+        "p99": -1.2715001106262207,
+        "p999": -1.0821809768676758
+      },
+      "metrics": {
+        "velocity_consistency": null,
+        "doppler_drift": null,
+        "persistence": 0.0,
+        "marginal_l1": 1.827291488647461,
+        "mean_tracks_per_seq": 2.0625,
+        "n_target_tracks_per_seq": 0.0
+      }
+    }
+  },
+  "aggregate": {
+    "generated_std_mean": 0.18048164745171866,
+    "generated_std_spread": 0.002954004791753409,
+    "generated_std_values": [
+      0.18428611755371094,
+      0.18007397651672363,
+      0.17708484828472137
+    ],
+    "marginal_l1_mean": 1.8260555267333984,
+    "n_target_tracks_per_seq_mean": 0.010416666666666666,
+    "velocity_consistency_mean": 0.0,
+    "persistence_mean": 0.0011574074160307646,
+    "e0_real_std": 1.0375086069107056,
+    "std_fraction_of_real": 0.17395677129765924
+  },
+  "decision_rule": {
+    "source": "docs/notes/2026-09-12-easy-regime-preregistration.md",
+    "data_complexity_driven_if": "|gen_std - real_std| <= 0.06",
+    "intrinsic_if": "gen_std < 0.75",
+    "inconclusive_otherwise": true
+  },
+  "detector_sanity_check": {
+    "e0_true_targets_per_sequence": 1,
+    "e0_real_target_tracks_per_seq": 2.90625,
+    "passes": false,
+    "note": "The pre-registration required ~1.0 track/sequence on REAL E0 data as evidence the detector works on this regime. E0 has no noise floor, so the sidelobe cross is bright and persistent and is detected as extra tracks. If this check fails, the arm's TARGET metrics are invalid; its DISTRIBUTION metrics still stand."
+  },
+  "verdict": "INTRINSIC",
+  "declared_confound": "E0 differs from the locked data in four ways at once (target count, class, gain spread, clutter+noise). A null result is clean; a positive result would not isolate which. E1/E2 are the named follow-ups.",
+  "temporal_collapse_diagnostic": {
+    "question": "Did the E0 arm collapse towards a time-invariant output? The smoothness term was ~50% of its objective (see the pre-registration addendum), and its limit is a sequence with no frame-to-frame change at all.",
+    "protocol": "8 sequences, DDIM 50 steps, seed 1, each model on its own data",
+    "results": {
+      "e0_arm": {
+        "generated_std": 0.17800724506378174,
+        "real_std": 1.0898613929748535,
+        "generated_frame_to_frame_mse": 0.03152349963784218,
+        "real_frame_to_frame_mse": 1.201788067817688,
+        "temporal_variation_ratio": 0.02623049810694602,
+        "generated_min": -2.460035800933838,
+        "generated_max": -0.706915557384491,
+        "real_min": -4.26577091217041,
+        "real_max": 4.617323398590088,
+        "generated_per_frame_spatial_std": [
+          0.18730995059013367,
+          0.18185335397720337,
+          0.17730137705802917,
+          0.17546287178993225,
+          0.1774388700723648,
+          0.17599785327911377,
+          0.16179582476615906,
+          0.170426145195961,
+          0.16691018640995026,
+          0.1720835566520691,
+          0.15429526567459106,
+          0.17334337532520294,
+          0.1746876835823059,
+          0.17458340525627136,
+          0.1709267795085907,
+          0.1888408660888672
+        ]
+      },
+      "locked_reference": {
+        "generated_std": 0.6625191569328308,
+        "real_std": 0.9826958179473877,
+        "generated_frame_to_frame_mse": 0.3399171829223633,
+        "real_frame_to_frame_mse": 0.5762255787849426,
+        "temporal_variation_ratio": 0.5899029745245417,
+        "generated_min": -4.0,
+        "generated_max": 3.5244224071502686,
+        "real_min": -5.480910301208496,
+        "real_max": 5.172728061676025,
+        "generated_per_frame_spatial_std": [
+          0.6758648753166199,
+          0.6705999970436096,
+          0.6675406098365784,
+          0.6587927937507629,
+          0.6592079997062683,
+          0.6589702367782593,
+          0.6562068462371826,
+          0.659473180770874,
+          0.6604668498039246,
+          0.6571001410484314,
+          0.6583797335624695,
+          0.6610041260719299,
+          0.6585240960121155,
+          0.6611436605453491,
+          0.6616277694702148,
+          0.6745801568031311
+        ]
+      }
+    },
+    "finding": "The E0 arm generates sequences with 2.6% of real frame-to-frame variation and a total value range of 1.75 normalised units (real: 8.9), i.e. a nearly constant, featureless map. The locked-data reference retains 59% of real temporal variation. The collapse is specific to the arm, not to the architecture."
+  },
+  "interpretation": {
+    "mechanical_verdict": "INTRINSIC",
+    "verdict_band_written_for": "std ~0.65, i.e. 'the same deficit persists'. The observed 0.18 is a different and far more severe failure, so the band's intended inference does not transfer.",
+    "decisive": false,
+    "why_not": "The arm changed the data AND, as a side effect, multiplied the smoothness prior's share of the objective by ~20x. That prior is the project's largest known lever on generated std, and the output collapsed towards its limiting behaviour. The arm therefore does not isolate data complexity.",
+    "target_metrics_valid": false,
+    "target_metrics_reason": "detector sanity check failed: 2.91 target tracks/seq on REAL E0 data containing 1 true target, because E0 has no noise floor and the sidelobe cross is detected as persistent tracks",
+    "distribution_metrics_valid": true,
+    "required_followup": "Repeat E0 with lambda_smooth scaled to hold the same share of the objective (~0.005), and with lambda_smooth = 0. Until then the data-complexity question stays open."
+  }
+}

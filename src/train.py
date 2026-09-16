@@ -14,6 +14,29 @@ from src.ema import make_ema, update_ema
 from src.losses import diffusion_loss, smooth_loss
 
 
+def _research_loss(x0_hat, x0, t, batch, cfg):
+    """Optional radar-specific research terms; absent from existing runs."""
+    tr = cfg["train"]
+    weights = (tr.get("lambda_range_doppler", 0.0),
+               tr.get("lambda_target_support", 0.0))
+    if not any(weights):
+        return x0_hat.new_zeros(())
+    keep = t <= tr.get("physics_max_t", 700)
+    if not keep.any():
+        return x0_hat.new_zeros(())
+    from src.research_losses import range_doppler_residual, target_support_loss
+    pred, true = x0_hat[keep], x0[keep]
+    sub = {key: value[keep.to(value.device)] for key, value in batch.items()
+           if key in ("traj", "n_targets")}
+    total = pred.new_zeros(())
+    if weights[0]:
+        total = total + weights[0] * range_doppler_residual(
+            pred, sub, frame_interval=cfg["data"]["frame_interval"])
+    if weights[1]:
+        total = total + weights[1] * target_support_loss(pred, true, sub)
+    return total
+
+
 def build_model(cfg, device):
     m = cfg["model"]
     architecture = m.get("architecture", "temporal_dit")
@@ -54,8 +77,10 @@ def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
     if tr.get("phase", 1) >= 2:
         from src.losses import traj_loss_from_batch
         physics = traj_loss_from_batch(x0_hat, batch, tr, device)
-    total = dit + tr["lambda_smooth"] * smooth + physics
-    return total, {"dit": dit, "smooth": smooth, "physics": physics}
+    research = _research_loss(x0_hat, x0, t, batch, cfg)
+    total = dit + tr["lambda_smooth"] * smooth + physics + research
+    return total, {"dit": dit, "smooth": smooth, "physics": physics,
+                   "research": research}
 
 
 @torch.no_grad()
@@ -64,7 +89,8 @@ def validate(model, encoder, diff, loader, cfg, device):
     model.eval()
     if encoder is not None:
         encoder.eval()
-    sums = {"total": 0.0, "dit": 0.0, "smooth": 0.0, "physics": 0.0}
+    sums = {"total": 0.0, "dit": 0.0, "smooth": 0.0,
+            "physics": 0.0, "research": 0.0}
     count = 0
     max_batches = cfg["train"].get("val_max_batches")
     devices = [device.index or 0] if device.type == "cuda" else []
@@ -246,7 +272,8 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             if tr.get("phase", 1) >= 2:
                 from src.losses import traj_loss_from_batch
                 physics = traj_loss_from_batch(x0_hat, batch, tr, device)
-            loss = dit + tr["lambda_smooth"] * smooth + physics
+            research = _research_loss(x0_hat, x0, t, batch, cfg)
+            loss = dit + tr["lambda_smooth"] * smooth + physics + research
             opt.zero_grad()
             loss.backward()
             grad_norm = torch.nn.utils.clip_grad_norm_(opt_params, 1.0)
@@ -263,6 +290,7 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
                     "global_step": step, "train/total_loss": loss.item(),
                     "train/dit_loss": dit.item(), "train/smooth_loss": smooth.item(),
                     "train/physics_loss": physics.item(),
+                    "train/research_loss": research.item(),
                     "train/grad_norm": float(grad_norm),
                     "train/lr": opt.param_groups[0]["lr"]})
             if step % log_every == 0:
@@ -286,15 +314,16 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
                 best_val, metrics["total"], bad_epochs,
                 tr.get("early_stopping_min_delta", 0.0))
             report("validation epoch={} total={:.6f} dit={:.6f} smooth={:.6f} "
-                   "physics={:.6f} best={:.6f} bad_epochs={}".format(
+                   "physics={:.6f} research={:.6f} best={:.6f} bad_epochs={}".format(
                        epoch, metrics["total"], metrics["dit"], metrics["smooth"],
-                       metrics["physics"], best_val, bad_epochs))
+                       metrics["physics"], metrics["research"], best_val, bad_epochs))
             if use_wandb:
                 wandb.log({
                     "epoch": epoch, "val/total_loss": metrics["total"],
                     "val/dit_loss": metrics["dit"],
                     "val/smooth_loss": metrics["smooth"],
                     "val/physics_loss": metrics["physics"],
+                    "val/research_loss": metrics["research"],
                     "val/best_loss": best_val})
                 wandb_run.summary["best_val_loss"] = best_val
                 wandb_run.summary["best_epoch"] = epoch if improved else wandb_run.summary.get("best_epoch")
