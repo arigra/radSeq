@@ -82,6 +82,44 @@ def generate(ckpt_path, n_seq, device, steps=50, cond=None, weights=None,
     return denormalize(x.float().cpu(), stats)
 
 
+def generate_trajectory_conditioned(ckpt_path, labels, device, steps=30, guidance=2.0,
+                                    weights="ema", seed=None):
+    """Sample sequences that contain the requested targets.
+
+    labels: dict with traj (B, M, L, 2) bins, n_targets (B,), cls (B, M).
+    Classifier-free guidance on the network output:
+    uncond + guidance * (cond - uncond), where uncond sees an all-zero
+    condition map. Returns dB maps (B, L, 64, 64).
+    """
+    from src.trajectory_condition import render_condition
+
+    ckpt = torch.load(ckpt_path, map_location=device)
+    cfg = ckpt["config"]
+    model = build_model(cfg, device)
+    model.load_state_dict(select_checkpoint_state(ckpt, weights=weights))
+    model.eval()
+    if not getattr(model, "cond_channels", 0):
+        raise ValueError(f"{ckpt_path} is not a trajectory-conditioned checkpoint")
+    diff = diffusion_from_config(cfg["diffusion"])
+    cond_map = render_condition(labels["traj"].to(device), labels["n_targets"].to(device),
+                                labels["cls"].to(device))
+    null = torch.zeros_like(cond_map)
+
+    def guided(xt, t, _cond=None):
+        out = model(torch.cat([xt, xt]), torch.cat([t, t]), None,
+                    cond_map=torch.cat([cond_map, null]))
+        with_cond, without = out.chunk(2)
+        return without + guidance * (with_cond - without)
+
+    B, L = labels["traj"].shape[0], cfg["data"]["seq_len"]
+    if seed is not None:
+        torch.manual_seed(seed)
+    x = diff.ddim_sample(guided, (B, L, 64, 64), device, steps=steps)
+    stats = torch.load(resolve_cache_dir(cfg["data"]["cache_dir"]) / "stats.pt",
+                       map_location="cpu")
+    return denormalize(x.float().cpu(), stats)
+
+
 def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0,
                          weights=None, patch_reduction=None, seed=None):
     from src.conditioning import ConditionEncoder
