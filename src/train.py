@@ -9,9 +9,10 @@ from torch.utils.data import DataLoader
 
 from src.dataset import RadarSequenceDataset
 from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion
-from src.dit import TemporalDiT
+from src.dit import TemporalDiT, load_unconditional_weights
 from src.ema import make_ema, update_ema
 from src.losses import diffusion_loss, smooth_loss
+from src.trajectory_condition import drop_condition, render_condition
 
 
 def _research_loss(x0_hat, x0, t, batch, cfg):
@@ -37,14 +38,26 @@ def _research_loss(x0_hat, x0, t, batch, cfg):
     return total
 
 
-def _predict(model, xt, t, cond, tr, device):
+def _predict(model, xt, t, cond, tr, device, cond_map=None):
     """Network forward, optionally under bf16 autocast (train.amp: bf16)."""
     amp = tr.get("amp", "off")
     if amp not in ("off", "bf16"):
         raise ValueError(f"unknown train.amp {amp!r}")
     with torch.autocast(device.type, dtype=torch.bfloat16, enabled=amp == "bf16"):
-        prediction = model(xt, t, cond)
+        if cond_map is None:
+            prediction = model(xt, t, cond)
+        else:
+            prediction = model(xt, t, cond, cond_map=cond_map)
     return prediction.float()
+
+
+def _trajectory_condition(model, batch, device, dropout_p):
+    """Condition map for trajectory-conditioned models (cond_channels > 0), else None."""
+    if not getattr(model, "cond_channels", 0):
+        return None
+    cond_map = render_condition(batch["traj"].to(device), batch["n_targets"].to(device),
+                                batch["cls"].to(device))
+    return drop_condition(cond_map, dropout_p)
 
 
 def build_model(cfg, device):
@@ -76,7 +89,8 @@ def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
     xt = diff.q_sample(x0, t, eps)
     cond = (encoder(batch, device, dropout_p=dropout_p)
             if encoder is not None else None)
-    prediction = _predict(model, xt, t, cond, tr, device)
+    cond_map = _trajectory_condition(model, batch, device, dropout_p)
+    prediction = _predict(model, xt, t, cond, tr, device, cond_map)
     dit = diffusion_loss(
         diff.target(x0, t, eps), prediction,
         weight=diff.objective_weights(
@@ -189,6 +203,10 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         epoch, step = state.get("epoch", 0), state.get("step", 0)
         best_val = state.get("best_val", float("inf"))
         bad_epochs = state.get("bad_epochs", 0)
+    if tr.get("init_from") and resume_state is None:
+        # warm start from an unconditional checkpoint; EMA weights if it has them
+        source = torch.load(tr["init_from"], map_location="cpu")
+        load_unconditional_weights(model, source.get("ema_model") or source["model"])
     ema_decay = tr.get("ema_decay")
     if ema_decay is not None and not 0.0 <= ema_decay < 1.0:
         raise ValueError("train.ema_decay must be in [0, 1)")
@@ -270,7 +288,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             xt = diff.q_sample(x0, t, eps)
             cond = (encoder(batch, device, dropout_p=tr.get("cond_dropout", 0.1))
                     if encoder is not None else None)
-            prediction = _predict(model, xt, t, cond, tr, device)
+            cond_map = _trajectory_condition(model, batch, device,
+                                             tr.get("cond_dropout", 0.1))
+            prediction = _predict(model, xt, t, cond, tr, device, cond_map)
             dit = diffusion_loss(
                 diff.target(x0, t, eps), prediction,
                 weight=diff.objective_weights(

@@ -116,3 +116,40 @@ def test_viz_writes_files(tmp_path):
     sequence_grid(x, str(tmp_path / "grid.png"))
     sequence_gif(x, str(tmp_path / "seq.gif"))
     assert (tmp_path / "grid.png").exists() and (tmp_path / "seq.gif").exists()
+
+
+def test_trajectory_condition_map_is_built_only_for_conditional_models():
+    from src.train import _trajectory_condition, build_model
+    from src.simulator import generate_sequences
+    cfg = yaml.safe_load(open("configs/base.yaml"))
+    cfg["model"].update(dim=32, depth=1, heads=4, patch=8, stride=8, attn_mode="factorized")
+    batch = generate_sequences(n=2, seed=0)
+    plain = build_model(cfg, torch.device("cpu"))
+    assert _trajectory_condition(plain, batch, torch.device("cpu"), 0.0) is None
+    cfg["model"]["cond_channels"] = 4
+    conditional = build_model(cfg, torch.device("cpu"))
+    cond_map = _trajectory_condition(conditional, batch, torch.device("cpu"), 0.0)
+    assert cond_map.shape == (2, 16, 4, 64, 64)
+
+
+def test_init_from_warm_starts_a_conditional_model_exactly(tmp_path):
+    torch.manual_seed(0)
+    base_cfg = _tiny_config(tmp_path / "base")
+    base_cfg["model"].update(patch=8, stride=8, attn_mode="factorized")
+    generate_cache(base_cfg["data"]["cache_dir"], 4, 2, seq_len=16, seed=7, shard_size=4)
+    train(base_cfg, device=torch.device("cpu"), max_steps=2)
+    base = torch.load(tmp_path / "base" / "ckpt" / "last.pt", map_location="cpu")["model"]
+
+    cfg = _tiny_config(tmp_path / "cond")
+    cfg["data"]["cache_dir"] = base_cfg["data"]["cache_dir"]
+    cfg["model"].update(patch=8, stride=8, attn_mode="factorized", cond_channels=4)
+    # lr 0: weights cannot move, so the checkpoint shows exactly what init_from loaded
+    cfg["train"].update(init_from=str(tmp_path / "base" / "ckpt" / "last.pt"),
+                        cond_dropout=0.5, lr=0.0)
+    losses = train(cfg, device=torch.device("cpu"), max_steps=2, _record_losses=True)
+    assert all(torch.isfinite(torch.tensor(losses)))
+    state = torch.load(tmp_path / "cond" / "ckpt" / "last.pt", map_location="cpu")["model"]
+    assert state["proj.weight"].shape == (64, 64 * 5)
+    assert torch.equal(state["proj.weight"][:, :64], base["proj.weight"])
+    assert torch.count_nonzero(state["proj.weight"][:, 64:]) == 0
+    assert all(torch.equal(state[k], base[k]) for k in base if k != "proj.weight")
