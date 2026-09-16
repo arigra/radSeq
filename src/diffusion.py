@@ -5,6 +5,10 @@ import torch
 
 
 DEFAULT_X0_CLAMP = (-4.0, 4.0)
+# Below this alpha_bar the signal is unrecoverable (t=999 has 2.4e-9) and
+# pred_x0 amplifies eps error by 1/sqrt(alpha_bar); see
+# docs/notes/2026-09-14-terminal-step-diagnosis.md.
+ZERO_SNR_ALPHA_BAR = 1e-6
 
 
 def parse_x0_clamp(value):
@@ -35,9 +39,12 @@ def _bc(v, x):
 
 class GaussianDiffusion:
     def __init__(self, timesteps=1000, x0_clamp=DEFAULT_X0_CLAMP,
-                 parameterization="eps"):
+                 parameterization="eps", terminal_x0="model", schedule_shift=1.0):
         self.T = timesteps
         self.x0_clamp = parse_x0_clamp(x0_clamp)
+        if terminal_x0 not in ("model", "mean"):
+            raise ValueError(f"unknown terminal_x0 {terminal_x0!r}")
+        self.terminal_x0 = terminal_x0
         if parameterization not in ("eps", "v"):
             raise ValueError(f"unknown parameterization {parameterization!r}")
         self.parameterization = parameterization
@@ -45,7 +52,15 @@ class GaussianDiffusion:
         f = torch.cos((t + 0.008) / 1.008 * math.pi / 2) ** 2
         abar = (f / f[0])
         betas = torch.clamp(1 - abar[1:] / abar[:-1], max=0.999)
-        self.alphas_bar = torch.cumprod(1 - betas, dim=0).float()
+        abar = torch.cumprod(1 - betas, dim=0)
+        if schedule_shift <= 0:
+            raise ValueError("schedule_shift must be positive")
+        # Resolution shift (Hoogeboom et al. 2023; SD3): SNR' = SNR / s^2. Large,
+        # redundant inputs reveal global structure at low SNR, so shift noise up.
+        self.schedule_shift = float(schedule_shift)
+        if schedule_shift != 1.0:
+            abar = abar / (abar + schedule_shift ** 2 * (1 - abar))
+        self.alphas_bar = abar.float()
 
     def _ab(self, t, x):
         return _bc(self.alphas_bar.to(x.device)[t], x)
@@ -109,6 +124,21 @@ class GaussianDiffusion:
             return x0
         return x0.clamp(*self.x0_clamp)
 
+    def terminal_step(self, x, t, eps, x0):
+        """Replace the network's estimate at zero-SNR steps when requested.
+
+        ``model`` keeps the historical behaviour. ``mean`` uses the posterior
+        mean at SNR ~ 0, which is the data mean (0 after normalisation), and
+        the eps consistent with it; this stops the first DDIM step from
+        injecting a saturated +/-clamp pattern into the trajectory.
+        """
+        if self.terminal_x0 == "model":
+            return eps, x0
+        ab = self._ab(t, x)
+        zero_snr = ab < ZERO_SNR_ALPHA_BAR
+        return (torch.where(zero_snr, x / (1 - ab).sqrt(), eps),
+                torch.where(zero_snr, torch.zeros_like(x0), x0))
+
     def loss_weight(self, t, mode="one_minus_alpha_bar"):
         """Per-sample weight for the auxiliary smoothness term.
 
@@ -133,7 +163,7 @@ class GaussianDiffusion:
         for i in range(steps):
             t = ts[i].repeat(shape[0])
             eps, x0 = self.to_eps_x0(model(x, t, cond), x, t)
-            x0 = self.clamp_x0(x0)
+            eps, x0 = self.terminal_step(x, t, eps, self.clamp_x0(x0))
             if i == steps - 1:
                 x = x0
             else:
@@ -148,7 +178,7 @@ class GaussianDiffusion:
         for ti in reversed(range(self.T)):
             t = torch.full((shape[0],), ti, device=device, dtype=torch.long)
             eps, x0 = self.to_eps_x0(model(x, t, cond), x, t)
-            x0 = self.clamp_x0(x0)
+            _, x0 = self.terminal_step(x, t, eps, self.clamp_x0(x0))
             if ti == 0:
                 x = x0
             else:

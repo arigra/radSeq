@@ -109,6 +109,47 @@ def test_eps_parameterization_is_unchanged():
     assert torch.equal(e, eps) and torch.allclose(x, d.pred_x0(xt, t, eps))
 
 
+def test_terminal_step_uses_data_mean_instead_of_amplified_eps_error():
+    """At t=999 alpha_bar is 2.4e-9: pred_x0 multiplies eps error by ~2e4.
+
+    A zero-eps model makes that error equal to xt itself, so the historical
+    sampler turns pure noise into a +/-4 clamp pattern that survives to the end.
+    With terminal_x0="mean" the zero-SNR step uses the data mean (0) instead.
+    """
+    def zero_eps(xt, t, cond=None):
+        return torch.zeros_like(xt)
+
+    shape, device = (2, 2, 8, 8), torch.device("cpu")
+    torch.manual_seed(0)
+    old = GaussianDiffusion(1000).ddim_sample(zero_eps, shape, device, steps=2)
+    torch.manual_seed(0)
+    new = GaussianDiffusion(1000, terminal_x0="mean").ddim_sample(
+        zero_eps, shape, device, steps=2)
+    assert old.abs().min() > 3.9                  # every pixel saturated
+    assert new.abs().max() < 0.1                  # no injected clamp noise
+    torch.manual_seed(0)
+    anc = GaussianDiffusion(20, terminal_x0="mean").p_sample_loop(
+        zero_eps, shape, device)
+    assert torch.isfinite(anc).all()
+
+
+def test_schedule_shift_divides_snr_by_shift_squared():
+    """Resolution shift (Hoogeboom et al. 2023; SD3): SNR'(t) = SNR(t) / s^2."""
+    base, shifted = GaussianDiffusion(1000), GaussianDiffusion(1000, schedule_shift=4.0)
+    assert torch.equal(GaussianDiffusion(1000, schedule_shift=1.0).alphas_bar,
+                       base.alphas_bar)
+    t = torch.tensor([10, 300, 600, 900])
+    assert torch.allclose(shifted.snr(t), base.snr(t) / 16.0, rtol=1e-3)
+    assert (shifted.alphas_bar[1:] <= shifted.alphas_bar[:-1]).all()
+    with pytest.raises(ValueError):
+        GaussianDiffusion(10, schedule_shift=0.0)
+
+
+def test_terminal_x0_rejects_unknown_modes():
+    with pytest.raises(ValueError):
+        GaussianDiffusion(10, terminal_x0="zero")
+
+
 def test_min_snr_caps_the_easy_low_noise_steps():
     d = GaussianDiffusion(timesteps=1000)
     t = torch.tensor([0, 500, 999])

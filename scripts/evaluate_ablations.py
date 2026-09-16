@@ -2,7 +2,7 @@
 
 Each ``--arm`` has the form::
 
-    NAME=CHECKPOINT[,weights=raw|ema|auto][,reduction=mean|tile|hann][,clamp=off|VALUE]
+    NAME=CHECKPOINT[,weights=raw|ema|auto][,reduction=mean|tile|hann][,clamp=off|VALUE][,terminal=model|mean]
 
 The same seed is reset before sampling every arm, so models with the same output
 shape receive identical initial Gaussian noise. Results are written after each
@@ -34,6 +34,7 @@ class Arm:
     weights: str | None = None
     reduction: str | None = None
     clamp: str | None = None
+    terminal: str | None = None
 
 
 def parse_arm(value: str) -> Arm:
@@ -54,7 +55,7 @@ def parse_arm(value: str) -> Arm:
         if key in options:
             raise ValueError(f"duplicate arm option {key!r}")
         options[key] = option_value
-    unknown = set(options) - {"weights", "reduction", "clamp"}
+    unknown = set(options) - {"weights", "reduction", "clamp", "terminal"}
     if unknown:
         raise ValueError(f"unknown arm option(s): {', '.join(sorted(unknown))}")
     weights = options.get("weights")
@@ -66,7 +67,10 @@ def parse_arm(value: str) -> Arm:
     clamp = options.get("clamp")
     if clamp is not None:
         parse_x0_clamp(float(clamp) if _is_number(clamp) else clamp)
-    return Arm(name, Path(path), weights, reduction, clamp)
+    terminal = options.get("terminal")
+    if terminal not in (None, "model", "mean"):
+        raise ValueError(f"unknown terminal {terminal!r}")
+    return Arm(name, Path(path), weights, reduction, clamp, terminal)
 
 
 def _is_number(value: str) -> bool:
@@ -194,7 +198,8 @@ def evaluate_arm(
     x0_clamp = parse_x0_clamp(clamp_setting)
     diffusion = GaussianDiffusion(
         config["diffusion"]["timesteps"], x0_clamp=x0_clamp,
-        parameterization=config["diffusion"].get("parameterization", "eps"))
+        parameterization=config["diffusion"].get("parameterization", "eps"),
+        terminal_x0=arm.terminal or config["diffusion"].get("terminal_x0", "model"))
     torch.manual_seed(seed)
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -219,6 +224,7 @@ def evaluate_arm(
         "patch_reduction": arm.reduction or model_config.get("patch_reduction", "mean"),
         "weights": effective_weights,
         "x0_clamp": list(x0_clamp) if x0_clamp is not None else None,
+        "terminal_x0": diffusion.terminal_x0,
         "parameterization": config["diffusion"].get("parameterization", "eps"),
         "loss_weighting": config["train"].get("loss_weighting", "none"),
         "smooth_weight": config["train"].get(
