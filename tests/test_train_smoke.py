@@ -13,8 +13,11 @@ def _tiny_config(tmp_path):
     # The tiny single-batch overfit needs a higher lr than the production
     # default (tuned for full-scale, many-epoch training) to visibly converge
     # within 150 steps; the config owns hyperparameters, not train().
+    # log_file under tmp_path: the default (logs/phase1.log) would append test
+    # runs to the real training log.
     cfg["train"].update(batch_size=2, epochs=1, lr=3.0e-4,
-                        ckpt_dir=str(tmp_path / "ckpt"))
+                        ckpt_dir=str(tmp_path / "ckpt"),
+                        log_file=str(tmp_path / "train.log"))
     # Pin to phase 1 so a future base.yaml phase flip cannot break this smoke test.
     cfg["train"]["phase"] = 1
     return cfg
@@ -69,6 +72,21 @@ def test_resume_continues_step_count(tmp_path):
     train(cfg, device=torch.device("cpu"), max_steps=4, resume=path)
     state = torch.load(path, map_location="cpu")
     assert state["step"] == 4
+
+
+def test_bf16_autocast_trains_and_rejects_unknown_modes(tmp_path):
+    import pytest
+    torch.manual_seed(0)
+    cfg = _tiny_config(tmp_path)
+    cfg["train"].update(amp="bf16", log_file=str(tmp_path / "train.log"))
+    generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16,
+                   seed=7, shard_size=4)
+    losses = train(cfg, device=torch.device("cpu"), max_steps=3,
+                   _record_losses=True)
+    assert len(losses) == 3 and all(torch.isfinite(torch.tensor(losses)))
+    cfg["train"]["amp"] = "fp8"
+    with pytest.raises(ValueError):
+        train(cfg, device=torch.device("cpu"), max_steps=1)
 
 
 def test_early_stopping_requires_meaningful_improvement():

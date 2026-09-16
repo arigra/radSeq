@@ -11,7 +11,8 @@ def test_generate_from_checkpoint(tmp_path):
         cfg = yaml.safe_load(fh)
     cfg["data"].update(cache_dir=str(tmp_path), n_train=4, n_val=2, shard_size=4)
     cfg["model"].update(dim=64, depth=2, heads=4)
-    cfg["train"].update(batch_size=2, epochs=1, ckpt_dir=str(tmp_path / "ckpt"))
+    cfg["train"].update(batch_size=2, epochs=1, ckpt_dir=str(tmp_path / "ckpt"),
+                        log_file=str(tmp_path / "train.log"))
     generate_cache(str(tmp_path), 4, 2, seq_len=16, seed=7, shard_size=4)
     train(cfg, device=torch.device("cpu"), max_steps=3)
     x = generate(str(tmp_path / "ckpt" / "last.pt"), n_seq=1,

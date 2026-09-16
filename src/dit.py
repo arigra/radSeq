@@ -9,8 +9,24 @@ import math
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from src.patching import patchify, unpatchify, num_patches
+
+
+def _attend(attn, h):
+    """Self-attention with nn.MultiheadAttention's weights via fused SDPA.
+
+    Same parameters and output as ``attn(h, h, h)``, but lets PyTorch pick the
+    flash / memory-efficient kernels, which MultiheadAttention does not use
+    during training. Checkpoints load unchanged.
+    """
+    B, T, d = h.shape
+    heads = attn.num_heads
+    q, k, v = F.linear(h, attn.in_proj_weight, attn.in_proj_bias).chunk(3, dim=-1)
+    q, k, v = (u.view(B, T, heads, d // heads).transpose(1, 2) for u in (q, k, v))
+    out = F.scaled_dot_product_attention(q, k, v)
+    return attn.out_proj(out.transpose(1, 2).reshape(B, T, d))
 
 
 def timestep_embedding(t, dim):
@@ -38,7 +54,7 @@ class TemporalBlock(nn.Module):
         sh1, sc1, g1, sh2, sc2, g2 = self.adaLN(c)[:, None, None].chunk(6, dim=-1)
         h = self.norm1(z) * (1 + sc1) + sh1
         h = h.permute(0, 2, 1, 3).reshape(B * P, L, d)
-        a, _ = self.attn(h, h, h, need_weights=False)
+        a = _attend(self.attn, h)
         a = a.reshape(B, P, L, d).permute(0, 2, 1, 3)
         z = z + g1 * a
         h = self.norm2(z) * (1 + sc2) + sh2
@@ -75,16 +91,45 @@ class FactorizedBlock(nn.Module):
 
         h = self.norm_t(z) * (1 + sc_t) + sh_t
         h = h.permute(0, 2, 1, 3).reshape(B * P, L, d)
-        a, _ = self.attn_t(h, h, h, need_weights=False)
+        a = _attend(self.attn_t, h)
         z = z + g_t * a.reshape(B, P, L, d).permute(0, 2, 1, 3)
 
         h = self.norm_s(z) * (1 + sc_s) + sh_s
         h = h.reshape(B * L, P, d)
-        a, _ = self.attn_s(h, h, h, need_weights=False)
+        a = _attend(self.attn_s, h)
         z = z + g_s * a.reshape(B, L, P, d)
 
         h = self.norm2(z) * (1 + sc_m) + sh_m
         return z + g_m * self.mlp(h)
+
+
+class FullBlock(nn.Module):
+    """Joint space-time attention over all L*P tokens of a sequence, then MLP.
+
+    The standard video-DiT choice: every patch in every frame attends to every
+    other, so temporal continuity is decided jointly with spatial layout instead
+    of in alternating sublayers. Same adaLN-Zero conditioning as TemporalBlock.
+    """
+
+    def __init__(self, dim, heads, mlp_ratio=4):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
+        self.attn = nn.MultiheadAttention(dim, heads, batch_first=True)
+        self.norm2 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
+        self.mlp = nn.Sequential(nn.Linear(dim, mlp_ratio * dim), nn.GELU(),
+                                 nn.Linear(mlp_ratio * dim, dim))
+        self.adaLN = nn.Sequential(nn.SiLU(), nn.Linear(dim, 6 * dim))
+        nn.init.zeros_(self.adaLN[1].weight)
+        nn.init.zeros_(self.adaLN[1].bias)
+
+    def forward(self, z, c):
+        # z: (B, L, P, d); c: (B, d)
+        B, L, P, d = z.shape
+        sh1, sc1, g1, sh2, sc2, g2 = self.adaLN(c)[:, None, None].chunk(6, dim=-1)
+        h = (self.norm1(z) * (1 + sc1) + sh1).reshape(B, L * P, d)
+        z = z + g1 * _attend(self.attn, h).reshape(B, L, P, d)
+        h = self.norm2(z) * (1 + sc2) + sh2
+        return z + g2 * self.mlp(h)
 
 
 class TemporalDiT(nn.Module):
@@ -107,9 +152,11 @@ class TemporalDiT(nn.Module):
         if patch_reduction not in ("mean", "tile", "hann"):
             raise ValueError(f"unknown patch_reduction {patch_reduction!r}")
         self.patch_reduction = patch_reduction
-        if attn_mode not in ("temporal", "factorized"):
+        blocks = {"temporal": TemporalBlock, "factorized": FactorizedBlock,
+                  "full": FullBlock}
+        if attn_mode not in blocks:
             raise ValueError(f"unknown attn_mode {attn_mode!r}")
-        block = TemporalBlock if attn_mode == "temporal" else FactorizedBlock
+        block = blocks[attn_mode]
         self.blocks = nn.ModuleList(block(dim, heads) for _ in range(depth))
         self.final_norm = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
         self.final_adaLN = nn.Sequential(nn.SiLU(), nn.Linear(dim, 2 * dim))

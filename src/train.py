@@ -37,6 +37,16 @@ def _research_loss(x0_hat, x0, t, batch, cfg):
     return total
 
 
+def _predict(model, xt, t, cond, tr, device):
+    """Network forward, optionally under bf16 autocast (train.amp: bf16)."""
+    amp = tr.get("amp", "off")
+    if amp not in ("off", "bf16"):
+        raise ValueError(f"unknown train.amp {amp!r}")
+    with torch.autocast(device.type, dtype=torch.bfloat16, enabled=amp == "bf16"):
+        prediction = model(xt, t, cond)
+    return prediction.float()
+
+
 def build_model(cfg, device):
     m = cfg["model"]
     architecture = m.get("architecture", "temporal_dit")
@@ -65,7 +75,7 @@ def _loss_components(model, encoder, diff, batch, cfg, device, dropout_p):
     xt = diff.q_sample(x0, t, eps)
     cond = (encoder(batch, device, dropout_p=dropout_p)
             if encoder is not None else None)
-    prediction = model(xt, t, cond)
+    prediction = _predict(model, xt, t, cond, tr, device)
     dit = diffusion_loss(
         diff.target(x0, t, eps), prediction,
         weight=diff.objective_weights(
@@ -157,7 +167,9 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
     diff = GaussianDiffusion(
         cfg["diffusion"]["timesteps"],
         x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
-        parameterization=cfg["diffusion"].get("parameterization", "eps"))
+        parameterization=cfg["diffusion"].get("parameterization", "eps"),
+        terminal_x0=cfg["diffusion"].get("terminal_x0", "model"),
+        schedule_shift=cfg["diffusion"].get("schedule_shift", 1.0))
     opt = torch.optim.AdamW(opt_params, lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     epoch, step = 0, 0
@@ -257,7 +269,7 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             xt = diff.q_sample(x0, t, eps)
             cond = (encoder(batch, device, dropout_p=tr.get("cond_dropout", 0.1))
                     if encoder is not None else None)
-            prediction = model(xt, t, cond)
+            prediction = _predict(model, xt, t, cond, tr, device)
             dit = diffusion_loss(
                 diff.target(x0, t, eps), prediction,
                 weight=diff.objective_weights(

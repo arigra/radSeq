@@ -89,6 +89,18 @@ def test_factorized_mixes_spatially():
     assert delta > 1e-4, f"spatial attention did not propagate (delta={delta})"
 
 
+def test_fused_attention_matches_multihead_attention():
+    """_attend must be a drop-in for nn.MultiheadAttention with the same weights,
+    so existing checkpoints keep producing identical outputs."""
+    from src.dit import _attend
+    torch.manual_seed(0)
+    attn = torch.nn.MultiheadAttention(32, 4, batch_first=True).eval()
+    h = torch.randn(3, 7, 32)
+    with torch.no_grad():
+        ref, _ = attn(h, h, h, need_weights=False)
+        assert torch.allclose(_attend(attn, h), ref, atol=1e-5)
+
+
 def test_factorized_depth5_stays_under_baseline_params():
     """The control brackets the baseline's parameter count from below, so a
     positive result cannot be explained by extra capacity. Guards that."""
@@ -99,3 +111,47 @@ def test_factorized_depth5_stays_under_baseline_params():
     n_base = sum(p.numel() for p in base.parameters())
     n_small = sum(p.numel() for p in small.parameters())
     assert n_small < n_base, f"{n_small} !< {n_base}"
+
+
+# ---- full joint space-time attention -------------------------------------
+
+def _small_full():
+    return TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8,
+                       dim=32, depth=2, heads=4, attn_mode="full")
+
+
+def test_full_zero_init_output():
+    m = _small_full()
+    out = m(torch.randn(1, 4, 16, 16), torch.tensor([5]))
+    assert out.shape == (1, 4, 16, 16) and out.abs().max() == 0.0
+
+
+def test_full_attention_mixes_across_space_and_time():
+    """A change in one patch of the LAST frame must reach a different patch of
+    the FIRST frame within a single block. One factorized block cannot do that
+    (time and space are separate sublayers), so it is the scale-free reference:
+    with small random weights attention is near-uniform and both effects are
+    small, but the joint block's must be far above the factorized one's."""
+    def delta(mode):
+        torch.manual_seed(0)
+        m = TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8,
+                        dim=32, depth=1, heads=4, attn_mode=mode)
+        for p in m.parameters():
+            torch.nn.init.normal_(p, std=0.02)
+        m.eval()
+        x = torch.randn(1, 4, 16, 16)
+        x2 = x.clone()
+        x2[:, 3, 8:, 8:] += 10.0
+        with torch.no_grad():
+            return float((m(x, torch.tensor([100]))[:, 0, :8, :8]
+                          - m(x2, torch.tensor([100]))[:, 0, :8, :8]).abs().max())
+
+    full, factorized = delta("full"), delta("factorized")
+    assert full > 1e-6 and full > 50 * factorized, (full, factorized)
+
+
+def test_unknown_attn_mode_rejected():
+    import pytest
+    with pytest.raises(ValueError):
+        TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32,
+                    depth=1, heads=4, attn_mode="sparse")
