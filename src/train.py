@@ -55,7 +55,8 @@ def build_model(cfg, device):
             seq_len=cfg["data"]["seq_len"], patch=m["patch"],
             stride=m["stride"], dim=m["dim"], depth=m["depth"],
             heads=m["heads"], attn_mode=m.get("attn_mode", "temporal"),
-            patch_reduction=m.get("patch_reduction", "mean"))
+            patch_reduction=m.get("patch_reduction", "mean"),
+            cond_channels=m.get("cond_channels", 0))
     elif architecture == "unet2d":
         from src.unet import SpatialUNet
         model = SpatialUNet(

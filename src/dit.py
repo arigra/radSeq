@@ -135,12 +135,14 @@ class FullBlock(nn.Module):
 class TemporalDiT(nn.Module):
     def __init__(self, seq_len=16, N=64, K=64, patch=8, stride=4,
                  dim=256, depth=8, heads=8, attn_mode="temporal",
-                 patch_reduction="mean"):
+                 patch_reduction="mean", cond_channels=0):
         super().__init__()
         self.N, self.K, self.p, self.s = N, K, patch, stride
+        self.cond_channels = cond_channels
         pr, pc = num_patches(N, K, patch, stride)
         P = pr * pc
-        self.proj = nn.Linear(patch * patch, dim)
+        # each token: the noisy map's patch, then one patch per condition channel
+        self.proj = nn.Linear(patch * patch * (1 + cond_channels), dim)
         self.spatial_pos = nn.Parameter(torch.zeros(1, 1, P, dim))
         self.temporal_pos = nn.Parameter(torch.zeros(1, seq_len, 1, dim))
         nn.init.trunc_normal_(self.spatial_pos, std=0.02)
@@ -166,8 +168,17 @@ class TemporalDiT(nn.Module):
         nn.init.zeros_(self.out.weight)
         nn.init.zeros_(self.out.bias)
 
-    def forward(self, x, t, cond=None):
+    def forward(self, x, t, cond=None, cond_map=None):
         tokens = patchify(x, self.p, self.s)                  # (B, L, P, p*p)
+        if self.cond_channels:
+            B, L, N, K = x.shape
+            if cond_map is None:
+                cond_map = x.new_zeros(B, L, self.cond_channels, N, K)
+            extra = [patchify(cond_map[:, :, c], self.p, self.s)
+                     for c in range(self.cond_channels)]
+            tokens = torch.cat([tokens] + extra, dim=-1)
+        elif cond_map is not None:
+            raise ValueError("cond_map given to a model built with cond_channels=0")
         z = self.proj(tokens) + self.spatial_pos + self.temporal_pos
         c = self.t_mlp(timestep_embedding(t, self.dim))
         if cond is not None:
@@ -178,3 +189,20 @@ class TemporalDiT(nn.Module):
         z = self.final_norm(z) * (1 + sc) + sh
         return unpatchify(self.out(z), self.N, self.K, self.p, self.s,
                           reduction=self.patch_reduction)
+
+
+def load_unconditional_weights(model, state_dict):
+    """Warm-start a conditional model from an unconditional checkpoint.
+
+    Every weight is copied; the input projection's map columns come from the
+    checkpoint and its condition columns are zero, so the loaded model's
+    output equals the unconditional model's for any condition map.
+    """
+    state = dict(state_dict)
+    source = state["proj.weight"]
+    target = model.proj.weight
+    if source.shape != target.shape:
+        expanded = torch.zeros_like(target)
+        expanded[:, :source.shape[1]] = source.to(target.device)
+        state["proj.weight"] = expanded
+    model.load_state_dict(state)

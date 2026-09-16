@@ -155,3 +155,45 @@ def test_unknown_attn_mode_rejected():
     with pytest.raises(ValueError):
         TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32,
                     depth=1, heads=4, attn_mode="sparse")
+
+
+# ---- trajectory condition channels ----------------------------------------
+
+def test_warm_started_conditional_model_matches_the_unconditional_one_exactly():
+    from src.dit import load_unconditional_weights
+    torch.manual_seed(0)
+    base = TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32, depth=2,
+                       heads=4, attn_mode="factorized")
+    for p in base.parameters():
+        torch.nn.init.normal_(p, std=0.02)
+    cond = TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32, depth=2,
+                       heads=4, attn_mode="factorized", cond_channels=4)
+    load_unconditional_weights(cond, base.state_dict())
+    base.eval()
+    cond.eval()
+    x, t = torch.randn(2, 4, 16, 16), torch.tensor([10, 700])
+    with torch.no_grad():
+        ref = base(x, t)
+        assert torch.allclose(cond(x, t, cond_map=torch.rand(2, 4, 4, 16, 16)), ref, atol=1e-6)
+        assert torch.allclose(cond(x, t), ref, atol=1e-6)
+
+
+def test_condition_channels_reach_the_output_with_nonzero_weights():
+    torch.manual_seed(0)
+    m = TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32, depth=1,
+                    heads=4, attn_mode="factorized", cond_channels=4)
+    for p in m.parameters():
+        torch.nn.init.normal_(p, std=0.02)
+    m.eval()
+    x, t = torch.randn(1, 4, 16, 16), torch.tensor([100])
+    with torch.no_grad():
+        a = m(x, t, cond_map=torch.zeros(1, 4, 4, 16, 16))
+        b = m(x, t, cond_map=torch.ones(1, 4, 4, 16, 16))
+    assert (a - b).abs().max() > 1e-6
+
+
+def test_unconditional_model_rejects_a_condition_map():
+    import pytest
+    m = TemporalDiT(seq_len=4, N=16, K=16, patch=8, stride=8, dim=32, depth=1, heads=4)
+    with pytest.raises(ValueError):
+        m(torch.randn(1, 4, 16, 16), torch.tensor([1]), cond_map=torch.zeros(1, 4, 4, 16, 16))
