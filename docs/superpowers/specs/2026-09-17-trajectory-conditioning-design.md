@@ -23,7 +23,7 @@ and noise (not labelled in real radar); the model invents them.
   channel per class. Channel 3: all ones when a condition is present.
   `drop_condition(cond, p)` zeroes all 4 channels for a random fraction p of
   sequences (classifier-free guidance training).
-- **Input** (`src/patching.py`, `src/dit.py`): `TemporalDiT(cond_channels=4)`
+- **Input** (`src/dit.py`): `TemporalDiT(cond_channels=4)` (config `model.cond_channels: 4`)
   patchifies the noisy map and the condition channels together, so each 8x8
   patch token carries `64 * (1 + 4)` values. Only the input projection grows;
   factorized attention, depth 12, dim 384 are unchanged.
@@ -39,7 +39,7 @@ and noise (not labelled in real radar); the model invents them.
 
 Same data (`data/cache`, 20k train / 2k val) and recipe as `configs/e3_long.yaml`
 (v-prediction, schedule shift 4, no clamp, bf16, batch 32, lr 1e-4, EMA 0.9999,
-no smoothness loss), plus `train.conditioning: trajectory`,
+no smoothness loss), plus `model.cond_channels: 4`,
 `train.cond_dropout: 0.1`, `train.init_from`. Fresh optimizer. 40 epochs
 (25,000 steps, ~2 h). Resumable pipeline `scripts/run_cond_traj.sh` and
 `scripts/cond_traj.sbatch`, checkpoints every 1000 steps.
@@ -69,8 +69,8 @@ labels. Generation: EMA weights, DDIM 30.
   marginal L1 <= 0.15, target tracks/seq within 15% of real, persistence within
   25% of real) pass against held-out real data.
 - **Null check**: the unconditional `e3_long` model on the same requests must
-  score a hit rate well below the conditional model's, else the test is too
-  easy and no result is reported.
+  score a hit rate at least 0.20 below the conditional model's, else the test
+  is too easy and no result is reported.
 
 Not measured: whether generated targets look like their requested class.
 
@@ -79,7 +79,6 @@ Not measured: whether generated targets look like their requested class.
 | unit | test |
 |---|---|
 | `render_condition`, `drop_condition` | blob maximum at requested bin; class routing; padded targets ignored; presence channel; dropout zeroes whole sequences |
-| multi-channel patchify | one channel equals `patchify` |
 | `TemporalDiT(cond_channels)`, input-projection expansion | expanded model output equals unconditional output exactly |
 | `train` conditioning + `init_from` | tiny run from a tiny unconditional checkpoint trains; config recorded |
 | `generate_trajectory_conditioned` | shape and finiteness; w=0 equals the dropped-condition prediction |
