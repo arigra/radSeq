@@ -107,3 +107,15 @@ def test_show_normalization_draws_both_histograms():
     axes = plt.gcf().axes
     assert len(axes) == 2 and all(ax.patches for ax in axes)
     assert axes[0].get_xlabel() == "dB" and axes[1].get_xlabel() == "normalised value"
+
+
+def test_show_rows_accepts_unlabelled_generated_scenes():
+    """Unconditional DiT samples have maps but no target labels."""
+    import torch
+    from src.viz import show_rows
+    real = generate_sequences(n=1, seq_len=4, n_targets=1, clutter=False, noise=False, seed=0)
+    generated = {"x": torch.randn(1, 4, 64, 64)}
+    show_rows([real, generated], ["simulator", "DiT"], frames=(0, 1))
+    image_axes = [ax for ax in plt.gcf().axes if ax.images]
+    assert len(image_axes) == 4
+    assert [len(ax.collections) for ax in image_axes] == [1, 1, 0, 0]   # circles only on labelled row

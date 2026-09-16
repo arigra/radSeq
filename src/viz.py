@@ -130,13 +130,15 @@ def show_rows(datasets, labels, i=0, frames=(0, 5, 10, 15), title="", hist=False
                              constrained_layout=True, squeeze=False)
     im = None
     for row, (d, x, label) in enumerate(zip(datasets, xs, labels)):
-        m = int(d["n_targets"][i])
-        traj = d["traj"][i, :m].detach().cpu().numpy()
+        # unconditional generated samples have maps but no target labels
+        traj = (d["traj"][i, :int(d["n_targets"][i])].detach().cpu().numpy()
+                if "traj" in d else None)
         for col, t in enumerate(frames):
             ax = axes[row, col]
             im = ax.imshow(x[t], origin="lower", vmin=lo, vmax=hi)
-            ax.scatter(traj[:, t, 1], traj[:, t, 0], s=100,
-                       facecolors="none", edgecolors="red")
+            if traj is not None:
+                ax.scatter(traj[:, t, 1], traj[:, t, 0], s=100,
+                           facecolors="none", edgecolors="red")
             ax.set_xticks([])
             ax.set_yticks([])
             if row == 0:

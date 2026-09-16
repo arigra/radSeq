@@ -189,3 +189,18 @@ class GaussianDiffusion:
                 var = beta_t * (1 - ab_prev) / (1 - ab_t)
                 x = mean + var.sqrt() * torch.randn_like(x)
         return x
+
+
+def diffusion_from_config(diffusion_cfg):
+    """Build the GaussianDiffusion a checkpoint was trained with.
+
+    Use this instead of calling the constructor by hand: a hand-built copy that
+    forgets schedule_shift or terminal_x0 samples a v-prediction, shifted model
+    on the wrong noise schedule without any error.
+    """
+    return GaussianDiffusion(
+        diffusion_cfg["timesteps"],
+        x0_clamp=diffusion_cfg.get("x0_clamp", DEFAULT_X0_CLAMP),
+        parameterization=diffusion_cfg.get("parameterization", "eps"),
+        terminal_x0=diffusion_cfg.get("terminal_x0", "model"),
+        schedule_shift=diffusion_cfg.get("schedule_shift", 1.0))

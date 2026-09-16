@@ -162,3 +162,17 @@ def test_min_snr_caps_the_easy_low_noise_steps():
     assert capped[1] == pytest.approx(1.0, abs=1e-3)  # SNR(500) < gamma: uncapped
     with pytest.raises(ValueError):
         d.objective_weights(t, "bogus")
+
+
+def test_diffusion_from_config_honours_every_sampling_setting():
+    """Callers must not rebuild GaussianDiffusion by hand: the old copies in
+    sample.generate silently dropped schedule_shift and terminal_x0."""
+    from src.diffusion import diffusion_from_config
+    d = diffusion_from_config({"timesteps": 1000, "parameterization": "v",
+                               "schedule_shift": 4.0, "x0_clamp": "off",
+                               "terminal_x0": "mean"})
+    assert (d.parameterization, d.schedule_shift, d.x0_clamp, d.terminal_x0) == \
+        ("v", 4.0, None, "mean")
+    plain = diffusion_from_config({"timesteps": 1000})
+    assert (plain.parameterization, plain.schedule_shift, plain.x0_clamp, plain.terminal_x0) == \
+        ("eps", 1.0, (-4.0, 4.0), "model")

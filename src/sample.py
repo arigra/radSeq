@@ -6,7 +6,7 @@ import torch
 import yaml
 
 from src.dataset import RadarSequenceDataset, denormalize
-from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion
+from src.diffusion import DEFAULT_X0_CLAMP, GaussianDiffusion, diffusion_from_config
 from src.train import build_model
 
 
@@ -52,6 +52,16 @@ def _set_patch_reduction(model, reduction):
     model.patch_reduction = reduction
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def resolve_cache_dir(cache_dir):
+    """Checkpoint configs store 'data/cache' relative to the repo; resolve it
+    from the repo root so sampling also works from notebooks/."""
+    path = Path(cache_dir)
+    return path if path.is_absolute() else REPO_ROOT / path
+
+
 def generate(ckpt_path, n_seq, device, steps=50, cond=None, weights=None,
              patch_reduction=None, seed=None):
     ckpt = torch.load(ckpt_path, map_location=device)
@@ -60,18 +70,16 @@ def generate(ckpt_path, n_seq, device, steps=50, cond=None, weights=None,
     model.load_state_dict(select_checkpoint_state(ckpt, weights=weights))
     _set_patch_reduction(model, patch_reduction)
     model.eval()
-    diff = GaussianDiffusion(
-        cfg["diffusion"]["timesteps"],
-        x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
-        parameterization=cfg["diffusion"].get("parameterization", "eps"))
+    diff = diffusion_from_config(cfg["diffusion"])
     L = cfg["data"]["seq_len"]
     if seed is not None:
         # Seed after model construction so different architectures receive the
         # same initial diffusion noise in paired comparisons.
         torch.manual_seed(seed)
     x = diff.ddim_sample(model, (n_seq, L, 64, 64), device, steps=steps, cond=cond)
-    stats = RadarSequenceDataset(cfg["data"]["cache_dir"], "val").stats
-    return denormalize(x.cpu(), stats)
+    stats = torch.load(resolve_cache_dir(cfg["data"]["cache_dir"]) / "stats.pt",
+                       map_location="cpu")
+    return denormalize(x.float().cpu(), stats)
 
 
 def generate_conditioned(ckpt_path, batch, device, steps=50, guidance=2.0,
