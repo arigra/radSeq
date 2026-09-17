@@ -1,0 +1,133 @@
+{
+  "checkpoint": "checkpoints/cond_traj_bs32/last.pt",
+  "n_per_seed": 32,
+  "real_vs_real": {
+    "velocity_consistency": 1.358168475329876,
+    "doppler_drift": 0.5075290573295206,
+    "persistence": 0.14367364550707862,
+    "marginal_l1": 0.06467437744140625,
+    "mean_tracks_per_seq": 23.65625,
+    "n_target_tracks_per_seq": 3.09375,
+    "std": 1.0042940378189087
+  },
+  "sweep": {
+    "1.0": {
+      "adherence": {
+        "hit_rate": 0.9641359060402684,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "simulator": {
+        "hit_rate": 0.9660234899328859,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "metrics": {
+        "velocity_consistency": 1.6284455483158429,
+        "doppler_drift": 0.5391614489102116,
+        "persistence": 0.13961509976070374,
+        "marginal_l1": 0.07441236078739166,
+        "mean_tracks_per_seq": 24.958333333333332,
+        "n_target_tracks_per_seq": 3.125,
+        "std": 0.9548135995864868
+      },
+      "rule": {
+        "hit_rate": true,
+        "unrequested_tracks": true,
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": true
+      },
+      "passes": true
+    },
+    "2.0": {
+      "adherence": {
+        "hit_rate": 0.9790268456375839,
+        "unrequested_lasting_tracks_per_seq": 0.2604166666666667
+      },
+      "simulator": {
+        "hit_rate": 0.9660234899328859,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "metrics": {
+        "velocity_consistency": 1.6564798379937808,
+        "doppler_drift": 0.5396627718582749,
+        "persistence": 0.17116511017472172,
+        "marginal_l1": 0.07156404852867126,
+        "mean_tracks_per_seq": 24.0,
+        "n_target_tracks_per_seq": 3.1979166666666665,
+        "std": 1.013501763343811
+      },
+      "rule": {
+        "hit_rate": true,
+        "unrequested_tracks": false,
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": true
+      },
+      "passes": false
+    },
+    "3.0": {
+      "adherence": {
+        "hit_rate": 0.9771392617449665,
+        "unrequested_lasting_tracks_per_seq": 0.2604166666666667
+      },
+      "simulator": {
+        "hit_rate": 0.9660234899328859,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "metrics": {
+        "velocity_consistency": 1.7550188954919577,
+        "doppler_drift": 0.5406074030324817,
+        "persistence": 0.16156057708819085,
+        "marginal_l1": 0.10910320281982422,
+        "mean_tracks_per_seq": 24.583333333333332,
+        "n_target_tracks_per_seq": 3.21875,
+        "std": 1.0444005727767944
+      },
+      "rule": {
+        "hit_rate": true,
+        "unrequested_tracks": false,
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": true
+      },
+      "passes": false
+    }
+  },
+  "final": {
+    "adherence": {
+      "hit_rate": 0.9732142857142857,
+      "unrequested_lasting_tracks_per_seq": 0.2916666666666667
+    },
+    "simulator": {
+      "hit_rate": 0.9757007233273056,
+      "unrequested_lasting_tracks_per_seq": 0.3333333333333333
+    },
+    "metrics": {
+      "velocity_consistency": 1.7835444728843868,
+      "doppler_drift": 0.5256224412005395,
+      "persistence": 0.13925020442305444,
+      "marginal_l1": 0.08624204248189926,
+      "mean_tracks_per_seq": 25.520833333333332,
+      "n_target_tracks_per_seq": 3.03125,
+      "std": 0.9547231793403625
+    },
+    "rule": {
+      "hit_rate": true,
+      "unrequested_tracks": true,
+      "std": true,
+      "marginal_l1": true,
+      "target_tracks": true,
+      "persistence": true
+    },
+    "passes": true,
+    "guidance": 1.0,
+    "null_unconditional": {
+      "hit_rate": 0.012997287522603979,
+      "unrequested_lasting_tracks_per_seq": 3.2916666666666665
+    },
+    "null_check_ok": true
+  }
+}
