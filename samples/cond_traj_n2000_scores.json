@@ -1,0 +1,77 @@
+{
+  "checkpoint": "checkpoints/cond_traj_n2000_bs32/last.pt",
+  "n_per_seed": 32,
+  "real_vs_real": {
+    "velocity_consistency": 1.358168475329876,
+    "doppler_drift": 0.5075290573295206,
+    "persistence": 0.14367364550707862,
+    "marginal_l1": 0.06467437744140625,
+    "mean_tracks_per_seq": 23.65625,
+    "n_target_tracks_per_seq": 3.09375,
+    "std": 1.0042940378189087
+  },
+  "sweep": {
+    "1.0": {
+      "adherence": {
+        "hit_rate": 0.9756711409395973,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "simulator": {
+        "hit_rate": 0.9660234899328859,
+        "unrequested_lasting_tracks_per_seq": 0.22916666666666666
+      },
+      "metrics": {
+        "velocity_consistency": 1.8171969714264076,
+        "doppler_drift": 0.5472987617831677,
+        "persistence": 0.14079593444087854,
+        "marginal_l1": 0.09140332043170929,
+        "mean_tracks_per_seq": 25.239583333333332,
+        "n_target_tracks_per_seq": 3.2291666666666665,
+        "std": 0.9473810195922852
+      },
+      "rule": {
+        "hit_rate": true,
+        "unrequested_tracks": true,
+        "std": true,
+        "marginal_l1": true,
+        "target_tracks": true,
+        "persistence": true
+      },
+      "passes": true
+    }
+  },
+  "final": {
+    "adherence": {
+      "hit_rate": 0.984629294755877,
+      "unrequested_lasting_tracks_per_seq": 0.24479166666666666
+    },
+    "simulator": {
+      "hit_rate": 0.9757007233273056,
+      "unrequested_lasting_tracks_per_seq": 0.3333333333333333
+    },
+    "metrics": {
+      "velocity_consistency": 1.7501269661200543,
+      "doppler_drift": 0.5238079749008951,
+      "persistence": 0.15870904139592312,
+      "marginal_l1": 0.10471996665000916,
+      "mean_tracks_per_seq": 26.421875,
+      "n_target_tracks_per_seq": 3.0364583333333335,
+      "std": 0.9437222480773926
+    },
+    "rule": {
+      "hit_rate": true,
+      "unrequested_tracks": true,
+      "std": true,
+      "marginal_l1": true,
+      "target_tracks": true,
+      "persistence": true
+    },
+    "passes": true,
+    "guidance": 1.0,
+    "null_unconditional": {
+      "hit_rate": 0.012997287522603979,
+      "unrequested_lasting_tracks_per_seq": 3.2916666666666665
+    },
+    "null_check_ok": true
+  }
+}

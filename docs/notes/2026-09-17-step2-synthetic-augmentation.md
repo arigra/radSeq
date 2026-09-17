@@ -56,3 +56,20 @@ quality check, which answers whether the recipe works at RADIal-like data size.
 The detector experiment is on hold until a task with headroom is chosen (for
 example weak targets only, target class, or much smaller N), and its rule will
 be re-registered then.
+
+## Result (`samples/cond_traj_n2000_scores.json`)
+
+Checkpoint `checkpoints/cond_traj_n2000_bs32/last.pt`. Guidance w = 1.0, chosen on val 0-95 / seeds 1-3 (w=1.0: hit 0.976, passes True). Verdict on val 96-287, seeds 4-9, 192 sequences.
+
+| check | simulator / real | conditional DiT | |
+|---|---:|---:|---|
+| hit rate | 0.976 | 0.985 | ok |
+| unrequested lasting tracks / seq | 0.33 | 0.24 | ok |
+| std | 1.004 | 0.944 | ok |
+| marginal L1 | 0.065 | 0.105 | ok |
+| target tracks / seq | 3.09 | 3.04 | ok |
+| persistence | 0.144 | 0.159 | ok |
+
+Null check (unconditional e3_long, same requests and seeds): hit rate 0.013 -> ok (conditional hit rate is at least 0.20 higher)
+
+**Verdict (pre-set rule): the conditional DiT follows requested trajectories.**
