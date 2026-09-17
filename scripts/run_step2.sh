@@ -12,7 +12,9 @@ LOG=logs/step2_pipeline.log
 NOTE=docs/notes/2026-09-17-step2-synthetic-augmentation.md
 say() { echo "$(date '+%F %T') | $*" | tee -a "$LOG"; }
 
-if pgrep -f "src.train --config configs/cond_traj_n2000_bs|scripts/gen_synthetic.py|scripts/detector_augmentation.py" > /dev/null; then
+# anchored to the python executable so a shell whose command line merely mentions
+# these scripts (e.g. the one launching this pipeline) does not count
+if pgrep -f "^$PY (-m src.train --config configs/cond_traj_n2000_bs|scripts/gen_synthetic.py|scripts/detector_augmentation.py)" > /dev/null; then
   say "REFUSED: a step-2 process is already running"; exit 1
 fi
 say "start"
