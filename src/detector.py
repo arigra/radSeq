@@ -11,8 +11,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def heatmap_targets(traj, n_targets, size=64, sigma=1.0):
-    """traj (B, M, L, 2) bins; n_targets (B,) -> (B, L, size, size), peak 1 at rounded bins."""
+def _blobs(traj, n_targets, size, sigma):
+    """Gaussian blob (peak 1) at each target's rounded bin: (B, M, L, size, size), and the (B, M) real-target mask."""
     B, M, L, _ = traj.shape
     device = traj.device
     centres = torch.round(traj.float())
@@ -21,7 +21,22 @@ def heatmap_targets(traj, n_targets, size=64, sigma=1.0):
     blobs = torch.exp(-((r - centres[..., 0, None, None]) ** 2
                         + (d - centres[..., 1, None, None]) ** 2) / (2 * sigma ** 2))
     real = (torch.arange(M, device=device)[None] < n_targets.to(device)[:, None]).float()
+    return blobs, real
+
+
+def heatmap_targets(traj, n_targets, size=64, sigma=1.0):
+    """traj (B, M, L, 2) bins; n_targets (B,) -> (B, L, size, size), peak 1 at rounded bins."""
+    blobs, real = _blobs(traj, n_targets, size, sigma)
+    B, M = real.shape
     return (blobs * real.view(B, M, 1, 1, 1)).amax(dim=1)
+
+
+def class_heatmap_targets(traj, n_targets, cls, n_classes=3, size=64, sigma=1.0):
+    """-> (B, n_classes, L, size, size): each target's blob in its class channel only."""
+    blobs, real = _blobs(traj, n_targets, size, sigma)
+    B, M = real.shape
+    onehot = F.one_hot(cls.to(traj.device).long(), n_classes).float() * real[..., None]
+    return (blobs[:, :, None] * onehot.view(B, M, n_classes, 1, 1, 1)).amax(dim=1)
 
 
 def _block(cin, cout):
@@ -48,6 +63,34 @@ class HeatmapDetector(nn.Module):
         d2 = self.dec2(torch.cat([F.interpolate(e3, scale_factor=2), e2], 1))
         d1 = self.dec1(torch.cat([F.interpolate(d2, scale_factor=2), e1], 1))
         return self.head(d1)[:, 0]
+
+
+class SequenceClassDetector(nn.Module):
+    """All 16 frames in, one heatmap per class per frame out.
+
+    (B, 16, 64, 64) normalised maps -> (B, n_classes, 16, 64, 64) logits. Seeing the
+    whole sequence lets it use frame-to-frame amplitude fluctuation (Swerling-1)
+    and range extent (extended targets).
+    """
+
+    def __init__(self, frames=16, n_classes=3, width=48):
+        super().__init__()
+        self.frames, self.n_classes = frames, n_classes
+        self.enc1 = _block(frames, width)
+        self.enc2 = _block(width, 2 * width)
+        self.enc3 = _block(2 * width, 4 * width)
+        self.dec2 = _block(4 * width + 2 * width, 2 * width)
+        self.dec1 = _block(2 * width + width, width)
+        self.head = nn.Conv2d(width, n_classes * frames, 1)
+        nn.init.constant_(self.head.bias, -2.19)
+
+    def forward(self, x):
+        e1 = self.enc1(x)
+        e2 = self.enc2(F.max_pool2d(e1, 2))
+        e3 = self.enc3(F.max_pool2d(e2, 2))
+        d2 = self.dec2(torch.cat([F.interpolate(e3, scale_factor=2), e2], 1))
+        d1 = self.dec1(torch.cat([F.interpolate(d2, scale_factor=2), e1], 1))
+        return self.head(d1).view(x.shape[0], self.n_classes, self.frames, *x.shape[-2:])
 
 
 def focal_loss(logits, target, alpha=2, beta=4):

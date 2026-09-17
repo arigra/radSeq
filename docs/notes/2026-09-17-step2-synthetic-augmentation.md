@@ -73,3 +73,30 @@ Checkpoint `checkpoints/cond_traj_n2000_bs32/last.pt`. Guidance w = 1.0, chosen 
 Null check (unconditional e3_long, same requests and seeds): hit rate 0.013 -> ok (conditional hit rate is at least 0.20 higher)
 
 **Verdict (pre-set rule): the conditional DiT follows requested trajectories.**
+
+## Step 2b, registered before running (Ari chose the target-class task, 2026-09-17)
+
+**Memorisation check** (`scripts/memorization_check.py`): 128 requests from the
+generator's own training labels and 128 from held-out labels (val 1000-1127);
+RMS difference (normalised) between each generated sequence and the real
+sequence with the same labels. **Memorising if** median (training labels) <
+0.8 x median (held-out labels).
+
+**Target-class detector** (`scripts/detector_class_augmentation.py`): the
+detector sees all 16 frames and outputs one heatmap per class (steady,
+Swerling-1, extended) per frame; a detection counts only in its class channel,
+within 2 bins of a true target of that class. Metric: mean AP over classes on
+val 1000-1511. Same four arms, 3 seeds, 3,000 steps x 32 sequences. Synthetic
+data: 8,000 sequences from the small-data generator (2,000 training labels x 4
+seeds, w = 1).
+
+**Decision rule:**
+- *Informative* only if mean mAP(`real_full`) - mean mAP(`real_n`) exceeds the
+  larger seed range of those two arms (the task has headroom). Otherwise the
+  verdict is "uninformative", not "does not help".
+- If informative, synthetic data **helps** if mean mAP(`real_n_synth`) - mean
+  mAP(`real_n`) exceeds the larger seed range of those two arms.
+- If the memorisation check says the generator copies, a positive result is
+  reported but flagged as possibly reflecting copied real sequences.
+
+Run: `scripts/run_step2b.sh` (resumable; `sbatch scripts/step2b.sbatch` from `ece-hpc`).

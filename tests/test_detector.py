@@ -44,3 +44,25 @@ def test_average_precision_penalises_false_positives_ranked_first():
     targets = [torch.tensor([[10.0, 10.0]])]
     dets = [[(0.9, 40.0, 40.0), (0.5, 10.0, 10.0)]]         # (score, range, doppler) per frame
     assert abs(average_precision(dets, targets, radius=2.0) - 0.5) < 1e-6
+
+
+def test_class_heatmap_routes_each_target_to_its_class_channel():
+    from src.detector import class_heatmap_targets
+    traj, n = _labels()
+    n = torch.tensor([2])
+    cls = torch.tensor([[2, 0, 0, 0, 0]])                 # target 0 extended, target 1 steady
+    h = class_heatmap_targets(traj, n, cls)
+    assert h.shape == (1, 3, 2, 64, 64)
+    assert float(h[0, 2, 0, 20, 42]) == 1.0 and float(h[0, 0, 0, 20, 42]) < 1e-6
+    assert float(h[0, 0, 1, 50, 10]) == 1.0 and float(h[0, 2, 1, 50, 10]) < 1e-6
+
+
+def test_sequence_class_detector_shape_and_loss():
+    from src.detector import SequenceClassDetector
+    torch.manual_seed(0)
+    model = SequenceClassDetector()
+    logits = model(torch.randn(2, 16, 64, 64))
+    assert logits.shape == (2, 3, 16, 64, 64)
+    target = torch.zeros(2, 3, 16, 64, 64)
+    target[:, 1, :, 30, 30] = 1.0
+    assert torch.isfinite(focal_loss(logits, target))
