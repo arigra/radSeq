@@ -163,6 +163,10 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
     tr = cfg["train"]
     torch.manual_seed(tr.get("seed", cfg["data"].get("seed", 1234)))
     ds = RadarSequenceDataset(cfg["data"]["cache_dir"], "train")
+    subset = cfg["data"].get("train_subset")
+    if subset:
+        # scarce-data experiments: the first N training sequences and nothing else
+        ds.items = ds.items[:subset]
     loader = DataLoader(ds, batch_size=tr["batch_size"], shuffle=True,
                         num_workers=0, drop_last=True)
     val_loader = None

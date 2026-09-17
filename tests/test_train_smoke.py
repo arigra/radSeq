@@ -153,3 +153,13 @@ def test_init_from_warm_starts_a_conditional_model_exactly(tmp_path):
     assert torch.equal(state["proj.weight"][:, :64], base["proj.weight"])
     assert torch.count_nonzero(state["proj.weight"][:, 64:]) == 0
     assert all(torch.equal(state[k], base[k]) for k in base if k != "proj.weight")
+
+
+def test_train_subset_uses_only_the_first_n_training_sequences(tmp_path):
+    """Scarce-data runs: 4 cached sequences, subset 2, batch 2 -> one step per epoch."""
+    torch.manual_seed(0)
+    cfg = _tiny_config(tmp_path)
+    cfg["data"]["train_subset"] = 2
+    generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16, seed=7, shard_size=4)
+    train(cfg, device=torch.device("cpu"))
+    assert torch.load(tmp_path / "ckpt" / "last.pt", map_location="cpu")["step"] == 1
