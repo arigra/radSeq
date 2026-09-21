@@ -193,3 +193,23 @@ def test_init_weights_raw_warm_starts_from_the_trained_weights_not_the_ema(tmp_p
     got = torch.load(tmp_path / "ft" / "ckpt" / "last.pt", map_location="cpu")["model"]
     assert all(torch.equal(got[k], src_state["model"][k]) for k in src_state["model"])
     assert not all(torch.equal(got[k], src_state["ema_model"][k]) for k in src_state["model"])
+
+
+def test_trains_on_a_scene_cache_with_vehicle_conditioning(tmp_path):
+    """The RADIal-grid path: memory-mapped scene cache, non-square 512x256
+    maps, position-only vehicle conditioning, and a train_subset."""
+    import subprocess, sys
+    cache = tmp_path / "scene"
+    subprocess.run([sys.executable, "scripts/build_scene_cache.py", "--variant", "engineer",
+                    "--n-train", "4", "--n-val", "2", "--seq-len", "2", "--out", str(cache)],
+                   check=True, env={"PYTHONPATH": ".", "CUDA_VISIBLE_DEVICES": "",
+                                    "PATH": "/usr/bin:/bin"})
+    cfg = _tiny_config(tmp_path)
+    cfg["data"].update(kind="scene", cache_dir=str(cache), seq_len=2,
+                       n_range=512, n_doppler=256, train_subset=2)
+    cfg["model"].update(patch=32, stride=32, attn_mode="factorized", cond_channels=2)
+    cfg["train"].update(batch_size=2, cond_dropout=0.5)
+    losses = train(cfg, device=torch.device("cpu"), max_steps=2, _record_losses=True)
+    assert len(losses) == 2 and all(torch.isfinite(torch.tensor(losses)))
+    state = torch.load(tmp_path / "ckpt" / "last.pt", map_location="cpu")
+    assert state["step"] == 2

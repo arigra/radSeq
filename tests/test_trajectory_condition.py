@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 from src.trajectory_condition import COND_CHANNELS, drop_condition, render_condition
@@ -37,3 +38,28 @@ def test_drop_condition_zeroes_whole_sequences():
     assert torch.equal(per_seq.min(1).values, per_seq.max(1).values)   # all or nothing
     assert 60 < int((per_seq.max(1).values == 0).sum()) < 140
     assert torch.equal(drop_condition(cond, 0.0), cond)
+
+
+# ---- RADIal-style vehicle conditioning: positions only, no classes ----------
+
+def test_vehicle_condition_marks_present_vehicles_and_a_presence_plane():
+    from src.trajectory_condition import VEHICLE_COND_CHANNELS, render_vehicle_condition
+    traj = torch.zeros(1, 2, 2, 2)
+    traj[0, 0, :, 0], traj[0, 0, :, 1] = 100.0, 40.0
+    present = torch.tensor([[[True, False], [False, False]]])
+    c = render_vehicle_condition(traj, present, n_range=512, n_doppler=256)
+    assert c.shape == (1, 2, VEHICLE_COND_CHANNELS, 512, 256)
+    assert float(c[0, 0, 0, 100, 40]) == 1.0            # vehicle drawn in frame 0
+    assert float(c[0, 1, 0].max()) == 0.0               # absent in frame 1
+    assert float(c[0, :, 1].min()) == 1.0               # presence plane: condition given
+
+
+def test_vehicle_blob_wraps_around_the_circular_doppler_axis():
+    """Doppler bin 255 neighbours bin 0: a vehicle near the edge must light up
+    both sides, or the generator is taught a seam that real radar lacks."""
+    from src.trajectory_condition import render_vehicle_condition
+    traj = torch.zeros(1, 1, 1, 2)
+    traj[0, 0, 0] = torch.tensor([100.0, 255.5])
+    c = render_vehicle_condition(traj, torch.ones(1, 1, 1, dtype=torch.bool),
+                                 n_range=512, n_doppler=256)[0, 0, 0]
+    assert float(c[100, 0]) == pytest.approx(float(c[100, 255]), abs=1e-6)

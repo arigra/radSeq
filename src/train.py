@@ -51,12 +51,31 @@ def _predict(model, xt, t, cond, tr, device, cond_map=None):
     return prediction.float()
 
 
+def _dataset(cfg, split):
+    """64x64 simulator caches, or memory-mapped RADIal-grid scene caches."""
+    if cfg["data"].get("kind", "simulator") == "scene":
+        from src.scene_data import SceneSequenceDataset
+        return SceneSequenceDataset(cfg["data"]["cache_dir"], split)
+    return RadarSequenceDataset(cfg["data"]["cache_dir"], split)
+
+
 def _trajectory_condition(model, batch, device, dropout_p):
-    """Condition map for trajectory-conditioned models (cond_channels > 0), else None."""
+    """Condition map for trajectory-conditioned models (cond_channels > 0), else None.
+
+    Scene batches carry per-frame vehicle presence and no classes (RADIal
+    labels give positions only); simulator batches carry classes.
+    """
     if not getattr(model, "cond_channels", 0):
         return None
-    cond_map = render_condition(batch["traj"].to(device), batch["n_targets"].to(device),
-                                batch["cls"].to(device))
+    if "present" in batch:
+        from src.trajectory_condition import render_vehicle_condition
+        cond_map = render_vehicle_condition(batch["traj"].to(device),
+                                            batch["present"].to(device),
+                                            n_range=model.N, n_doppler=model.K)
+    else:
+        cond_map = render_condition(batch["traj"].to(device),
+                                    batch["n_targets"].to(device),
+                                    batch["cls"].to(device))
     return drop_condition(cond_map, dropout_p)
 
 
@@ -66,6 +85,7 @@ def build_model(cfg, device):
     if architecture == "temporal_dit":
         model = TemporalDiT(
             seq_len=cfg["data"]["seq_len"], patch=m["patch"],
+            N=cfg["data"].get("n_range", 64), K=cfg["data"].get("n_doppler", 64),
             stride=m["stride"], dim=m["dim"], depth=m["depth"],
             heads=m["heads"], attn_mode=m.get("attn_mode", "temporal"),
             patch_reduction=m.get("patch_reduction", "mean"),
@@ -174,16 +194,19 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tr = cfg["train"]
     torch.manual_seed(tr.get("seed", cfg["data"].get("seed", 1234)))
-    ds = RadarSequenceDataset(cfg["data"]["cache_dir"], "train")
+    ds = _dataset(cfg, "train")
     subset = cfg["data"].get("train_subset")
     if subset:
         # scarce-data experiments: the first N training sequences and nothing else
-        ds.items = ds.items[:subset]
+        if hasattr(ds, "items"):
+            ds.items = ds.items[:subset]
+        else:
+            ds = torch.utils.data.Subset(ds, range(min(subset, len(ds))))
     loader = DataLoader(ds, batch_size=tr["batch_size"], shuffle=True,
-                        num_workers=0, drop_last=True)
+                        num_workers=cfg["data"].get("num_workers", 0), drop_last=True)
     val_loader = None
     if tr.get("val_every_epochs"):
-        val_ds = RadarSequenceDataset(cfg["data"]["cache_dir"], "val")
+        val_ds = _dataset(cfg, "val")
         val_loader = DataLoader(
             val_ds, batch_size=tr.get("val_batch_size", tr["batch_size"]),
             shuffle=False, num_workers=0, drop_last=False)
