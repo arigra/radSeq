@@ -159,6 +159,22 @@ class SceneSimulator:
         self.k_idx = torch.arange(k, device=self.device, dtype=torch.float)
 
     # ------------------------------------------------------------ sampling
+    def _rx_noise(self):
+        """Unit-power complex noise per Rx per cell, power summed over the Rx.
+
+        Drawn as the sum of squares of 2*n_rx normals (= Gamma(n_rx, 1)) from
+        a device generator seeded by the sequence's own generator, so a
+        sequence is reproducible from its seed alone; torch.distributions
+        would draw from the global generator instead.
+        """
+        if not hasattr(self, "_dg"):
+            seed = int(torch.randint(2 ** 62, (1,), generator=self.g))
+            self._dg = torch.Generator(device=self.device).manual_seed(seed)
+        z = torch.randn(self.spec.n_range, self.spec.n_doppler, 2 * self.spec.n_rx,
+                        generator=self._dg, device=self.device)
+        return (z ** 2).sum(-1) / 2
+
+    # ------------------------------------------------------------ sampling
     def _u(self, lo, hi, size=()):
         return torch.rand(size, generator=self.g) * (hi - lo) + lo
 
@@ -321,7 +337,7 @@ class SceneSimulator:
             xs, ys, rcs = [sx], [sy - ego_y], [srcs]
             vys, surfs = [torch.zeros_like(sx)], [ssurf]
             frame_labels = []
-            for v in vehicles:
+            for vid, v in enumerate(vehicles):
                 dy = v["vy"] * t
                 xs.append(v["x"]); ys.append(v["y"] + dy - ego_y)
                 rcs.append(v["rcs"]); vys.append(torch.full_like(v["x"], v["vy"]))
@@ -334,6 +350,7 @@ class SceneSimulator:
                 az_c = math.atan2(float(v["cx"]), float(cy))
                 vr_c = (v["vy"] - v_ego) * math.cos(az_c)
                 frame_labels.append({
+                    "id": vid,                  # stable across frames
                     "range_bin": r_c / spec.range_res_m,
                     "doppler_bin": (vr_c / spec.velocity_res_mps) % spec.n_doppler,
                     "kind": v["kind"], "moving": v["moving"]})
@@ -353,11 +370,9 @@ class SceneSimulator:
             power = self._render(rng, az, vr, p, None)
             # thermal noise: unit power per Rx per cell, summed over 16 Rx;
             # not DDMA-replicated (independent from chirp to chirp)
-            noise = torch.distributions.Gamma(float(spec.n_rx), 1.0).sample(
-                (spec.n_range, spec.n_doppler)).to(self.device)
+            noise = self._rx_noise()
             filtered = (power + noise) * (10 ** (self.rx_gain_db / 10)).unsqueeze(1)
-            adc = torch.distributions.Gamma(float(spec.n_rx), 1.0).sample(
-                (spec.n_range, spec.n_doppler)).to(self.device)
+            adc = self._rx_noise()
             total = filtered + adc * 10 ** (-sc.thermal_over_adc_db / 10)
             frames.append(10 * torch.log10(total + 1e-12).cpu())
             labels.append(frame_labels)
