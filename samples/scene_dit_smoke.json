@@ -1,0 +1,111 @@
+{
+  "A_p16_s16": {
+    "run": {
+      "patch": 16,
+      "shift": 16.0
+    },
+    "last_validation": "2026-09-21 15:19:09 | validation epoch=3 total=0.379449 dit=0.379449 smooth=0.037015 physics=0.000000 research=0.000000 best=0.379449 bad_epochs=0",
+    "generated": {
+      "dynamic range (0.1-99.9%)": 43.07393848609954,
+      "range-profile spread": 25.066036224365234,
+      "Doppler-profile spread": 0.8474540710449219,
+      "near range (0-4 m) vs mid": -13.628628730773926,
+      "far range (>98 m) vs mid": -5.638737678527832
+    },
+    "simulated": {
+      "dynamic range (0.1-99.9%)": 57.1953125,
+      "range-profile spread": 26.0703125,
+      "Doppler-profile spread": 0.484375,
+      "near range (0-4 m) vs mid": -12.954833984375,
+      "far range (>98 m) vs mid": -5.044921875
+    }
+  },
+  "B_p16_s4": {
+    "run": {
+      "patch": 16,
+      "shift": 4.0
+    },
+    "last_validation": "2026-09-21 15:57:55 | validation epoch=3 total=0.326312 dit=0.326312 smooth=0.110907 physics=0.000000 research=0.000000 best=0.326312 bad_epochs=0",
+    "generated": {
+      "dynamic range (0.1-99.9%)": 43.139253942490214,
+      "range-profile spread": 25.239686965942383,
+      "Doppler-profile spread": 0.7557601928710938,
+      "near range (0-4 m) vs mid": -12.757354736328125,
+      "far range (>98 m) vs mid": -4.763396263122559
+    },
+    "simulated": {
+      "dynamic range (0.1-99.9%)": 57.1953125,
+      "range-profile spread": 26.0703125,
+      "Doppler-profile spread": 0.484375,
+      "near range (0-4 m) vs mid": -12.954833984375,
+      "far range (>98 m) vs mid": -5.044921875
+    }
+  },
+  "C_p32_s16": {
+    "run": {
+      "patch": 32,
+      "shift": 16.0
+    },
+    "last_validation": "2026-09-21 16:04:11 | validation epoch=3 total=0.410924 dit=0.410924 smooth=0.071522 physics=0.000000 research=0.000000 best=0.410924 bad_epochs=0",
+    "generated": {
+      "dynamic range (0.1-99.9%)": 49.628400844574145,
+      "range-profile spread": 29.002063751220703,
+      "Doppler-profile spread": 1.559377670288086,
+      "near range (0-4 m) vs mid": -13.742554664611816,
+      "far range (>98 m) vs mid": -5.614368438720703
+    },
+    "simulated": {
+      "dynamic range (0.1-99.9%)": 57.1953125,
+      "range-profile spread": 26.0703125,
+      "Doppler-profile spread": 0.484375,
+      "near range (0-4 m) vs mid": -12.954833984375,
+      "far range (>98 m) vs mid": -5.044921875
+    }
+  },
+  "B_long": {
+    "run": {
+      "patch": 16,
+      "shift": 4.0,
+      "epochs": 20,
+      "ema": 0.9995
+    },
+    "last_validation": "2026-09-21 17:36:14 | validation epoch=20 total=0.232276 dit=0.232276 smooth=0.189716 physics=0.000000 research=0.000000 best=0.232276 bad_epochs=0",
+    "generated": {
+      "dynamic range (0.1-99.9%)": 42.063484565736545,
+      "range-profile spread": 23.061111450195312,
+      "Doppler-profile spread": 0.21068096160888672,
+      "near range (0-4 m) vs mid": -12.923612594604492,
+      "far range (>98 m) vs mid": -4.9416399002075195
+    },
+    "simulated": {
+      "dynamic range (0.1-99.9%)": 57.1953125,
+      "range-profile spread": 26.0703125,
+      "Doppler-profile spread": 0.484375,
+      "near range (0-4 m) vs mid": -12.954833984375,
+      "far range (>98 m) vs mid": -5.044921875
+    }
+  },
+  "A_long": {
+    "run": {
+      "patch": 16,
+      "shift": 16.0,
+      "epochs": 20,
+      "ema": 0.9995
+    },
+    "last_validation": "2026-09-21 21:29:25 | validation epoch=20 total=0.295191 dit=0.295191 smooth=0.121733 physics=0.000000 research=0.000000 best=0.295191 bad_epochs=0",
+    "generated": {
+      "dynamic range (0.1-99.9%)": 49.99837238311782,
+      "range-profile spread": 25.376235961914062,
+      "Doppler-profile spread": 0.217926025390625,
+      "near range (0-4 m) vs mid": -13.259015083312988,
+      "far range (>98 m) vs mid": -5.101823806762695
+    },
+    "simulated": {
+      "dynamic range (0.1-99.9%)": 57.1953125,
+      "range-profile spread": 26.0703125,
+      "Doppler-profile spread": 0.484375,
+      "near range (0-4 m) vs mid": -12.954833984375,
+      "far range (>98 m) vs mid": -5.044921875
+    }
+  }
+}
