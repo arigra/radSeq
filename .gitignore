@@ -19,3 +19,4 @@ configs/*_bs[0-9]*.yaml
 !data/radial/
 !data/radial/split.json
 !data/radial/range_gain_db.npy
+attic/

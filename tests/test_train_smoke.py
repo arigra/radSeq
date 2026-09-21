@@ -163,3 +163,33 @@ def test_train_subset_uses_only_the_first_n_training_sequences(tmp_path):
     generate_cache(cfg["data"]["cache_dir"], 4, 2, seq_len=16, seed=7, shard_size=4)
     train(cfg, device=torch.device("cpu"))
     assert torch.load(tmp_path / "ckpt" / "last.pt", map_location="cpu")["step"] == 1
+
+
+def test_ema_residual_measures_how_much_initialisation_survives():
+    """EMA 0.9999 needs tens of thousands of steps. The fidelity pilot's
+    7,480-step pretraining kept 47% of the random initialisation in its EMA
+    weights, and the samples drawn from them landed only 8% of targets."""
+    from src.train import ema_residual
+    assert abs(ema_residual(0.9999, 7480) - 0.47) < 0.01
+    assert ema_residual(0.9999, 39700) < 0.03
+    assert ema_residual(None, 100) == 0.0
+
+
+def test_init_weights_raw_warm_starts_from_the_trained_weights_not_the_ema(tmp_path):
+    torch.manual_seed(0)
+    base_cfg = _tiny_config(tmp_path / "base")
+    base_cfg["model"].update(patch=8, stride=8, attn_mode="factorized", cond_channels=4)
+    base_cfg["train"]["ema_decay"] = 0.9999
+    generate_cache(base_cfg["data"]["cache_dir"], 4, 2, seq_len=16, seed=7, shard_size=4)
+    train(base_cfg, device=torch.device("cpu"), max_steps=3)
+    src_state = torch.load(tmp_path / "base" / "ckpt" / "last.pt", map_location="cpu")
+
+    cfg = _tiny_config(tmp_path / "ft")
+    cfg["data"]["cache_dir"] = base_cfg["data"]["cache_dir"]
+    cfg["model"].update(patch=8, stride=8, attn_mode="factorized", cond_channels=4)
+    cfg["train"].update(init_from=str(tmp_path / "base" / "ckpt" / "last.pt"),
+                        init_weights="raw", lr=0.0)
+    train(cfg, device=torch.device("cpu"), max_steps=1)
+    got = torch.load(tmp_path / "ft" / "ckpt" / "last.pt", map_location="cpu")["model"]
+    assert all(torch.equal(got[k], src_state["model"][k]) for k in src_state["model"])
+    assert not all(torch.equal(got[k], src_state["ema_model"][k]) for k in src_state["model"])

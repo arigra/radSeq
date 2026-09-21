@@ -157,6 +157,18 @@ def _save_checkpoint(path, model, encoder, optimizer, cfg, epoch, step,
     tmp.replace(path)
 
 
+def ema_residual(decay, steps):
+    """Share of the initial weights still present in an EMA after `steps`.
+
+    EMA at 0.9999 has a ~10,000-step memory. Sampled after a short run it is
+    largely the random initialisation, which silently yields a model that
+    ignores its conditioning while the raw weights are fine.
+    """
+    if decay is None:
+        return 0.0
+    return float(decay) ** int(steps)
+
+
 def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
           log_file=None):
     device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -208,9 +220,18 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         best_val = state.get("best_val", float("inf"))
         bad_epochs = state.get("bad_epochs", 0)
     if tr.get("init_from") and resume_state is None:
-        # warm start from an unconditional checkpoint; EMA weights if it has them
+        # Warm start. EMA weights by default, but only a long run warms its EMA
+        # up: a short pretraining's EMA is still mostly random initialisation
+        # (see ema_residual), so short runs must set init_weights: raw.
         source = torch.load(tr["init_from"], map_location="cpu")
-        load_unconditional_weights(model, source.get("ema_model") or source["model"])
+        init_weights = tr.get("init_weights", "ema")
+        if init_weights == "ema":
+            state = source.get("ema_model") or source["model"]
+        elif init_weights == "raw":
+            state = source["model"]
+        else:
+            raise ValueError("train.init_weights must be 'ema' or 'raw'")
+        load_unconditional_weights(model, state)
     ema_decay = tr.get("ema_decay")
     if ema_decay is not None and not 0.0 <= ema_decay < 1.0:
         raise ValueError("train.ema_decay must be in [0, 1)")
@@ -259,6 +280,12 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
                tr.get("smooth_weight", "one_minus_alpha_bar"), diff.x0_clamp)
            + " param={} loss_weighting={}".format(
                diff.parameterization, tr.get("loss_weighting", "none")))
+    residual = ema_residual(ema_decay, tr["epochs"] * len(loader))
+    if residual > 0.1:
+        report("WARNING ema_decay={} over {} steps keeps {:.0%} of the initial "
+               "weights in the EMA; sampling from it gives a partly untrained "
+               "model. Lower ema_decay or sample raw weights.".format(
+                   ema_decay, tr["epochs"] * len(loader), residual))
     losses = []
     fixed_batch = next(iter(loader)) if _record_losses else None
     fixed_t = (torch.randint(0, diff.T, (tr["batch_size"],), device=device)

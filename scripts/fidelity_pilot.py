@@ -70,6 +70,17 @@ def train_stage(cfg_path, ckpt_dir):
     done.touch()
 
 
+MIN_HIT_RATE = 0.7
+
+
+def synthetic_hit_rate(folder, n=128):
+    """Share of requested targets the rendered sequences actually contain."""
+    from src.eval.adherence import trajectory_adherence
+    part = torch.load(Path(folder) / "part_0.pt", map_location="cpu")
+    return trajectory_adherence(part["x"][:n].float(), part["traj"][:n],
+                                part["n_targets"][:n])["hit_rate"]
+
+
 def write_config(path, **over):
     """A conditional-DiT config sized for a pilot rather than a final model."""
     cfg = {
@@ -84,7 +95,9 @@ def write_config(path, **over):
         "train": {"seed": 2026, "batch_size": 32, "lr": 1.0e-4,
                   "weight_decay": 0.0, "epochs": 40, "lambda_smooth": 0.0,
                   "lambda_traj": 0.01, "lambda_doppler": 0.01, "amp": "bf16",
-                  "ema_decay": 0.9999, "phase": 1, "cond_dropout": 0.1,
+                  # 0.999 suits a ~7k-step pilot; 0.9999 left 47% of the
+                  # random init in the EMA and broke every sample drawn from it
+                  "ema_decay": 0.999, "phase": 1, "cond_dropout": 0.1,
                   "log_every_steps": 200, "save_every_steps": 1000,
                   "val_every_epochs": 10, "val_batch_size": 32,
                   "val_seed": 4321, "wandb": False},
@@ -146,6 +159,10 @@ def main():
                   "train_subset": args.n_real},
             train={"epochs": args.finetune_epochs,
                    "init_from": str(pre_ckpt / "last.pt"),
+                   # raw weights: a short pretraining's EMA is not warmed up
+                   "init_weights": "raw",
+                   # ~1,800 fine-tuning steps need a short EMA memory
+                   "ema_decay": 0.995,
                    "ckpt_dir": str(ft_ckpt),
                    "log_file": f"logs/pilot_ft_{tag}.log"})
         train_stage(cfg, ft_ckpt)
@@ -156,6 +173,16 @@ def main():
              "--n-labels", args.n_real, "--repeats", args.repeats,
              "--guidance", 1.0, "--out", synth])
 
+        # 3b. gate: the synthetic labels must be right before a detector learns
+        # from them. The first pilot run fed the D arm sequences whose targets
+        # landed on their labels 8-16% of the time, and it looked like a result.
+        hit = synthetic_hit_rate(synth)
+        print(f"synthetic hit rate for delta {key}: {hit:.2f}", flush=True)
+        if hit < MIN_HIT_RATE:
+            raise SystemExit(f"generator for delta {key} puts only {hit:.0%} of "
+                             f"targets where requested (< {MIN_HIT_RATE:.0%}); "
+                             "refusing to train detectors on its output")
+
         # 4. detector arms
         out = f"samples/pilot_detector_{tag}.json"
         if not Path(out).exists():
@@ -165,6 +192,7 @@ def main():
                  "--steps", args.detector_steps, "--seeds", args.seeds,
                  "--out", out])
         results[key] = {"delta_db": delta, "done": True,
+                        "synthetic_hit_rate": hit,
                         "detector": json.loads(Path(out).read_text())}
         Path(args.out).write_text(json.dumps(
             {"knob": "target brightness offset (dB)", "n_real": args.n_real,
