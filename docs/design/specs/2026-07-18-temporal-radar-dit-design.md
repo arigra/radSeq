@@ -132,7 +132,7 @@ radSeq/
     viz.py            # grids / GIFs
     eval/metrics.py   # physics metrics, CFAR reuse
   tests/
-  docs/superpowers/specs/
+  docs/design/specs/
 ```
 
 ## 7. Testing

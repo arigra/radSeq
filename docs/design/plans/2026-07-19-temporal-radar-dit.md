@@ -8,7 +8,7 @@
 
 **Tech Stack:** PyTorch (existing env), numpy, scipy (peak detection), matplotlib + imageio (viz), pytest, wandb (optional logging), PyYAML.
 
-**Spec:** `docs/superpowers/specs/2026-07-18-temporal-radar-dit-design.md` — read it before starting any task.
+**Spec:** `docs/design/specs/2026-07-18-temporal-radar-dit-design.md` — read it before starting any task.
 
 ## Global Constraints
 

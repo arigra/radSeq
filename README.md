@@ -17,6 +17,7 @@ If this generator will produce the sequences properly, and we could fine-tune it
 | `samples/` | step 3 results | current |
 | `logs/` | step 3 run logs (not in git) | current |
 | `docs/notes/` | dated lab notes, one per experiment, with pre-set rules and verdicts | reference |
+| `docs/design/` | design specs and implementation plans (original DiT, trajectory conditioning) | reference |
 | `experiments/dit_64/` | the 64×64 DiT: training pipelines, scoring, diagnostics, results | finished, runnable |
 | `experiments/step2_detector/` | step 2: does generated data help a detector | finished, runnable |
 | `experiments/radial_facts/` | how RADIal's grid and mislabelled label columns were established | finished |
@@ -66,6 +67,12 @@ sbatch scripts/pretrain.sbatch             # resumes from the last checkpoint; s
   `e3_long_bs32` (full, passes the four checks), `cond_traj_bs32` (trajectory-conditioned).
 - **Step 2, generated data for a detector** — `experiments/step2_detector/`; note
   `docs/notes/2026-09-17-step2-synthetic-augmentation.md`. Checkpoint: `cond_traj_n2000_bs32`.
+
+## Other files
+
+- `requirements.txt` — Python packages; `.gitignore` — what git does not track.
+- `__pycache__/`, `.pytest_cache/` — throwaway caches Python and pytest recreate on every run.
+- `data/cache`, `data/cache_easy` — the 64×64 datasets (not throwaway).
 
 ## Environment
 

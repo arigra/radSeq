@@ -8,7 +8,7 @@
 
 **Tech Stack:** PyTorch 2.12 (`/truenas/home/arigra/.venv/bin/python`), pytest, existing radSeq modules (`src/dit.py`, `src/train.py`, `src/sample.py`, `src/eval/metrics.py`).
 
-Spec: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
+Spec: `docs/design/specs/2026-09-17-trajectory-conditioning-design.md`.
 
 ## Global Constraints
 
@@ -788,7 +788,7 @@ if __name__ == "__main__":
 
 ```yaml
 # Trajectory-conditioned DiT (research plan step 1). Warm-starts from the passing
-# unconditional full-data model. Design: docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md
+# unconditional full-data model. Design: docs/design/specs/2026-09-17-trajectory-conditioning-design.md
 # Rule: docs/notes/2026-09-17-trajectory-conditioning.md. Run by experiments/dit_64/run_cond_traj.sh.
 data:
   n_train: 20000
@@ -924,7 +924,7 @@ Then: `chmod +x experiments/dit_64/run_cond_traj.sh experiments/dit_64/cond_traj
 
 Written before the run. Research plan step 1: the DiT generates the targets it
 is asked for, so synthetic sequences come with exact labels.
-Design: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
+Design: `docs/design/specs/2026-09-17-trajectory-conditioning-design.md`.
 
 ## Setup
 

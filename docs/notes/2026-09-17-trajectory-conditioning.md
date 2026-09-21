@@ -2,7 +2,7 @@
 
 Written before the run. Research plan step 1: the DiT generates the targets it
 is asked for, so synthetic sequences come with exact labels.
-Design: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
+Design: `docs/design/specs/2026-09-17-trajectory-conditioning-design.md`.
 
 ## Setup
 
