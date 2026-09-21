@@ -96,17 +96,24 @@ def load_trajectory_conditioned(ckpt_path, device, weights="ema"):
 
 @torch.no_grad()
 def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance=2.0, seed=None):
-    """Guided sampling with an already loaded model; returns dB maps (B, L, 64, 64).
+    """Guided sampling with an already loaded model; returns dB maps (B, L, N, K).
 
     Classifier-free guidance on the network output:
     uncond + guidance * (cond - uncond), where uncond sees an all-zero
     condition map.
     """
-    from src.trajectory_condition import render_condition
+    from src.trajectory_condition import render_condition, render_vehicle_condition
 
     diff = diffusion_from_config(cfg["diffusion"])
-    cond_map = render_condition(labels["traj"].to(device), labels["n_targets"].to(device),
-                                labels["cls"].to(device))
+    N, K = cfg["data"].get("n_range", 64), cfg["data"].get("n_doppler", 64)
+    if "present" in labels:          # RADIal-grid scenes: vehicle positions only
+        cond_map = render_vehicle_condition(labels["traj"].to(device),
+                                            labels["present"].to(device),
+                                            n_range=N, n_doppler=K)
+    else:
+        cond_map = render_condition(labels["traj"].to(device),
+                                    labels["n_targets"].to(device),
+                                    labels["cls"].to(device))
     null = torch.zeros_like(cond_map)
 
     def guided(xt, t, _cond=None):
@@ -118,7 +125,7 @@ def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance
     B, L = labels["traj"].shape[0], cfg["data"]["seq_len"]
     if seed is not None:
         torch.manual_seed(seed)
-    x = diff.ddim_sample(guided, (B, L, 64, 64), device, steps=steps)
+    x = diff.ddim_sample(guided, (B, L, N, K), device, steps=steps)
     stats = torch.load(resolve_cache_dir(cfg["data"]["cache_dir"]) / "stats.pt",
                        map_location="cpu")
     return denormalize(x.float().cpu(), stats)
