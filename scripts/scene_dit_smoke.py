@@ -30,7 +30,12 @@ RUNS = {
     "A_p16_s16": {"patch": 16, "shift": 16.0},
     "B_p16_s4": {"patch": 16, "shift": 4.0},
     "C_p32_s16": {"patch": 32, "shift": 16.0},
+    # After 2,250 steps none had learned the DDMA copies; C showed 32x32 block
+    # artifacts and was dropped. The two patch-16 settings get a long run each.
+    "B_long": {"patch": 16, "shift": 4.0, "epochs": 20, "ema": 0.9995},
+    "A_long": {"patch": 16, "shift": 16.0, "epochs": 20, "ema": 0.9995},
 }
+DEFAULT_RUNS = "A_p16_s16,B_p16_s4,C_p32_s16,B_long,A_long"
 
 
 def config(name, run, cache, epochs):
@@ -44,15 +49,17 @@ def config(name, run, cache, epochs):
                       "schedule_shift": run["shift"], "x0_clamp": "off",
                       "terminal_x0": "mean"},
         "train": {"seed": 2026, "batch_size": 8, "lr": 1.0e-4, "weight_decay": 0.0,
-                  "epochs": epochs, "lambda_smooth": 0.0, "lambda_traj": 0.0,
-                  "lambda_doppler": 0.0, "amp": "bf16", "ema_decay": 0.998,
+                  "epochs": run.get("epochs", epochs), "lambda_smooth": 0.0,
+                  "lambda_traj": 0.0, "lambda_doppler": 0.0, "amp": "bf16",
+                  "ema_decay": run.get("ema", 0.998),
                   "phase": 1, "cond_dropout": 0.1,
                   "ckpt_dir": f"checkpoints/scene_smoke_{name}",
                   "log_file": f"logs/scene_smoke_{name}.log",
                   "log_every_steps": 100, "save_every_steps": 500,
                   "val_every_epochs": 1, "val_batch_size": 8, "val_seed": 4321,
                   "wandb": False},
-        "sample": {"ddim_steps": 30, "weights": "raw"},
+        # short runs: EMA not warmed up, sample raw; long runs: EMA
+        "sample": {"ddim_steps": 30, "weights": "ema" if "ema" in run else "raw"},
     }
 
 
@@ -60,8 +67,9 @@ def evaluate(name, cache, device, n=8):
     from src import radial
     from src.sample import load_trajectory_conditioned, sample_trajectory_conditioned
     from src.scene_data import SceneSequenceDataset
+    weights = "ema" if "ema" in RUNS[name] else "raw"
     model, cfg = load_trajectory_conditioned(
-        f"checkpoints/scene_smoke_{name}/last.pt", device, weights="raw")
+        f"checkpoints/scene_smoke_{name}/last.pt", device, weights=weights)
     val = SceneSequenceDataset(cache, "val", normalise=False)
     labels = {"traj": val.traj[:n], "present": val.present[:n]}
     x = sample_trajectory_conditioned(model, cfg, labels, device, steps=30,
@@ -77,7 +85,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", default="data/scene_engineer")
     ap.add_argument("--epochs", type=int, default=3)
-    ap.add_argument("--runs", default=",".join(RUNS))
+    ap.add_argument("--runs", default=DEFAULT_RUNS)
     ap.add_argument("--out", default="samples/scene_dit_smoke.json")
     a = ap.parse_args()
     device = torch.device("cuda")
