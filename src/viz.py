@@ -456,10 +456,15 @@ def show_camera_rd(image, rd_map, vehicles, title="", ddma_offsets=(), range_res
     """Camera image and RD map of one frame, vehicles numbered alike in both.
 
     In the RD map the numbered circle is the vehicle's label (its Tx0 copy);
-    small ticks mark its other DDMA copies, one per transmitter.
+    small arrows just above the row point at its other DDMA copies, one per
+    transmitter.
     """
     import matplotlib.patches as patches
-    colours = plt.cm.tab10.colors
+    import matplotlib.patheffects as pe
+    # High contrast on both a photo and the viridis RD map; the default tab10
+    # blue vanishes against viridis' dark blue-green.
+    colours = ("red", "white", "magenta", "orange", "black", "cyan")
+    outline = [pe.withStroke(linewidth=3, foreground="black")]
     fig, (a, b) = plt.subplots(1, 2, figsize=(13, 3.8),
                                gridspec_kw={"width_ratios": [1.6, 1]})
     a.imshow(image)
@@ -475,12 +480,17 @@ def show_camera_rd(image, rd_map, vehicles, title="", ddma_offsets=(), range_res
         x1, y1, x2, y2 = v["box"]
         a.add_patch(patches.Rectangle((x1, y1), x2 - x1, y2 - y1, fill=False,
                                       ec=c, lw=2))
-        a.text(x1, y1 - 4, str(n), color=c, fontsize=12, weight="bold")
+        a.text(x1, y1 - 4, str(n), color=c, fontsize=13, weight="bold",
+               path_effects=outline)
         r = v["range_bin"] * range_res_m
+        # just above the row, pointing down, so the copies themselves stay visible
         for off in ddma_offsets[1:]:
-            b.plot((v["doppler_bin"] + off) % m.shape[1], r, "|", color=c, ms=8, mew=1.5)
-        b.plot(v["doppler_bin"], r, "o", mfc="none", mec=c, ms=11, mew=2)
-        b.text(v["doppler_bin"] + 4, r + 2, str(n), color=c, fontsize=12, weight="bold")
+            b.plot((v["doppler_bin"] + off) % m.shape[1], r + 3.5, "v", color=c, ms=7,
+                   mec="black", mew=0.8)
+        b.plot(v["doppler_bin"], r, "o", mfc="none", mec=c, ms=13, mew=2.5,
+               path_effects=outline)
+        b.text(v["doppler_bin"] + 5, r + 3, str(n), color=c, fontsize=13,
+               weight="bold", path_effects=outline)
     if title:
         fig.suptitle(title)
     fig.tight_layout()
