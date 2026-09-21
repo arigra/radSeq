@@ -152,7 +152,8 @@ class TemporalRadarSimulator:
 
     def __init__(self, seq_len=16, frame_interval=0.5, max_targets=5,
                  rho_clutter=None, scnr=None, nu=None, clutter=True, noise=True,
-                 force_class=None, geometry=None, a_max=None):
+                 force_class=None, geometry=None, a_max=None,
+                 sigma_f=0.05, n_looks=1, range_gain_db=None):
         self.geometry = geometry or RadarGeometry()
         g = self.geometry
         self.N, self.K = g.N, g.K
@@ -167,6 +168,17 @@ class TemporalRadarSimulator:
         self.clutter = clutter
         self.noise = noise
         self.force_class = force_class
+        self.sigma_f = sigma_f
+        # Non-coherent integration. RADIal's maps sum power over receive
+        # channels, which suppresses speckle; a single look cannot reproduce
+        # that dB spread however the clutter is tuned.
+        self.n_looks = int(n_looks)
+        # Receiver range response (blind zone, peak, far roll-off), fitted from
+        # real recordings rather than assumed. dB, one value per range bin.
+        self.range_gain_db = (None if range_gain_db is None
+                              else torch.as_tensor(range_gain_db, dtype=torch.float))
+        if self.range_gain_db is not None and len(self.range_gain_db) != self.N:
+            raise ValueError(f"range_gain_db must have {self.N} entries")
 
         self.r_min, self.r_max, self.dr = 0.0, g.r_max, g.dr
         # Doppler grid MUST match generate_doppler_steering_matrix exactly:
@@ -359,20 +371,35 @@ class TemporalRadarSimulator:
         nu = (float(torch.empty(1).uniform_(0.1, 1.5).item()) if self.nu is None
               else float(self.nu))
 
-        C = (self._clutter_frames(rho, nu) if self.clutter
-             else torch.zeros(self.L, self.N, self.K, dtype=torch.cfloat))
         frames, s_energy, cn_energy = [], 0.0, 0.0
+        # The target signal is common to every look (the array sees one scene);
+        # clutter and noise are redrawn per look and the powers are averaged.
+        looks = [(self._clutter_frames(rho, nu, self.sigma_f) if self.clutter
+                  else torch.zeros(self.L, self.N, self.K, dtype=torch.cfloat))
+                 for _ in range(self.n_looks)]
         for l in range(self.L):
             S = self._frame_targets(r[:, l], v[:, l], gain_db, cls)
-            W = (torch.randn(self.N, self.K, dtype=torch.cfloat)
-                 / torch.sqrt(torch.tensor(2.0 * self.sigma2)))
-            if not self.noise:
-                W = torch.zeros_like(W)  # still drawn, so the random stream stays aligned
-            X = S + C[l] + W
-            s_energy += S.abs().pow(2).sum().item()
-            cn_energy += (C[l] + W).abs().pow(2).sum().item()
-            rd = create_rd_map(X, self.geometry)
-            frames.append(20 * torch.log10(rd.abs() + 1e-6))
+            rds = []
+            for C in looks:
+                W = (torch.randn(self.N, self.K, dtype=torch.cfloat)
+                     / torch.sqrt(torch.tensor(2.0 * self.sigma2)))
+                if not self.noise:
+                    W = torch.zeros_like(W)  # still drawn: keeps the stream aligned
+                X = S + C[l] + W
+                s_energy += S.abs().pow(2).sum().item()
+                cn_energy += (C[l] + W).abs().pow(2).sum().item()
+                rds.append(create_rd_map(X, self.geometry))
+            if self.n_looks == 1 and self.range_gain_db is None:
+                # Historical single-look path, kept as the literal expression
+                # it shipped with: the cached training set and every trained
+                # checkpoint depend on it, and 10*log10(|rd|^2 + 1e-12) is not
+                # bit-identical to it.
+                frames.append(20 * torch.log10(rds[0].abs() + 1e-6))
+            else:
+                power = sum(r.abs().pow(2) for r in rds) / self.n_looks
+                if self.range_gain_db is not None:
+                    power = power * (10 ** (self.range_gain_db / 10)).unsqueeze(1)
+                frames.append(10 * torch.log10(power + 1e-12))
         scnr_dB = 10 * torch.log10(torch.tensor(s_energy / (cn_energy + 1e-12)))
         return {
             "x": torch.stack(frames).float(),

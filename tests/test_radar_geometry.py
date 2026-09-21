@@ -48,3 +48,64 @@ def test_geometries_do_not_contaminate_each_others_cached_matrices():
     assert big.gen_sequence(n_targets=1)["x"].shape == (2, 512, 256)
     assert small.gen_sequence(n_targets=1)["x"].shape == (2, 64, 64)
     assert big.gen_sequence(n_targets=1)["x"].shape == (2, 512, 256)
+
+
+def test_clutter_doppler_spread_is_fittable():
+    """RADIal's background is flat in Doppler (ego motion smears static
+    clutter); the shipped sigma_f=0.05 makes a narrow ridge on a 256-bin
+    Doppler axis, so it has to be a fit parameter rather than a literal."""
+    narrow = TemporalRadarSimulator(seq_len=2, sigma_f=0.01, noise=False)
+    wide = TemporalRadarSimulator(seq_len=2, sigma_f=0.5, noise=False)
+    torch.manual_seed(0)
+    a = narrow.gen_sequence(n_targets=1)["x"]
+    torch.manual_seed(0)
+    b = wide.gen_sequence(n_targets=1)["x"]
+    spread = lambda x: float(x.median(dim=0).values.median(dim=0).values.max()
+                             - x.median(dim=0).values.median(dim=0).values.min())
+    assert spread(b) < spread(a), (spread(a), spread(b))
+
+
+def test_non_coherent_looks_suppress_speckle():
+    """RADIal maps sum power over receive channels, which narrows the dB
+    histogram. A single-look simulator spans ~120 dB where RADIal spans ~76,
+    and no clutter setting closes that -- only integration does."""
+    one = TemporalRadarSimulator(seq_len=2, geometry=RADIAL_GEOMETRY, n_looks=1)
+    many = TemporalRadarSimulator(seq_len=2, geometry=RADIAL_GEOMETRY, n_looks=8)
+    torch.manual_seed(0)
+    a = one.gen_sequence(n_targets=1)["x"]
+    torch.manual_seed(0)
+    b = many.gen_sequence(n_targets=1)["x"]
+    assert (b.max() - b.min()) < (a.max() - a.min()) - 20.0
+
+
+def test_range_gain_profile_shapes_the_background():
+    """The receiver's range response (blind zone, peak, far roll-off) is fitted
+    from RADIal rather than assumed, so the simulator must accept it."""
+    gain = torch.zeros(RADIAL_GEOMETRY.N)
+    gain[:64] = -30.0
+    sim = TemporalRadarSimulator(seq_len=2, geometry=RADIAL_GEOMETRY,
+                                 range_gain_db=gain)
+    x = sim.gen_sequence(n_targets=1)["x"]
+    near = float(x[:, :64].median())
+    far = float(x[:, 64:].median())
+    assert near < far - 20.0, (near, far)
+
+
+def test_default_geometry_ignores_looks_and_gain_by_default():
+    sim = TemporalRadarSimulator(seq_len=2)
+    assert sim.n_looks == 1 and sim.range_gain_db is None
+
+
+def test_single_look_path_stays_bit_identical_to_the_shipped_simulator():
+    """Pinned against sequences drawn before the geometry/multi-look rework.
+
+    Every cached training sequence and every trained checkpoint came from this
+    exact expression, so a silent drift here would invalidate them while all
+    the behavioural tests still passed.
+    """
+    from pathlib import Path
+    from src.simulator import generate_sequences
+    ref = torch.load(Path(__file__).parent / "data" / "simulator_reference.pt")
+    got = generate_sequences(n=1, seed=4321)
+    assert torch.equal(got["x"][:, :2], ref["x"])
+    assert torch.equal(got["traj"], ref["traj"])

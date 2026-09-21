@@ -69,3 +69,55 @@ clutter already produces a comparably flat background.
 The two real gaps are geometric (grid) and the target contrast: **our targets are
 ~14 dB easier to see than real vehicles**. That single number is the clearest
 quantification of the sim-to-real gap so far, and it is a CNR/SCNR fit parameter.
+
+## Fitted simulator (2026-09-21)
+
+Fit on TRAINING recordings only (scripts/fit_simulator_to_radial.py); val/test
+recordings are untouched so the "simulator" arm carries no real test data.
+
+Three model deficiencies were found by measurement, not assumed:
+1. **Single look.** RADIal's maps sum power over 16 receive channels, which
+   suppresses speckle; our single-look maps spanned 131 dB against RADIal's 80.
+   No clutter setting closes that -- only non-coherent integration does.
+   Fitted `n_looks = 8` (the 16 channels are correlated, so they are not 16
+   independent looks).
+2. **No receiver range response.** RADIal has a near blind zone (bins 0-3,
+   ~-21 dB), a peak near 12 m, a gentle ~5 dB falloff, and a sharp roll-off
+   past ~96 m (~-18 dB). Our clutter was uniform in range. The response is
+   *fitted from the training recordings* as a per-bin dB gain, transferring
+   only the shape (both profiles are referenced to their own median).
+3. **Targets far too bright.** The shipped target gain U(-5, 10) dB had to drop
+   to **U(-35, -20) dB** -- a 25 dB correction. The original simulator made
+   targets roughly 25 dB easier to see than real vehicles.
+
+### Residuals of the fitted simulator (sim - real, dB)
+| statistic | RADIal | fitted sim | residual |
+|---|---|---|---|
+| target prominence over range ring | 23.98 | 22.54 | -1.44 |
+| dynamic range | 80.27 | 76.60 | -3.67 |
+| Doppler profile spread | 2.54 | 2.32 | -0.22 |
+| range profile spread | 24.26 | 25.34 | +1.08 |
+
+Parameters in `configs/radial_sim.yaml`, range response in
+`data/radial/range_gain_db.npy`, full sweep in `samples/simulator_fit_radial.json`.
+
+This is deliberately a *good* baseline: a strawman simulator would make the
+generator look good for the wrong reason. What it still cannot model is real
+vehicle scattering (multiple scatterers, micro-Doppler, aspect dependence),
+which is the residual the DiT is supposed to capture and what the
+target-centred check will test.
+
+## Split, pinned (data/radial/split.json)
+Whole recordings, balanced by the sequences each contributes (recordings differ
+~20x in length; assigning them independently left val with 6 of 219 sequences).
+
+| split | recordings | frames | 16-frame sequences |
+|---|---|---|---|
+| train | 67 | 4544 | 153 |
+| val | 9 | 1016 | 22 |
+| test | 13 | 1627 | 44 |
+
+**Only 219 independent 16-frame sequences exist in all of RADIal.** That is far
+scarcer than the 2,000 used in the step 2 rehearsal, and it is the dominant
+constraint on everything downstream: overlapping windows (stride 4) raise train
+to 525 but they are near-duplicates, and 8-frame sequences would give 387.

@@ -1,0 +1,10 @@
+{
+  "checkpoint": "checkpoints/cond_traj_n2000_bs32/last.pt",
+  "n": 128,
+  "guidance": 1.0,
+  "median_rms_training_labels": 0.7950910329818726,
+  "median_rms_heldout_labels": 1.1119860410690308,
+  "median_rms_unrelated_real_pairs": 1.4227327108383179,
+  "ratio_training_over_heldout": 0.7150188684463501,
+  "memorising": true
+}

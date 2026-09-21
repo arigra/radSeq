@@ -1,0 +1,12 @@
+# Simulator fitted to RADIal training recordings (scripts/fit_simulator_to_radial.py).
+# Residuals vs real, in dB: prominence -1.44,
+# dynamic range -3.67,
+# Doppler spread -0.22,
+# range spread +1.08.
+simulator:
+  geometry: radial            # 512 x 256, 0.2 m per range bin, ~0.1 m/s per Doppler bin
+  n_looks: 8                 # non-coherent integration over receive channels
+  sigma_f: 0.1
+  cnr_db: 15.0
+  target_gain_db: [-35.0, -20.0]
+  range_gain_db: data/radial/range_gain_db.npy
