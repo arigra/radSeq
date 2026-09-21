@@ -1,0 +1,26 @@
+{
+  "real": {
+    "target_prominence_db": 24.913970947265625,
+    "dynamic_range_db": 88.38938903808594,
+    "doppler_profile_spread_db": 2.8329849243164062,
+    "range_profile_spread_db": 24.976882934570312
+  },
+  "sim": {
+    "target_prominence_db": 64.17546081542969,
+    "dynamic_range_db": 160.93557739257812,
+    "doppler_profile_spread_db": 2.162384033203125,
+    "range_profile_spread_db": 80.99547576904297
+  },
+  "gap": {
+    "target_prominence_db": 39.26148986816406,
+    "dynamic_range_db": 72.54618835449219,
+    "doppler_profile_spread_db": -0.6706008911132812,
+    "range_profile_spread_db": 56.018592834472656
+  },
+  "spec": "RADIal",
+  "seq_len": 8,
+  "n_real_frames": 350,
+  "n_real_vehicles": 363,
+  "n_sim_sequences": 20,
+  "note": "Nothing fitted to recordings; this is the measured gap."
+}
