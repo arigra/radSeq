@@ -105,7 +105,7 @@ the outcome that most advances the project being the null.
 
 One arm. No E1/E2 without approval. Result lands in `archive/codex_research/results/easy_regime_arm.json` in the same
 shape as the other arm files, and is reported in
-`notebooks/02_radseq_self_contained.ipynb` §17 against this rule, read verbatim.
+`archive/codex_research/02_radseq_self_contained.ipynb` §17 against this rule, read verbatim.
 
 ---
 
