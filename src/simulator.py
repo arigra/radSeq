@@ -3,6 +3,7 @@ plus a TemporalRadarSimulator that generates kinematically consistent
 multi-frame sequences of moving targets.
 """
 
+import dataclasses
 import math
 
 import torch
@@ -13,41 +14,94 @@ import torch
 # RadarDataset instance and every worker process.  They are computed once on
 # first use and reused for the lifetime of the process (~200 KB total).
 # ---------------------------------------------------------------------------
-_RD_R: torch.Tensor | None = None   # range steering for RD map  (N, dR) complex
-_RD_V: torch.Tensor | None = None   # Doppler steering for RD map (K, dV) complex
-_PQ_DIFF: torch.Tensor | None = None          # (p-q) matrix (N, K) float
-_CLUTTER_R_STEER: torch.Tensor | None = None  # range steering for clutter (N, dR) complex
+_STEER_CACHE: dict = {}   # geometry key -> (range steering, Doppler steering)
+_PQ_CACHE: dict = {}      # (N, K) -> (p - q) matrix
+_CLUTTER_CACHE: dict = {}  # geometry key -> clutter range steering
 
 
-def _get_rd_matrices() -> tuple[torch.Tensor, torch.Tensor]:
-    global _RD_R, _RD_V
-    if _RD_R is None:
-        _RD_R = generate_range_steering_matrix()
-        _RD_V = generate_doppler_steering_matrix()
-    return _RD_R, _RD_V
+@dataclasses.dataclass(frozen=True)
+class RadarGeometry:
+    """Radar constants defining the range-Doppler grid.
+
+    The defaults are the constants this simulator shipped with; the whole
+    cached training set was drawn with them, so they must not drift.
+    `RADIAL_GEOMETRY` matches the measured RADIal grid so a model pretrained
+    on simulated data sees the same metres and metres-per-second per pixel as
+    the real recordings -- without that, pretraining transfers nothing.
+    """
+
+    N: int = 64          # range bins
+    K: int = 64          # Doppler bins
+    B_HZ: float = 50e6   # sweep bandwidth -> range resolution
+    T0: float = 1e-3     # chirp repetition interval -> Doppler resolution
+    FC: float = 9.39e9   # carrier
+    C_LIGHT: float = 3e8
+    CNR_DB: float = 15.0
+
+    @property
+    def dr(self) -> float:
+        """Metres per range bin."""
+        return self.C_LIGHT / (2 * self.B_HZ)
+
+    @property
+    def dv(self) -> float:
+        """Metres per second per Doppler bin."""
+        return self.C_LIGHT / (2 * self.FC * self.K * self.T0)
+
+    @property
+    def r_max(self) -> float:
+        return (self.N - 1) * self.dr
+
+
+# Measured from the dataset (docs/notes/2026-09-21-radial-sim2real-design.md):
+# 512 range bins at 0.2 m, 256 Doppler bins. T0 is set so the Doppler
+# resolution is the published ~0.1 m/s; FC is the automotive 77 GHz band.
+RADIAL_GEOMETRY = RadarGeometry(
+    N=512, K=256, B_HZ=750e6, T0=7.61e-5, FC=77e9, CNR_DB=15.0)
+
+
+def _geometry_key(g: "RadarGeometry") -> tuple:
+    return (g.N, g.K, g.B_HZ, g.T0, g.FC, g.C_LIGHT)
+
+
+def _get_rd_matrices(geometry: "RadarGeometry | None" = None
+                     ) -> tuple[torch.Tensor, torch.Tensor]:
+    """Range and Doppler steering matrices, cached per geometry.
+
+    Keyed by geometry: an unkeyed cache would hand a 64x64 simulator the
+    512x256 matrices built for a RADIal-grid one earlier in the process.
+    """
+    g = geometry or RadarGeometry()
+    key = _geometry_key(g)
+    if key not in _STEER_CACHE:
+        _STEER_CACHE[key] = (
+            generate_range_steering_matrix(g.N, g.N, g.B_HZ, g.C_LIGHT),
+            generate_doppler_steering_matrix(g.K, g.K, g.FC, g.T0, g.C_LIGHT),
+        )
+    return _STEER_CACHE[key]
 
 
 def _get_pq_diff(N: int, K: int) -> torch.Tensor:
-    global _PQ_DIFF
-    if _PQ_DIFF is None:
+    if (N, K) not in _PQ_CACHE:
         p, q = torch.meshgrid(
             torch.arange(N, dtype=torch.float),
             torch.arange(K, dtype=torch.float),
             indexing="ij",
         )
-        _PQ_DIFF = p - q
-    return _PQ_DIFF
+        _PQ_CACHE[(N, K)] = p - q
+    return _PQ_CACHE[(N, K)]
 
 
-def _get_clutter_range_steer(N: int, R: torch.Tensor, B: float, c: float) -> torch.Tensor:
-    global _CLUTTER_R_STEER
-    if _CLUTTER_R_STEER is None:
-        _CLUTTER_R_STEER = torch.exp(
+def _get_clutter_range_steer(N: int, R: torch.Tensor, B: float,
+                             c: float) -> torch.Tensor:
+    key = (N, len(R), B, c)
+    if key not in _CLUTTER_CACHE:
+        _CLUTTER_CACHE[key] = torch.exp(
             -1j * 2 * math.pi
             * torch.outer(torch.arange(N, dtype=torch.float), R)
             * (2 * B) / (c * N)
         )
-    return _CLUTTER_R_STEER
+    return _CLUTTER_CACHE[key]
 
 
 # =====================================================================
@@ -72,13 +126,13 @@ def generate_doppler_steering_matrix(K=64, dV=64, fc=9.39e9, T0=1e-3, c=3e8):
     return V
 
 
-def create_rd_map(IQ_map):
+def create_rd_map(IQ_map, geometry: "RadarGeometry | None" = None):
     if not torch.is_tensor(IQ_map):
         IQ_map = torch.from_numpy(IQ_map)
     if not torch.is_complex(IQ_map):
         IQ_map = IQ_map.to(torch.complex64)
     device = IQ_map.device
-    R, V = _get_rd_matrices()
+    R, V = _get_rd_matrices(geometry)
     RD_map = R.T.conj().to(device) @ IQ_map @ V.conj().to(device)
     return RD_map
 
@@ -96,16 +150,14 @@ class TemporalRadarSimulator:
     which gives the easy regimes (e.g. one target on an empty map).
     """
 
-    N = K = 64
-    B_HZ = 50e6
-    T0 = 1e-3
-    FC = 9.39e9
-    C_LIGHT = 3e8
-    CNR_DB = 15.0
-
     def __init__(self, seq_len=16, frame_interval=0.5, max_targets=5,
                  rho_clutter=None, scnr=None, nu=None, clutter=True, noise=True,
-                 force_class=None):
+                 force_class=None, geometry=None, a_max=None):
+        self.geometry = geometry or RadarGeometry()
+        g = self.geometry
+        self.N, self.K = g.N, g.K
+        self.B_HZ, self.T0, self.FC = g.B_HZ, g.T0, g.FC
+        self.C_LIGHT, self.CNR_DB = g.C_LIGHT, g.CNR_DB
         self.L = seq_len
         self.Tf = frame_interval
         self.max_targets = max_targets
@@ -116,17 +168,22 @@ class TemporalRadarSimulator:
         self.noise = noise
         self.force_class = force_class
 
-        self.r_min, self.r_max, self.dr = 0.0, 189.0, 3.0
+        self.r_min, self.r_max, self.dr = 0.0, g.r_max, g.dr
         # Doppler grid MUST match generate_doppler_steering_matrix exactly:
         # vel_res = c/(2*fc*K*T0), bins arange(-K/2, K/2)*vel_res. Using the
         # rounded (-7.8, 0.249) grid biases traj labels by up to ~1 bin.
-        self.dv = self.C_LIGHT / (2 * self.FC * self.K * self.T0)
+        self.dv = g.dv
         self.v_min = -(self.K // 2) * self.dv
         self.v_max = (self.K // 2 - 1) * self.dv
-        self.R = torch.arange(self.r_min, self.r_max + self.dr, self.dr)
+        self.R = torch.arange(self.N, dtype=torch.float) * self.dr + self.r_min
         self.V = torch.arange(-(self.K // 2), self.K // 2).float() * self.dv
         self.dR, self.dV = len(self.R), len(self.V)
-        self.a_max = 0.5  # m/s^2 -> <=1 Doppler bin per frame at Tf=0.5
+        # <=1 Doppler bin of velocity change per frame, i.e. dv / Tf. The
+        # shipped 64x64 grid used the rounded 0.5 and the entire cached
+        # training set was drawn from that random stream, so the literal is
+        # kept for the default geometry; others derive it from their own dv.
+        self.a_max = a_max if a_max is not None else (
+            0.5 if geometry is None else self.dv / self.Tf)
 
         self.sigma2 = self.N / (2 * 10 ** (self.CNR_DB / 10))
         self.cn_norm = torch.sqrt(torch.tensor(
@@ -213,7 +270,10 @@ class TemporalRadarSimulator:
         """
         clutter_vel = torch.empty(1).uniform_(self.v_min, self.v_max)
         fd = 2 * torch.pi * (2 * self.FC * clutter_vel) / self.C_LIGHT
-        pq = _get_pq_diff(self.N, self.K)
+        # (K, K): M is the covariance across the K slow-time samples, so both
+        # axes are Doppler. Passing (N, K) happened to be square only because
+        # the shipped grid had N == K == 64; on any other geometry eigh fails.
+        pq = _get_pq_diff(self.K, self.K)
         M = torch.exp(-2 * torch.pi ** 2 * sigma_f ** 2 * pq ** 2
                       - 1j * pq * fd * self.T0)
         e, Vm = torch.linalg.eigh(M)
@@ -311,7 +371,7 @@ class TemporalRadarSimulator:
             X = S + C[l] + W
             s_energy += S.abs().pow(2).sum().item()
             cn_energy += (C[l] + W).abs().pow(2).sum().item()
-            rd = create_rd_map(X)
+            rd = create_rd_map(X, self.geometry)
             frames.append(20 * torch.log10(rd.abs() + 1e-6))
         scnr_dB = 10 * torch.log10(torch.tensor(s_energy / (cn_energy + 1e-12)))
         return {
