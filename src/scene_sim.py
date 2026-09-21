@@ -103,6 +103,14 @@ class Scenario:
     vehicles_per_frame: float = 9550 / 8252
     # antenna and surface scattering
     azimuth_pattern_power: float = 2.0          # two-way cos^2 element pattern
+    # backscatter from a rough surface ~cos^n(incidence); n=2 for the
+    # engineer's variant, an uncertain physical law the fitted variant tunes
+    surface_incidence_power: float = 2.0
+    # scene-density multipliers (1.0 = the road-type description as written)
+    structure_coverage_scale: float = 1.0
+    tree_density_scale: float = 1.0
+    # offset on the link-budget anchor (0 = the published reference SNR)
+    snr_offset_db: float = 0.0
     # receiver
     highpass_corner_m: float = 4.0              # IF high-pass, 2nd order
     lowpass_edge: float = 0.93                  # anti-alias, fraction of max range
@@ -160,6 +168,7 @@ class SceneSimulator:
     def _segments(self, y0, y1, coverage):
         """Stretches of a structure covering about `coverage` of [y0, y1]."""
         sc = self.sc
+        coverage = min(coverage * sc.structure_coverage_scale, 1.0)
         out, y = [], y0 + float(self._u(0, sc.gap_length_m[1]))
         while y < y1 and coverage > 0:
             length = float(self._u(*sc.segment_length_m))
@@ -211,7 +220,7 @@ class SceneSimulator:
                                             sc.car_rcs_dbsm, vy=0.0))
                     y += sc.car_length_m + float(self._u(0.5, 2.0))
         # trees and bushes: clusters of weak scatterers
-        n_trees = int(torch.poisson(torch.tensor(road.trees_per_100m * ymax / 100),
+        n_trees = int(torch.poisson(torch.tensor(road.trees_per_100m * sc.tree_density_scale * ymax / 100),
                                     generator=self.g))
         for _ in range(n_trees):
             side = -1.0 if torch.rand((), generator=self.g) < 0.5 else 1.0
@@ -338,7 +347,9 @@ class SceneSimulator:
                 torch.cos(az).abs().clamp(min=1e-3))
             # surfaces parallel to the road: backscatter ~cos^2(incidence),
             # incidence from their normal = 90deg - |az|
-            p = p + surf * 20 * torch.log10(torch.sin(az).abs().clamp(min=1e-3))
+            p = p + surf * 10 * sc.surface_incidence_power * torch.log10(
+                torch.sin(az).abs().clamp(min=1e-3))
+            p = p + sc.snr_offset_db
             power = self._render(rng, az, vr, p, None)
             # thermal noise: unit power per Rx per cell, summed over 16 Rx;
             # not DDMA-replicated (independent from chirp to chirp)
@@ -352,3 +363,20 @@ class SceneSimulator:
             labels.append(frame_labels)
         return {"x": torch.stack(frames), "labels": labels,
                 "ego_speed": v_ego, "road_type": name}
+
+
+def fitted_scenario(path="configs/scene_fitted.json"):
+    """The fitted variant: Scenario with knobs tuned to RADIal training recordings.
+
+    Kept separate from Scenario() on purpose -- the engineer's variant must
+    never inherit anything fitted.
+    """
+    import json
+    from pathlib import Path
+    knobs = dict(json.loads(Path(path).read_text())["knobs"])
+    ground = knobs.pop("ground_rcs_mean")
+    knobs["lowpass_order"] = int(round(knobs["lowpass_order"]))
+    return Scenario(ground_rcs_dbsm=(ground, 6.0), **knobs)
+
+
+VARIANTS = {"engineer": Scenario, "fitted": fitted_scenario}

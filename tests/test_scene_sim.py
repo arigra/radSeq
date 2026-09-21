@@ -58,3 +58,11 @@ def test_labels_cover_moving_traffic_at_the_published_rate():
         assert all(l["moving"] for l in labels)
         counts.append(len(labels))
     assert 0.5 < sum(counts) / len(counts) < 1.6
+
+
+def test_engineer_variant_inherits_nothing_fitted():
+    """The engineer's variant is the honest baseline: it must stay the Scenario
+    defaults, whatever the fitted variant's config file says."""
+    from src.scene_sim import VARIANTS, Scenario
+    assert VARIANTS["engineer"]() == Scenario()
+    assert VARIANTS["fitted"]() != Scenario()

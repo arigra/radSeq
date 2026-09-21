@@ -1,0 +1,3193 @@
+{
+  "fitted_on": "train recordings only",
+  "real": {
+    "dynamic range (0.1-99.9%)": 51.72002721405033,
+    "range-profile spread": 24.2569580078125,
+    "Doppler-profile spread": 2.537841796875,
+    "near range (0-4 m) vs mid": -6.554389953613281,
+    "far range (>98 m) vs mid": -16.583877563476562,
+    "vehicle prominence": 23.979537963867188
+  },
+  "engineer": {
+    "stats": {
+      "dynamic range (0.1-99.9%)": 56.28511579799661,
+      "range-profile spread": 23.83411979675293,
+      "Doppler-profile spread": 0.5541563034057617,
+      "near range (0-4 m) vs mid": -13.02930736541748,
+      "far range (>98 m) vs mid": -5.097552299499512,
+      "vehicle prominence": 14.843986511230469
+    },
+    "distance": 1.1356135472297686
+  },
+  "fitted": {
+    "knobs": {
+      "surface_incidence_power": 0.0,
+      "structure_coverage_scale": 1.2882202707525476,
+      "tree_density_scale": 5.0554310214111435,
+      "ground_rcs_mean": -21.039021892868593,
+      "highpass_corner_m": 2.565207458590355,
+      "lowpass_edge": 0.8536913057524048,
+      "lowpass_order": 8.93028429018195,
+      "thermal_over_adc_db": 10.279476576993293,
+      "snr_offset_db": 4.606973909519105
+    },
+    "stats": {
+      "dynamic range (0.1-99.9%)": 51.518711407065425,
+      "range-profile spread": 23.677936553955078,
+      "Doppler-profile spread": 1.7889842987060547,
+      "near range (0-4 m) vs mid": -7.212335586547852,
+      "far range (>98 m) vs mid": -9.873604774475098,
+      "vehicle prominence": 20.026634216308594
+    },
+    "distance": 0.4283438976168635,
+    "refine": true,
+    "distance_fresh": 0.3244784538765744
+  },
+  "trials": [
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5843663600554757,
+        "structure_coverage_scale": 0.9416182722352725,
+        "tree_density_scale": 6.324912662957085,
+        "ground_rcs_mean": -19.78294458016482,
+        "highpass_corner_m": 2.878301917994539,
+        "lowpass_edge": 0.8524940264791259,
+        "lowpass_order": 9.462371780923636,
+        "thermal_over_adc_db": 10.473792765554357,
+        "snr_offset_db": 4.468986919736921
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.44187984815987,
+        "range-profile spread": 23.81424331665039,
+        "Doppler-profile spread": 1.8819026947021484,
+        "near range (0-4 m) vs mid": -8.40694808959961,
+        "far range (>98 m) vs mid": -10.046161651611328,
+        "vehicle prominence": 21.501760482788086
+      },
+      "distance": 0.40816175627186957,
+      "refine": true,
+      "distance_fresh": 0.3767712598862742
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3062442247121194,
+        "structure_coverage_scale": 0.819494353378592,
+        "tree_density_scale": 6.760201954681028,
+        "ground_rcs_mean": -22.298684482224438,
+        "highpass_corner_m": 3.191348309343124,
+        "lowpass_edge": 0.8579759981370252,
+        "lowpass_order": 11.139176776991688,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 6.980784327811026
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.747299399226925,
+        "range-profile spread": 25.775922775268555,
+        "Doppler-profile spread": 2.0588903427124023,
+        "near range (0-4 m) vs mid": -9.235240936279297,
+        "far range (>98 m) vs mid": -10.581972122192383,
+        "vehicle prominence": 24.029542922973633
+      },
+      "distance": 0.42526499299506276,
+      "refine": true,
+      "distance_fresh": 0.5135260833501817
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.8139942636118427,
+        "structure_coverage_scale": 0.7982317333265562,
+        "tree_density_scale": 6.441333811450397,
+        "ground_rcs_mean": -20.498216116291978,
+        "highpass_corner_m": 2.6384209618326357,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 9.241217882322903,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 6.572826183900327
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.9646004341841,
+        "range-profile spread": 26.77197265625,
+        "Doppler-profile spread": 2.381937026977539,
+        "near range (0-4 m) vs mid": -7.800175666809082,
+        "far range (>98 m) vs mid": -10.252044677734375,
+        "vehicle prominence": 23.637237548828125
+      },
+      "distance": 0.42784705508152593,
+      "refine": true,
+      "distance_fresh": 0.49075632405082253
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 1.2882202707525476,
+        "tree_density_scale": 5.0554310214111435,
+        "ground_rcs_mean": -21.039021892868593,
+        "highpass_corner_m": 2.565207458590355,
+        "lowpass_edge": 0.8536913057524048,
+        "lowpass_order": 8.93028429018195,
+        "thermal_over_adc_db": 10.279476576993293,
+        "snr_offset_db": 4.606973909519105
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.518711407065425,
+        "range-profile spread": 23.677936553955078,
+        "Doppler-profile spread": 1.7889842987060547,
+        "near range (0-4 m) vs mid": -7.212335586547852,
+        "far range (>98 m) vs mid": -9.873604774475098,
+        "vehicle prominence": 20.026634216308594
+      },
+      "distance": 0.4283438976168635,
+      "refine": true,
+      "distance_fresh": 0.3244784538765744
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3638172808627188,
+        "structure_coverage_scale": 1.0270475766383007,
+        "tree_density_scale": 6.238590666223073,
+        "ground_rcs_mean": -21.197086258137308,
+        "highpass_corner_m": 1.0,
+        "lowpass_edge": 0.862159541697539,
+        "lowpass_order": 9.928531192215766,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.909768566397387
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.3800642461777,
+        "range-profile spread": 23.64057731628418,
+        "Doppler-profile spread": 2.0730361938476562,
+        "near range (0-4 m) vs mid": -2.381129264831543,
+        "far range (>98 m) vs mid": -10.021160125732422,
+        "vehicle prominence": 24.732376098632812
+      },
+      "distance": 0.4410013195991513,
+      "refine": true,
+      "distance_fresh": 0.5203112100044874
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5531628456995635,
+        "structure_coverage_scale": 0.958407563560056,
+        "tree_density_scale": 4.1838795439223615,
+        "ground_rcs_mean": -18.724389305522667,
+        "highpass_corner_m": 1.6985582916904685,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 11.451512766270973,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 4.900672774027023
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.29108835226298,
+        "range-profile spread": 23.42099380493164,
+        "Doppler-profile spread": 2.1835250854492188,
+        "near range (0-4 m) vs mid": -4.227771759033203,
+        "far range (>98 m) vs mid": -11.08150577545166,
+        "vehicle prominence": 20.205810546875
+      },
+      "distance": 0.4454686484038819,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.15816167183986862,
+        "structure_coverage_scale": 0.8869294401302698,
+        "tree_density_scale": 6.152063747696211,
+        "ground_rcs_mean": -20.421208855787743,
+        "highpass_corner_m": 4.025874534036867,
+        "lowpass_edge": 0.858103596499515,
+        "lowpass_order": 10.839653522513279,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.774582432705326
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.18126090154052,
+        "range-profile spread": 24.321334838867188,
+        "Doppler-profile spread": 2.145318031311035,
+        "near range (0-4 m) vs mid": -11.043697357177734,
+        "far range (>98 m) vs mid": -10.765398025512695,
+        "vehicle prominence": 22.23749351501465
+      },
+      "distance": 0.46559885581632326,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5685050763155662,
+        "structure_coverage_scale": 0.9277056108483029,
+        "tree_density_scale": 6.2921793165425735,
+        "ground_rcs_mean": -19.86633767275249,
+        "highpass_corner_m": 2.3303043086323165,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 8.505698695454415,
+        "thermal_over_adc_db": 13.045484783099113,
+        "snr_offset_db": 5.3669752552525685
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.8403094983101,
+        "range-profile spread": 27.027387619018555,
+        "Doppler-profile spread": 2.207365036010742,
+        "near range (0-4 m) vs mid": -6.9236555099487305,
+        "far range (>98 m) vs mid": -11.406778335571289,
+        "vehicle prominence": 21.504348754882812
+      },
+      "distance": 0.47475808831850586,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5502397087616924,
+        "structure_coverage_scale": 1.1497408969471576,
+        "tree_density_scale": 4.984085355528251,
+        "ground_rcs_mean": -18.913873584869073,
+        "highpass_corner_m": 2.619348271660316,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 9.673520166149633,
+        "thermal_over_adc_db": 11.901614833986734,
+        "snr_offset_db": 2.2799474901540173
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.6251367518902,
+        "range-profile spread": 23.979049682617188,
+        "Doppler-profile spread": 1.513671875,
+        "near range (0-4 m) vs mid": -7.398044109344482,
+        "far range (>98 m) vs mid": -10.984908103942871,
+        "vehicle prominence": 18.493160247802734
+      },
+      "distance": 0.47753233468532635,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.92066597215023,
+        "tree_density_scale": 6.940117693674022,
+        "ground_rcs_mean": -22.58667021416116,
+        "highpass_corner_m": 4.026620979038482,
+        "lowpass_edge": 0.8570369756953823,
+        "lowpass_order": 11.514084195795498,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.7369869040773125
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.6193698647624,
+        "range-profile spread": 22.891191482543945,
+        "Doppler-profile spread": 1.8148603439331055,
+        "near range (0-4 m) vs mid": -10.48470401763916,
+        "far range (>98 m) vs mid": -10.616666793823242,
+        "vehicle prominence": 21.702308654785156
+      },
+      "distance": 0.47880531567532053,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0720396020140478,
+        "structure_coverage_scale": 0.7450521367054342,
+        "tree_density_scale": 7.125640502251715,
+        "ground_rcs_mean": -19.215049034946475,
+        "highpass_corner_m": 4.897848430377932,
+        "lowpass_edge": 0.8766944075189632,
+        "lowpass_order": 10.692970991455677,
+        "thermal_over_adc_db": 10.242930522272252,
+        "snr_offset_db": 4.259872618758413
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.586754187038856,
+        "range-profile spread": 24.011945724487305,
+        "Doppler-profile spread": 2.022167205810547,
+        "near range (0-4 m) vs mid": -11.736995697021484,
+        "far range (>98 m) vs mid": -9.817520141601562,
+        "vehicle prominence": 23.305561065673828
+      },
+      "distance": 0.4838966654959229
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.41209649205561594,
+        "structure_coverage_scale": 0.9472896362120681,
+        "tree_density_scale": 7.070122099895044,
+        "ground_rcs_mean": -18.108566018195315,
+        "highpass_corner_m": 1.8740108098913957,
+        "lowpass_edge": 0.8672638480386675,
+        "lowpass_order": 9.15434434519948,
+        "thermal_over_adc_db": 12.430425695963663,
+        "snr_offset_db": 2.7950150923515737
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.80483272362036,
+        "range-profile spread": 24.994333267211914,
+        "Doppler-profile spread": 1.9588346481323242,
+        "near range (0-4 m) vs mid": -4.73082160949707,
+        "far range (>98 m) vs mid": -10.108772277832031,
+        "vehicle prominence": 19.78677749633789
+      },
+      "distance": 0.4907670331954035,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.23608537350431183,
+        "structure_coverage_scale": 1.0074098658343689,
+        "tree_density_scale": 6.53183629299646,
+        "ground_rcs_mean": -19.820818980625386,
+        "highpass_corner_m": 3.860863625589179,
+        "lowpass_edge": 0.8679228715840571,
+        "lowpass_order": 11.09244543793488,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.412640383907702
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.918790903776895,
+        "range-profile spread": 24.535764694213867,
+        "Doppler-profile spread": 2.3102645874023438,
+        "near range (0-4 m) vs mid": -10.752837181091309,
+        "far range (>98 m) vs mid": -10.316493034362793,
+        "vehicle prominence": 20.760522842407227
+      },
+      "distance": 0.5129998154550781,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8699262497697934,
+        "tree_density_scale": 6.216313339428378,
+        "ground_rcs_mean": -23.209704789790724,
+        "highpass_corner_m": 4.25438152928661,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 11.419497937718836,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 6.728492650444458
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.13793272772432,
+        "range-profile spread": 23.354238510131836,
+        "Doppler-profile spread": 1.7910480499267578,
+        "near range (0-4 m) vs mid": -10.96821403503418,
+        "far range (>98 m) vs mid": -10.755788803100586,
+        "vehicle prominence": 21.82868194580078
+      },
+      "distance": 0.5153395872722059,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5873696916862088,
+        "structure_coverage_scale": 0.6590322363019934,
+        "tree_density_scale": 5.707900059415514,
+        "ground_rcs_mean": -22.563366776455112,
+        "highpass_corner_m": 3.579043367192006,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.666074577139577,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.676218757433576
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.30515525817872,
+        "range-profile spread": 22.551624298095703,
+        "Doppler-profile spread": 1.4968023300170898,
+        "near range (0-4 m) vs mid": -9.565397262573242,
+        "far range (>98 m) vs mid": -10.364130020141602,
+        "vehicle prominence": 20.656593322753906
+      },
+      "distance": 0.5238314875284841,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5525889038184396,
+        "structure_coverage_scale": 1.2192186658415196,
+        "tree_density_scale": 7.025164306008281,
+        "ground_rcs_mean": -20.84211535592791,
+        "highpass_corner_m": 2.6827579898302063,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 9.759432966610364,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 2.0322507341701557
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.42314885652075,
+        "range-profile spread": 20.815752029418945,
+        "Doppler-profile spread": 1.2654438018798828,
+        "near range (0-4 m) vs mid": -7.035243034362793,
+        "far range (>98 m) vs mid": -9.824793815612793,
+        "vehicle prominence": 23.483261108398438
+      },
+      "distance": 0.5248898671666763,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 1.1304170524674033,
+        "tree_density_scale": 6.332815943626281,
+        "ground_rcs_mean": -15.206081721849017,
+        "highpass_corner_m": 3.1785743014564876,
+        "lowpass_edge": 0.8552443183262413,
+        "lowpass_order": 13.601652474131185,
+        "thermal_over_adc_db": 10.061311135270921,
+        "snr_offset_db": 2.184629084032411
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.932748774319904,
+        "range-profile spread": 25.63939094543457,
+        "Doppler-profile spread": 2.3063230514526367,
+        "near range (0-4 m) vs mid": -9.778928756713867,
+        "far range (>98 m) vs mid": -12.185929298400879,
+        "vehicle prominence": 19.170146942138672
+      },
+      "distance": 0.5277702737559883,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.8185495739443341,
+        "structure_coverage_scale": 0.9235143791916367,
+        "tree_density_scale": 6.749901209383516,
+        "ground_rcs_mean": -21.287656061872017,
+        "highpass_corner_m": 3.8873132842745157,
+        "lowpass_edge": 0.8545643458719356,
+        "lowpass_order": 11.172700571852047,
+        "thermal_over_adc_db": 12.090049941990738,
+        "snr_offset_db": 4.865584612373711
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.62575051069262,
+        "range-profile spread": 25.064476013183594,
+        "Doppler-profile spread": 1.7417612075805664,
+        "near range (0-4 m) vs mid": -11.387174606323242,
+        "far range (>98 m) vs mid": -11.536869049072266,
+        "vehicle prominence": 21.472034454345703
+      },
+      "distance": 0.5298872855981185,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.1530021360363407,
+        "structure_coverage_scale": 0.9042251554794384,
+        "tree_density_scale": 5.390763626306282,
+        "ground_rcs_mean": -21.24567460615945,
+        "highpass_corner_m": 2.472124142099891,
+        "lowpass_edge": 0.8563188596583184,
+        "lowpass_order": 8.511948087774881,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 4.017746156833777
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.95552163934708,
+        "range-profile spread": 21.886226654052734,
+        "Doppler-profile spread": 1.4304618835449219,
+        "near range (0-4 m) vs mid": -6.47444486618042,
+        "far range (>98 m) vs mid": -9.309000015258789,
+        "vehicle prominence": 20.60381317138672
+      },
+      "distance": 0.5324388089974733,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3822055843333684,
+        "structure_coverage_scale": 1.265327467860211,
+        "tree_density_scale": 5.328331371912782,
+        "ground_rcs_mean": -20.893481206624053,
+        "highpass_corner_m": 2.068147360750849,
+        "lowpass_edge": 0.8510142709657232,
+        "lowpass_order": 11.020767548746548,
+        "thermal_over_adc_db": 13.58847906197176,
+        "snr_offset_db": 5.581428717666289
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.31604716706277,
+        "range-profile spread": 27.57781219482422,
+        "Doppler-profile spread": 2.0320167541503906,
+        "near range (0-4 m) vs mid": -5.906381607055664,
+        "far range (>98 m) vs mid": -12.953773498535156,
+        "vehicle prominence": 20.70708656311035
+      },
+      "distance": 0.5324420998334874,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.6103826461948713,
+        "structure_coverage_scale": 0.9692144858972597,
+        "tree_density_scale": 6.763919264173167,
+        "ground_rcs_mean": -17.53328423457378,
+        "highpass_corner_m": 3.062068601781912,
+        "lowpass_edge": 0.8573870559687865,
+        "lowpass_order": 11.46705383328904,
+        "thermal_over_adc_db": 11.236321349780042,
+        "snr_offset_db": 5.777040875848317
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.34489165645839,
+        "range-profile spread": 27.155620574951172,
+        "Doppler-profile spread": 3.114990234375,
+        "near range (0-4 m) vs mid": -10.545902252197266,
+        "far range (>98 m) vs mid": -12.487548828125,
+        "vehicle prominence": 22.11602783203125
+      },
+      "distance": 0.535067553760607,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.41324611499483943,
+        "structure_coverage_scale": 1.2407294195418035,
+        "tree_density_scale": 5.0564052695207815,
+        "ground_rcs_mean": -21.762377445612426,
+        "highpass_corner_m": 1.552453139389164,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.301722000908518,
+        "thermal_over_adc_db": 12.244342521467072,
+        "snr_offset_db": 5.205247648074499
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.675419300794616,
+        "range-profile spread": 24.965211868286133,
+        "Doppler-profile spread": 1.6986122131347656,
+        "near range (0-4 m) vs mid": -3.349222183227539,
+        "far range (>98 m) vs mid": -11.330375671386719,
+        "vehicle prominence": 19.563636779785156
+      },
+      "distance": 0.5459148792505256,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8104510362969959,
+        "tree_density_scale": 5.982071400568047,
+        "ground_rcs_mean": -21.03152888559604,
+        "highpass_corner_m": 4.590360533003998,
+        "lowpass_edge": 0.8504436121736478,
+        "lowpass_order": 10.20810163245281,
+        "thermal_over_adc_db": 11.300653011203297,
+        "snr_offset_db": 5.20982680051917
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.70300695830589,
+        "range-profile spread": 25.729393005371094,
+        "Doppler-profile spread": 1.8415393829345703,
+        "near range (0-4 m) vs mid": -12.106280326843262,
+        "far range (>98 m) vs mid": -10.936120986938477,
+        "vehicle prominence": 21.908721923828125
+      },
+      "distance": 0.547406004852057,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.7530876769101157,
+        "structure_coverage_scale": 1.0706861504624654,
+        "tree_density_scale": 6.820391477597562,
+        "ground_rcs_mean": -20.880937211374338,
+        "highpass_corner_m": 1.4544372228520315,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 9.87144898724115,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.075273054895668
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.38150361078978,
+        "range-profile spread": 23.58051109313965,
+        "Doppler-profile spread": 1.760960578918457,
+        "near range (0-4 m) vs mid": -3.0337257385253906,
+        "far range (>98 m) vs mid": -10.253752708435059,
+        "vehicle prominence": 20.091073989868164
+      },
+      "distance": 0.5510368260006122,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3649855771662266,
+        "structure_coverage_scale": 0.8419665645681763,
+        "tree_density_scale": 5.782036139965276,
+        "ground_rcs_mean": -17.496126942587967,
+        "highpass_corner_m": 2.1168088844818738,
+        "lowpass_edge": 0.8649432048450613,
+        "lowpass_order": 9.415436317784708,
+        "thermal_over_adc_db": 10.886715339438991,
+        "snr_offset_db": 8.097111041098534
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.19960681943598,
+        "range-profile spread": 29.868005752563477,
+        "Doppler-profile spread": 4.219343185424805,
+        "near range (0-4 m) vs mid": -7.969831466674805,
+        "far range (>98 m) vs mid": -12.002351760864258,
+        "vehicle prominence": 24.035144805908203
+      },
+      "distance": 0.5608234298800424,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.7211626815203025,
+        "structure_coverage_scale": 0.97282487036689,
+        "tree_density_scale": 5.2072806875546425,
+        "ground_rcs_mean": -16.054753699508524,
+        "highpass_corner_m": 3.793820160643461,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 8.617623309791218,
+        "thermal_over_adc_db": 12.32366532654852,
+        "snr_offset_db": 3.2799092060180284
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.970468306064646,
+        "range-profile spread": 26.513790130615234,
+        "Doppler-profile spread": 2.36672306060791,
+        "near range (0-4 m) vs mid": -12.397270202636719,
+        "far range (>98 m) vs mid": -11.77241325378418,
+        "vehicle prominence": 21.4514102935791
+      },
+      "distance": 0.5620288060029348,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.7709127732966153,
+        "tree_density_scale": 7.558762646604624,
+        "ground_rcs_mean": -18.84988618059855,
+        "highpass_corner_m": 4.363825320693287,
+        "lowpass_edge": 0.8750274772849314,
+        "lowpass_order": 11.117483449294461,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 3.3673108914635153
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.43950913423301,
+        "range-profile spread": 23.68158531188965,
+        "Doppler-profile spread": 1.8895225524902344,
+        "near range (0-4 m) vs mid": -11.152657508850098,
+        "far range (>98 m) vs mid": -9.81950569152832,
+        "vehicle prominence": 21.72855567932129
+      },
+      "distance": 0.5705943910618632,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.7956702898686013,
+        "structure_coverage_scale": 1.1900124971700552,
+        "tree_density_scale": 5.263424823101238,
+        "ground_rcs_mean": -18.55905876860845,
+        "highpass_corner_m": 1.9752396696242331,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.15967715451338,
+        "thermal_over_adc_db": 14.348221406681775,
+        "snr_offset_db": 2.5917910577964696
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.03884942221645,
+        "range-profile spread": 26.645158767700195,
+        "Doppler-profile spread": 1.5814208984375,
+        "near range (0-4 m) vs mid": -5.053105354309082,
+        "far range (>98 m) vs mid": -12.20330810546875,
+        "vehicle prominence": 17.386146545410156
+      },
+      "distance": 0.5712896447420118,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.81895849149767,
+        "tree_density_scale": 6.608646289708656,
+        "ground_rcs_mean": -19.006685416941888,
+        "highpass_corner_m": 3.159210620795784,
+        "lowpass_edge": 0.8624112939097224,
+        "lowpass_order": 12.504881078521121,
+        "thermal_over_adc_db": 14.212219804237833,
+        "snr_offset_db": 4.092674714228421
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.34083915233615,
+        "range-profile spread": 28.992399215698242,
+        "Doppler-profile spread": 2.067981719970703,
+        "near range (0-4 m) vs mid": -10.423612594604492,
+        "far range (>98 m) vs mid": -13.503150939941406,
+        "vehicle prominence": 22.520065307617188
+      },
+      "distance": 0.5745178381284075,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.6668776327004049,
+        "structure_coverage_scale": 1.1460541547790644,
+        "tree_density_scale": 5.2763045331892995,
+        "ground_rcs_mean": -21.962780842497914,
+        "highpass_corner_m": 3.25611468063074,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 7.888914513429115,
+        "thermal_over_adc_db": 12.382954563415325,
+        "snr_offset_db": 3.0608111209694906
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.26380484020721,
+        "range-profile spread": 23.33213233947754,
+        "Doppler-profile spread": 1.258138656616211,
+        "near range (0-4 m) vs mid": -9.545723915100098,
+        "far range (>98 m) vs mid": -9.710283279418945,
+        "vehicle prominence": 19.049802780151367
+      },
+      "distance": 0.5818471537232376,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.22101996480717792,
+        "structure_coverage_scale": 0.7767209058104928,
+        "tree_density_scale": 5.058390624390302,
+        "ground_rcs_mean": -23.1333428957927,
+        "highpass_corner_m": 4.266917185201638,
+        "lowpass_edge": 0.8576987591332077,
+        "lowpass_order": 10.847475326837412,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.333151512735145
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.57842583176498,
+        "range-profile spread": 22.15719985961914,
+        "Doppler-profile spread": 1.5110559463500977,
+        "near range (0-4 m) vs mid": -10.375815391540527,
+        "far range (>98 m) vs mid": -9.856330871582031,
+        "vehicle prominence": 21.189830780029297
+      },
+      "distance": 0.5868941564887761,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8758155319253501,
+        "tree_density_scale": 5.695709687133812,
+        "ground_rcs_mean": -20.60258366971991,
+        "highpass_corner_m": 4.096147236365723,
+        "lowpass_edge": 0.8710142837047612,
+        "lowpass_order": 14.01316026028352,
+        "thermal_over_adc_db": 11.756269216303375,
+        "snr_offset_db": 2.4041939209881376
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.54082489407063,
+        "range-profile spread": 23.272472381591797,
+        "Doppler-profile spread": 1.3662042617797852,
+        "near range (0-4 m) vs mid": -11.266143798828125,
+        "far range (>98 m) vs mid": -11.505993843078613,
+        "vehicle prominence": 19.194820404052734
+      },
+      "distance": 0.5969893535574289,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.9408491948240721,
+        "structure_coverage_scale": 1.2356055071257883,
+        "tree_density_scale": 7.429249499237443,
+        "ground_rcs_mean": -18.877628693380277,
+        "highpass_corner_m": 3.0528668993344326,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 9.88294184443275,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 2.0112922600991032
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.6711501497627,
+        "range-profile spread": 22.589466094970703,
+        "Doppler-profile spread": 1.4379005432128906,
+        "near range (0-4 m) vs mid": -8.376242637634277,
+        "far range (>98 m) vs mid": -10.018800735473633,
+        "vehicle prominence": 19.242033004760742
+      },
+      "distance": 0.5980248233973969,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.432216625624607,
+        "structure_coverage_scale": 0.6030918302426143,
+        "tree_density_scale": 5.726873006905809,
+        "ground_rcs_mean": -19.74423189605647,
+        "highpass_corner_m": 3.542875641774232,
+        "lowpass_edge": 0.8549892148105066,
+        "lowpass_order": 11.99134379491337,
+        "thermal_over_adc_db": 10.760275136040292,
+        "snr_offset_db": 3.565096748333663
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.73400970789792,
+        "range-profile spread": 23.693445205688477,
+        "Doppler-profile spread": 1.6466064453125,
+        "near range (0-4 m) vs mid": -10.020936965942383,
+        "far range (>98 m) vs mid": -11.161775588989258,
+        "vehicle prominence": 18.02277374267578
+      },
+      "distance": 0.6095392955948916,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.43085557288479276,
+        "structure_coverage_scale": 0.7216039729941724,
+        "tree_density_scale": 5.897953130911094,
+        "ground_rcs_mean": -20.98028387607191,
+        "highpass_corner_m": 4.502634527949463,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.349153614967038,
+        "thermal_over_adc_db": 11.823076358256824,
+        "snr_offset_db": 4.906530663361564
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.18764471137991,
+        "range-profile spread": 25.063125610351562,
+        "Doppler-profile spread": 1.7630176544189453,
+        "near range (0-4 m) vs mid": -12.184551239013672,
+        "far range (>98 m) vs mid": -11.084635734558105,
+        "vehicle prominence": 19.804039001464844
+      },
+      "distance": 0.6117837106348628,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.7138493647838255,
+        "tree_density_scale": 4.457446514595531,
+        "ground_rcs_mean": -22.05304417164433,
+        "highpass_corner_m": 5.147732688206809,
+        "lowpass_edge": 0.8500901572036121,
+        "lowpass_order": 11.97371229914117,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 4.093265257285645
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.46159370692075,
+        "range-profile spread": 20.7780818939209,
+        "Doppler-profile spread": 1.368896484375,
+        "near range (0-4 m) vs mid": -11.045390129089355,
+        "far range (>98 m) vs mid": -10.4453763961792,
+        "vehicle prominence": 22.020112991333008
+      },
+      "distance": 0.6165060416276267,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.4653760081906437,
+        "structure_coverage_scale": 1.3774740203385174,
+        "tree_density_scale": 4.074413162793278,
+        "ground_rcs_mean": -29.876999571442155,
+        "highpass_corner_m": 1.508608440538247,
+        "lowpass_edge": 0.852146970507637,
+        "lowpass_order": 10.959642166769138,
+        "thermal_over_adc_db": 13.822205469201496,
+        "snr_offset_db": 9.510659568536408
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 59.3830783057213,
+        "range-profile spread": 25.32701873779297,
+        "Doppler-profile spread": 1.211069107055664,
+        "near range (0-4 m) vs mid": -2.7102746963500977,
+        "far range (>98 m) vs mid": -12.084144592285156,
+        "vehicle prominence": 24.517711639404297
+      },
+      "distance": 0.6313968805154156
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8536427093346097,
+        "tree_density_scale": 7.632204980588191,
+        "ground_rcs_mean": -21.718425920421684,
+        "highpass_corner_m": 6.974694400597286,
+        "lowpass_edge": 0.8592757852079539,
+        "lowpass_order": 8.19744709714206,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 7.669792241694566
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.61488587047532,
+        "range-profile spread": 25.62253761291504,
+        "Doppler-profile spread": 2.6238059997558594,
+        "near range (0-4 m) vs mid": -13.045886039733887,
+        "far range (>98 m) vs mid": -9.816363334655762,
+        "vehicle prominence": 21.522172927856445
+      },
+      "distance": 0.6354259271786844,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.008731180760782109,
+        "structure_coverage_scale": 0.6780819328927598,
+        "tree_density_scale": 7.06969855323172,
+        "ground_rcs_mean": -20.646922413945607,
+        "highpass_corner_m": 4.318027163183193,
+        "lowpass_edge": 0.8674609044081649,
+        "lowpass_order": 11.712426945248765,
+        "thermal_over_adc_db": 12.69202464788423,
+        "snr_offset_db": 1.7276504699997481
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.84614300680185,
+        "range-profile spread": 22.895549774169922,
+        "Doppler-profile spread": 1.2965259552001953,
+        "near range (0-4 m) vs mid": -12.073027610778809,
+        "far range (>98 m) vs mid": -11.315834045410156,
+        "vehicle prominence": 18.812461853027344
+      },
+      "distance": 0.6476788522879213,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.3280949573343417,
+        "structure_coverage_scale": 1.7459471619076385,
+        "tree_density_scale": 2.446616796040836,
+        "ground_rcs_mean": -31.954100743023723,
+        "highpass_corner_m": 2.3951273637490003,
+        "lowpass_edge": 0.9018717957215518,
+        "lowpass_order": 10.145789435450805,
+        "thermal_over_adc_db": 13.89218695464469,
+        "snr_offset_db": 5.598895419771633
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.63526486897469,
+        "range-profile spread": 21.700002670288086,
+        "Doppler-profile spread": 0.7343988418579102,
+        "near range (0-4 m) vs mid": -5.785387992858887,
+        "far range (>98 m) vs mid": -7.777834892272949,
+        "vehicle prominence": 23.323171615600586
+      },
+      "distance": 0.6502348975896822
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8080054026123958,
+        "tree_density_scale": 6.01832734187092,
+        "ground_rcs_mean": -23.840908196027577,
+        "highpass_corner_m": 5.607038670947321,
+        "lowpass_edge": 0.8503164593653394,
+        "lowpass_order": 12.84121281228534,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.222651659550919
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.04813081047686,
+        "range-profile spread": 22.406494140625,
+        "Doppler-profile spread": 1.3836593627929688,
+        "near range (0-4 m) vs mid": -11.312740325927734,
+        "far range (>98 m) vs mid": -10.791997909545898,
+        "vehicle prominence": 18.593746185302734
+      },
+      "distance": 0.6537521503217524,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5227898199333818,
+        "structure_coverage_scale": 0.5746627533569688,
+        "tree_density_scale": 6.811123378252794,
+        "ground_rcs_mean": -24.09009466626429,
+        "highpass_corner_m": 5.352263199677118,
+        "lowpass_edge": 0.8886214157407584,
+        "lowpass_order": 11.482792030394759,
+        "thermal_over_adc_db": 12.445344492179201,
+        "snr_offset_db": 5.317568806190959
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.13824465465548,
+        "range-profile spread": 23.891643524169922,
+        "Doppler-profile spread": 1.416738510131836,
+        "near range (0-4 m) vs mid": -13.085865020751953,
+        "far range (>98 m) vs mid": -9.455775260925293,
+        "vehicle prominence": 21.87637710571289
+      },
+      "distance": 0.6555791146278376,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.896724296571941,
+        "tree_density_scale": 3.5167825923846676,
+        "ground_rcs_mean": -21.69569045854987,
+        "highpass_corner_m": 3.798255559814687,
+        "lowpass_edge": 0.8514890718789694,
+        "lowpass_order": 8.558876073959247,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 3.91072174457169
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.496787571311046,
+        "range-profile spread": 20.58839225769043,
+        "Doppler-profile spread": 1.3602170944213867,
+        "near range (0-4 m) vs mid": -9.772403717041016,
+        "far range (>98 m) vs mid": -9.272340774536133,
+        "vehicle prominence": 20.91065788269043
+      },
+      "distance": 0.6555953576286631,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.14756977969835938,
+        "structure_coverage_scale": 0.9612023640671687,
+        "tree_density_scale": 5.889009126338326,
+        "ground_rcs_mean": -21.9452025740014,
+        "highpass_corner_m": 3.949709100547171,
+        "lowpass_edge": 0.858031652223532,
+        "lowpass_order": 9.823221610409346,
+        "thermal_over_adc_db": 11.023829092264396,
+        "snr_offset_db": 7.566410087048851
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.9464710432291,
+        "range-profile spread": 26.089458465576172,
+        "Doppler-profile spread": 2.541095733642578,
+        "near range (0-4 m) vs mid": -11.7359619140625,
+        "far range (>98 m) vs mid": -11.091018676757812,
+        "vehicle prominence": 21.022457122802734
+      },
+      "distance": 0.656456997064748,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.34361846170669164,
+        "structure_coverage_scale": 0.6737966553139945,
+        "tree_density_scale": 7.5469745207922765,
+        "ground_rcs_mean": -17.95083519854705,
+        "highpass_corner_m": 6.053222492181477,
+        "lowpass_edge": 0.850560246719462,
+        "lowpass_order": 13.196558031907614,
+        "thermal_over_adc_db": 13.288087179611205,
+        "snr_offset_db": 5.635231000363628
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.1311623415947,
+        "range-profile spread": 29.056293487548828,
+        "Doppler-profile spread": 2.769542694091797,
+        "near range (0-4 m) vs mid": -15.897851943969727,
+        "far range (>98 m) vs mid": -14.670893669128418,
+        "vehicle prominence": 24.038352966308594
+      },
+      "distance": 0.6585810797214496,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.7201785500882766,
+        "tree_density_scale": 6.0034496665848165,
+        "ground_rcs_mean": -23.741345938956936,
+        "highpass_corner_m": 4.588059037785241,
+        "lowpass_edge": 0.8939147095578448,
+        "lowpass_order": 11.500359001203941,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 5.123737198741763
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.55251141107083,
+        "range-profile spread": 22.0858154296875,
+        "Doppler-profile spread": 1.4228124618530273,
+        "near range (0-4 m) vs mid": -10.645407676696777,
+        "far range (>98 m) vs mid": -8.589277267456055,
+        "vehicle prominence": 19.206119537353516
+      },
+      "distance": 0.6770908053914716,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.1953451427572762,
+        "structure_coverage_scale": 0.8303626087632766,
+        "tree_density_scale": 6.8850629134937655,
+        "ground_rcs_mean": -16.36306216471511,
+        "highpass_corner_m": 4.605047895766041,
+        "lowpass_edge": 0.8556365397967285,
+        "lowpass_order": 11.916659395066247,
+        "thermal_over_adc_db": 14.684617194155807,
+        "snr_offset_db": 1.9555099324608984
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.79793982601167,
+        "range-profile spread": 28.264101028442383,
+        "Doppler-profile spread": 2.0151214599609375,
+        "near range (0-4 m) vs mid": -14.369109153747559,
+        "far range (>98 m) vs mid": -13.610729217529297,
+        "vehicle prominence": 19.806316375732422
+      },
+      "distance": 0.6856288367907197,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.048744574917740036,
+        "structure_coverage_scale": 0.8942972508149356,
+        "tree_density_scale": 6.633842430303841,
+        "ground_rcs_mean": -16.226359495695366,
+        "highpass_corner_m": 3.3182949320916415,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.142570415260593,
+        "thermal_over_adc_db": 10.215828239153886,
+        "snr_offset_db": 6.194527456394183
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.789115253314385,
+        "range-profile spread": 28.900564193725586,
+        "Doppler-profile spread": 3.9907026290893555,
+        "near range (0-4 m) vs mid": -11.720108032226562,
+        "far range (>98 m) vs mid": -12.617287635803223,
+        "vehicle prominence": 20.388029098510742
+      },
+      "distance": 0.6963123976344853,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.21507144575900214,
+        "structure_coverage_scale": 1.1953578000605507,
+        "tree_density_scale": 5.582958639010567,
+        "ground_rcs_mean": -19.171777452105097,
+        "highpass_corner_m": 3.682537301592456,
+        "lowpass_edge": 0.8614822613524387,
+        "lowpass_order": 9.644526473515077,
+        "thermal_over_adc_db": 12.67629610567544,
+        "snr_offset_db": 6.197032606522744
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.38039575840104,
+        "range-profile spread": 28.13222312927246,
+        "Doppler-profile spread": 2.6832408905029297,
+        "near range (0-4 m) vs mid": -12.080167770385742,
+        "far range (>98 m) vs mid": -11.730483055114746,
+        "vehicle prominence": 20.982479095458984
+      },
+      "distance": 0.7019087984327027,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5791954069023845,
+        "structure_coverage_scale": 0.9918085321626493,
+        "tree_density_scale": 7.1755865488754855,
+        "ground_rcs_mean": -21.558672912043207,
+        "highpass_corner_m": 3.4776958579554114,
+        "lowpass_edge": 0.8623415262676876,
+        "lowpass_order": 10.55895444545829,
+        "thermal_over_adc_db": 14.400086633489172,
+        "snr_offset_db": 6.049950542348194
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.807655654192814,
+        "range-profile spread": 28.424470901489258,
+        "Doppler-profile spread": 2.225065231323242,
+        "near range (0-4 m) vs mid": -11.573002815246582,
+        "far range (>98 m) vs mid": -12.41654109954834,
+        "vehicle prominence": 21.6295223236084
+      },
+      "distance": 0.7034627621730437,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.19136007472309294,
+        "structure_coverage_scale": 1.0998316622124507,
+        "tree_density_scale": 7.030508561201703,
+        "ground_rcs_mean": -20.539451827670852,
+        "highpass_corner_m": 3.63145495092503,
+        "lowpass_edge": 0.8531210686076068,
+        "lowpass_order": 10.326575542218338,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 2.000221085002139
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.36074873888493,
+        "range-profile spread": 21.323822021484375,
+        "Doppler-profile spread": 1.3372526168823242,
+        "near range (0-4 m) vs mid": -9.477325439453125,
+        "far range (>98 m) vs mid": -9.644288063049316,
+        "vehicle prominence": 20.223560333251953
+      },
+      "distance": 0.703716875278951,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.6399422972859157,
+        "structure_coverage_scale": 0.9917264928734353,
+        "tree_density_scale": 4.5754432389441115,
+        "ground_rcs_mean": -17.921843580139686,
+        "highpass_corner_m": 3.123049678049335,
+        "lowpass_edge": 0.8555416356687251,
+        "lowpass_order": 11.801736849738088,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 8.460048166186624
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.4904689000547,
+        "range-profile spread": 28.626136779785156,
+        "Doppler-profile spread": 4.127256393432617,
+        "near range (0-4 m) vs mid": -11.222532272338867,
+        "far range (>98 m) vs mid": -13.139689445495605,
+        "vehicle prominence": 20.699302673339844
+      },
+      "distance": 0.7040533593922843,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.5964814204230324,
+        "structure_coverage_scale": 1.7198661430462887,
+        "tree_density_scale": 7.977577198043688,
+        "ground_rcs_mean": -27.98890377264224,
+        "highpass_corner_m": 2.1971500801447186,
+        "lowpass_edge": 0.8970009759344684,
+        "lowpass_order": 13.036599878388117,
+        "thermal_over_adc_db": 18.784578637166128,
+        "snr_offset_db": 1.7676021885842967
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 58.0569419298172,
+        "range-profile spread": 27.81104278564453,
+        "Doppler-profile spread": 0.8357601165771484,
+        "near range (0-4 m) vs mid": -5.193714141845703,
+        "far range (>98 m) vs mid": -10.588739395141602,
+        "vehicle prominence": 21.718791961669922
+      },
+      "distance": 0.7069880385398851
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.945717111195382,
+        "tree_density_scale": 6.455081963315369,
+        "ground_rcs_mean": -21.07038339648533,
+        "highpass_corner_m": 3.0516461399118135,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 10.387844149644824,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 1.1661543966582508
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.85939494448901,
+        "range-profile spread": 20.040142059326172,
+        "Doppler-profile spread": 1.1750774383544922,
+        "near range (0-4 m) vs mid": -7.97172737121582,
+        "far range (>98 m) vs mid": -9.615274429321289,
+        "vehicle prominence": 19.139019012451172
+      },
+      "distance": 0.7222224026580663,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.03545239536061943,
+        "structure_coverage_scale": 0.6216725747761893,
+        "tree_density_scale": 6.783115577136949,
+        "ground_rcs_mean": -19.104425902675295,
+        "highpass_corner_m": 3.8547293300417502,
+        "lowpass_edge": 0.8726961946527143,
+        "lowpass_order": 8.581977955065039,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 1.4133054491908434
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.18246273919955,
+        "range-profile spread": 22.303314208984375,
+        "Doppler-profile spread": 1.3954362869262695,
+        "near range (0-4 m) vs mid": -9.946735382080078,
+        "far range (>98 m) vs mid": -8.530813217163086,
+        "vehicle prominence": 19.053361892700195
+      },
+      "distance": 0.7335066543191635,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.9305735314072953,
+        "structure_coverage_scale": 0.8619189751228157,
+        "tree_density_scale": 5.0831334996399455,
+        "ground_rcs_mean": -21.335046827733482,
+        "highpass_corner_m": 3.6742979549407546,
+        "lowpass_edge": 0.8615015256158234,
+        "lowpass_order": 9.0298626532006,
+        "thermal_over_adc_db": 12.627252237891758,
+        "snr_offset_db": 1.9694331045388749
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.262180654764215,
+        "range-profile spread": 22.579984664916992,
+        "Doppler-profile spread": 1.1158790588378906,
+        "near range (0-4 m) vs mid": -10.594887733459473,
+        "far range (>98 m) vs mid": -9.751363754272461,
+        "vehicle prominence": 18.09563636779785
+      },
+      "distance": 0.7437898608446121,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.7350077447788181,
+        "structure_coverage_scale": 0.7911946593361904,
+        "tree_density_scale": 4.445166864634064,
+        "ground_rcs_mean": -24.531305452101602,
+        "highpass_corner_m": 1.622549481723904,
+        "lowpass_edge": 0.9678331231752048,
+        "lowpass_order": 10.856747205469294,
+        "thermal_over_adc_db": 10.128177653286203,
+        "snr_offset_db": 5.4529840245077725
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.740397905416856,
+        "range-profile spread": 22.368057250976562,
+        "Doppler-profile spread": 1.1236228942871094,
+        "near range (0-4 m) vs mid": -2.8328685760498047,
+        "far range (>98 m) vs mid": -4.165185928344727,
+        "vehicle prominence": 21.94190216064453
+      },
+      "distance": 0.7486865927991757
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.0200788936754432,
+        "structure_coverage_scale": 1.352276212852598,
+        "tree_density_scale": 5.213440984091813,
+        "ground_rcs_mean": -17.09166448736324,
+        "highpass_corner_m": 2.189919160285889,
+        "lowpass_edge": 0.8679778655050554,
+        "lowpass_order": 5.462826656023675,
+        "thermal_over_adc_db": 11.52878041836434,
+        "snr_offset_db": 0.6846204720748119
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.200229835152875,
+        "range-profile spread": 22.658525466918945,
+        "Doppler-profile spread": 1.3831119537353516,
+        "near range (0-4 m) vs mid": -5.639897346496582,
+        "far range (>98 m) vs mid": -7.049173355102539,
+        "vehicle prominence": 17.948532104492188
+      },
+      "distance": 0.7584387479265461
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.492268086462857,
+        "structure_coverage_scale": 1.2939682402951556,
+        "tree_density_scale": 6.393392755353556,
+        "ground_rcs_mean": -26.706883012886586,
+        "highpass_corner_m": 6.141385002521106,
+        "lowpass_edge": 0.93533714535877,
+        "lowpass_order": 15.184716239360538,
+        "thermal_over_adc_db": 12.298652665618103,
+        "snr_offset_db": 4.580302341526188
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.13989472746849,
+        "range-profile spread": 22.18741226196289,
+        "Doppler-profile spread": 1.0257129669189453,
+        "near range (0-4 m) vs mid": -13.00635051727295,
+        "far range (>98 m) vs mid": -7.063418388366699,
+        "vehicle prominence": 22.702077865600586
+      },
+      "distance": 0.7750473975419984
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.2038164544826189,
+        "structure_coverage_scale": 1.2272210825309562,
+        "tree_density_scale": 6.85238192406934,
+        "ground_rcs_mean": -18.70494600753521,
+        "highpass_corner_m": 5.271844085004329,
+        "lowpass_edge": 0.8846373602858106,
+        "lowpass_order": 8.358442891807002,
+        "thermal_over_adc_db": 12.690454452622252,
+        "snr_offset_db": 5.913689076689485
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.23580683159829,
+        "range-profile spread": 28.354026794433594,
+        "Doppler-profile spread": 2.679994583129883,
+        "near range (0-4 m) vs mid": -14.645506858825684,
+        "far range (>98 m) vs mid": -9.498490333557129,
+        "vehicle prominence": 23.4578800201416
+      },
+      "distance": 0.7817721089760452,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.9570468970670634,
+        "structure_coverage_scale": 0.8728365145508676,
+        "tree_density_scale": 7.507145286933966,
+        "ground_rcs_mean": -26.206011000689372,
+        "highpass_corner_m": 6.414893598165094,
+        "lowpass_edge": 0.9101125548386184,
+        "lowpass_order": 6.200274917261531,
+        "thermal_over_adc_db": 15.918536940188266,
+        "snr_offset_db": 1.4882153760563437
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.22893688917172,
+        "range-profile spread": 23.05802345275879,
+        "Doppler-profile spread": 0.7636528015136719,
+        "near range (0-4 m) vs mid": -15.726676940917969,
+        "far range (>98 m) vs mid": -5.843366622924805,
+        "vehicle prominence": 23.896181106567383
+      },
+      "distance": 0.7826062670230892
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.8908361311610052,
+        "tree_density_scale": 5.322367707327013,
+        "ground_rcs_mean": -19.183518660193954,
+        "highpass_corner_m": 3.939170629236189,
+        "lowpass_edge": 0.8586775577131661,
+        "lowpass_order": 9.556339393903256,
+        "thermal_over_adc_db": 11.929018191860052,
+        "snr_offset_db": 7.436135814142544
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.13075255608559,
+        "range-profile spread": 28.86526870727539,
+        "Doppler-profile spread": 3.3893470764160156,
+        "near range (0-4 m) vs mid": -13.114307403564453,
+        "far range (>98 m) vs mid": -12.353419303894043,
+        "vehicle prominence": 21.147214889526367
+      },
+      "distance": 0.7831080034971225,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.9425060163286902,
+        "structure_coverage_scale": 1.528312976721042,
+        "tree_density_scale": 5.378444572008622,
+        "ground_rcs_mean": -21.2310653885812,
+        "highpass_corner_m": 3.7224499678537266,
+        "lowpass_edge": 0.8662115806026893,
+        "lowpass_order": 12.65786008232898,
+        "thermal_over_adc_db": 20.507086449514517,
+        "snr_offset_db": -3.7951624888208872
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.43947472476987,
+        "range-profile spread": 26.048715591430664,
+        "Doppler-profile spread": 0.6132087707519531,
+        "near range (0-4 m) vs mid": -12.12749195098877,
+        "far range (>98 m) vs mid": -13.799284934997559,
+        "vehicle prominence": 13.89720344543457
+      },
+      "distance": 0.795862242158262
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.4683102862977994,
+        "structure_coverage_scale": 1.2878589346946412,
+        "tree_density_scale": 6.104796303632445,
+        "ground_rcs_mean": -17.53304204984901,
+        "highpass_corner_m": 3.9218591766407727,
+        "lowpass_edge": 0.8637784535596152,
+        "lowpass_order": 11.365739418275906,
+        "thermal_over_adc_db": 10.635020232060338,
+        "snr_offset_db": 7.354397261154241
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 55.043234766900554,
+        "range-profile spread": 28.68306541442871,
+        "Doppler-profile spread": 3.880695343017578,
+        "near range (0-4 m) vs mid": -13.124156951904297,
+        "far range (>98 m) vs mid": -12.722885131835938,
+        "vehicle prominence": 19.5726375579834
+      },
+      "distance": 0.797660944714148,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.0884633510226784,
+        "structure_coverage_scale": 0.9919734346469038,
+        "tree_density_scale": 1.815573124888108,
+        "ground_rcs_mean": -21.50402700065442,
+        "highpass_corner_m": 3.5397536560405527,
+        "lowpass_edge": 0.8895874998992723,
+        "lowpass_order": 15.324133182750254,
+        "thermal_over_adc_db": 13.985966813589723,
+        "snr_offset_db": 0.2434731567547015
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.261915610075,
+        "range-profile spread": 21.358184814453125,
+        "Doppler-profile spread": 0.7651882171630859,
+        "near range (0-4 m) vs mid": -10.46586799621582,
+        "far range (>98 m) vs mid": -11.378456115722656,
+        "vehicle prominence": 15.214055061340332
+      },
+      "distance": 0.8003973589976642
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.07522967995311415,
+        "structure_coverage_scale": 0.7095417443867311,
+        "tree_density_scale": 6.445536680338882,
+        "ground_rcs_mean": -17.939995273673446,
+        "highpass_corner_m": 5.518112497513426,
+        "lowpass_edge": 0.8817973719184009,
+        "lowpass_order": 7.29373829497497,
+        "thermal_over_adc_db": 12.662123330487656,
+        "snr_offset_db": 3.419300579182988
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.16100198078157,
+        "range-profile spread": 26.243776321411133,
+        "Doppler-profile spread": 2.098173141479492,
+        "near range (0-4 m) vs mid": -13.926725387573242,
+        "far range (>98 m) vs mid": -8.194254875183105,
+        "vehicle prominence": 19.283592224121094
+      },
+      "distance": 0.810845519924163,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.6805194662550015,
+        "structure_coverage_scale": 0.7304194164279276,
+        "tree_density_scale": 5.130764013323443,
+        "ground_rcs_mean": -19.053608562196022,
+        "highpass_corner_m": 4.010459778931576,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 7.635645933033585,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 2.8354228046634757
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.57184030127529,
+        "range-profile spread": 21.575109481811523,
+        "Doppler-profile spread": 1.494215965270996,
+        "near range (0-4 m) vs mid": -10.185514450073242,
+        "far range (>98 m) vs mid": -8.884308815002441,
+        "vehicle prominence": 17.15325355529785
+      },
+      "distance": 0.8343546307961148,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.6205678933621965,
+        "structure_coverage_scale": 1.2084505051250172,
+        "tree_density_scale": 7.344664502306642,
+        "ground_rcs_mean": -19.68165764522255,
+        "highpass_corner_m": 7.407267720782361,
+        "lowpass_edge": 0.8652883610858687,
+        "lowpass_order": 4.882754863967584,
+        "thermal_over_adc_db": 11.406525071384362,
+        "snr_offset_db": 7.377085886946386
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.535547790408145,
+        "range-profile spread": 27.011417388916016,
+        "Doppler-profile spread": 2.7137622833251953,
+        "near range (0-4 m) vs mid": -14.328692436218262,
+        "far range (>98 m) vs mid": -8.165084838867188,
+        "vehicle prominence": 20.880491256713867
+      },
+      "distance": 0.83460141194264
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.4575060764953673,
+        "structure_coverage_scale": 1.8342317515235003,
+        "tree_density_scale": 7.505326369671873,
+        "ground_rcs_mean": -27.844096065818597,
+        "highpass_corner_m": 5.000708815108327,
+        "lowpass_edge": 0.8886243269291131,
+        "lowpass_order": 11.131600362396362,
+        "thermal_over_adc_db": 16.758224510142664,
+        "snr_offset_db": -2.1676199894367754
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.72642102527637,
+        "range-profile spread": 22.630420684814453,
+        "Doppler-profile spread": 0.6658821105957031,
+        "near range (0-4 m) vs mid": -14.424315452575684,
+        "far range (>98 m) vs mid": -9.574629783630371,
+        "vehicle prominence": 17.828269958496094
+      },
+      "distance": 0.8511777368227692
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.4437814897258057,
+        "structure_coverage_scale": 1.7203010962694532,
+        "tree_density_scale": 5.021366789308373,
+        "ground_rcs_mean": -21.897578720172394,
+        "highpass_corner_m": 7.395835338951723,
+        "lowpass_edge": 0.8578324499693549,
+        "lowpass_order": 14.019858447500807,
+        "thermal_over_adc_db": 17.636295599324775,
+        "snr_offset_db": -3.4890876779859115
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.079423069953975,
+        "range-profile spread": 22.903430938720703,
+        "Doppler-profile spread": 0.7023067474365234,
+        "near range (0-4 m) vs mid": -17.427501678466797,
+        "far range (>98 m) vs mid": -14.574928283691406,
+        "vehicle prominence": 13.739583969116211
+      },
+      "distance": 0.8983893754005426
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.37197501835163216,
+        "structure_coverage_scale": 0.8368287606047174,
+        "tree_density_scale": 7.332468970177056,
+        "ground_rcs_mean": -19.257986268456236,
+        "highpass_corner_m": 4.029317103168781,
+        "lowpass_edge": 0.85,
+        "lowpass_order": 11.090639097592055,
+        "thermal_over_adc_db": 12.655585750135424,
+        "snr_offset_db": -2.7190197519384274
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 45.99656796599442,
+        "range-profile spread": 20.803625106811523,
+        "Doppler-profile spread": 0.8527297973632812,
+        "near range (0-4 m) vs mid": -11.135370254516602,
+        "far range (>98 m) vs mid": -11.305291175842285,
+        "vehicle prominence": 17.647048950195312
+      },
+      "distance": 0.9017986616926027,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.9301328045383296,
+        "structure_coverage_scale": 0.7819482843323359,
+        "tree_density_scale": 7.8649715267149105,
+        "ground_rcs_mean": -20.987242589989577,
+        "highpass_corner_m": 5.850708653057468,
+        "lowpass_edge": 0.879111101482966,
+        "lowpass_order": 10.04324278286297,
+        "thermal_over_adc_db": 15.323584598230354,
+        "snr_offset_db": 3.5283534238604166
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.161693248748904,
+        "range-profile spread": 27.55940818786621,
+        "Doppler-profile spread": 1.5437736511230469,
+        "near range (0-4 m) vs mid": -15.758835792541504,
+        "far range (>98 m) vs mid": -10.461922645568848,
+        "vehicle prominence": 17.364940643310547
+      },
+      "distance": 0.9226394145965605,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.0,
+        "structure_coverage_scale": 0.5,
+        "tree_density_scale": 8.0,
+        "ground_rcs_mean": -17.99330723157155,
+        "highpass_corner_m": 3.2871786338744773,
+        "lowpass_edge": 0.8681000901646738,
+        "lowpass_order": 9.72753940759525,
+        "thermal_over_adc_db": 10.0,
+        "snr_offset_db": 0.7873521886228518
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 45.969417349577064,
+        "range-profile spread": 21.726119995117188,
+        "Doppler-profile spread": 1.2681999206542969,
+        "near range (0-4 m) vs mid": -8.849555969238281,
+        "far range (>98 m) vs mid": -9.187786102294922,
+        "vehicle prominence": 15.267677307128906
+      },
+      "distance": 0.9318069295644736,
+      "refine": true
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.9578437290099153,
+        "structure_coverage_scale": 0.9107736478993358,
+        "tree_density_scale": 5.769890529948397,
+        "ground_rcs_mean": -16.123971461158185,
+        "highpass_corner_m": 1.8877197158287342,
+        "lowpass_edge": 0.9537733954480929,
+        "lowpass_order": 4.713569819204062,
+        "thermal_over_adc_db": 17.61541016621779,
+        "snr_offset_db": -1.4045187764284677
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.499326532377815,
+        "range-profile spread": 27.81047821044922,
+        "Doppler-profile spread": 1.1573715209960938,
+        "near range (0-4 m) vs mid": -4.3552398681640625,
+        "far range (>98 m) vs mid": -4.78585147857666,
+        "vehicle prominence": 15.33881950378418
+      },
+      "distance": 0.9450394809091746
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5102355048445995,
+        "structure_coverage_scale": 1.3657969234798861,
+        "tree_density_scale": 4.519241971843358,
+        "ground_rcs_mean": -21.56194393044619,
+        "highpass_corner_m": 6.32340619065675,
+        "lowpass_edge": 0.863179346327669,
+        "lowpass_order": 11.499291540015802,
+        "thermal_over_adc_db": 18.279117649303856,
+        "snr_offset_db": 2.284028713359074
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 57.35297781848907,
+        "range-profile spread": 28.514097213745117,
+        "Doppler-profile spread": 1.2458906173706055,
+        "near range (0-4 m) vs mid": -17.813919067382812,
+        "far range (>98 m) vs mid": -12.650965690612793,
+        "vehicle prominence": 21.608489990234375
+      },
+      "distance": 0.9581843316713955
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.4665486405003927,
+        "structure_coverage_scale": 1.9646934829040668,
+        "tree_density_scale": 6.317683910763713,
+        "ground_rcs_mean": -28.82285274561478,
+        "highpass_corner_m": 2.888857498505601,
+        "lowpass_edge": 0.9535744245027181,
+        "lowpass_order": 14.575686072852278,
+        "thermal_over_adc_db": 20.214130110872905,
+        "snr_offset_db": -3.1140853807534956
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.67117772579195,
+        "range-profile spread": 24.66762351989746,
+        "Doppler-profile spread": 0.5484247207641602,
+        "near range (0-4 m) vs mid": -8.289722442626953,
+        "far range (>98 m) vs mid": -5.43162727355957,
+        "vehicle prominence": 13.0562744140625
+      },
+      "distance": 0.9720693142890923
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.821193510700189,
+        "structure_coverage_scale": 1.907039479456706,
+        "tree_density_scale": 0.6892456707847587,
+        "ground_rcs_mean": -31.303519710432035,
+        "highpass_corner_m": 2.693320798029945,
+        "lowpass_edge": 0.937849610004386,
+        "lowpass_order": 10.314016366019459,
+        "thermal_over_adc_db": 19.287508157881327,
+        "snr_offset_db": -5.54933322455633
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.11763392448427,
+        "range-profile spread": 20.83291244506836,
+        "Doppler-profile spread": 0.36385059356689453,
+        "near range (0-4 m) vs mid": -7.11540412902832,
+        "far range (>98 m) vs mid": -5.464547634124756,
+        "vehicle prominence": 11.911506652832031
+      },
+      "distance": 0.9982935157140105
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.6643549619775397,
+        "structure_coverage_scale": 0.8388041426259866,
+        "tree_density_scale": 1.4341602937646263,
+        "ground_rcs_mean": -29.23338485984845,
+        "highpass_corner_m": 5.10286145368913,
+        "lowpass_edge": 0.9164908602607921,
+        "lowpass_order": 13.716529310953334,
+        "thermal_over_adc_db": 21.209519040123716,
+        "snr_offset_db": -4.23157571137579
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 51.64154574108141,
+        "range-profile spread": 22.727943420410156,
+        "Doppler-profile spread": 0.3077735900878906,
+        "near range (0-4 m) vs mid": -16.001216888427734,
+        "far range (>98 m) vs mid": -8.695025444030762,
+        "vehicle prominence": 14.265682220458984
+      },
+      "distance": 1.0295699688275612
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.7120543575784972,
+        "structure_coverage_scale": 0.6407677301499594,
+        "tree_density_scale": 3.4353531972849813,
+        "ground_rcs_mean": -33.52517973204388,
+        "highpass_corner_m": 4.3331687425189696,
+        "lowpass_edge": 0.9014247529771509,
+        "lowpass_order": 9.084849315645368,
+        "thermal_over_adc_db": 21.726007071815687,
+        "snr_offset_db": -7.546186796478532
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.76154158592235,
+        "range-profile spread": 22.849939346313477,
+        "Doppler-profile spread": 0.2411041259765625,
+        "near range (0-4 m) vs mid": -13.862692832946777,
+        "far range (>98 m) vs mid": -7.375982284545898,
+        "vehicle prominence": 13.914155006408691
+      },
+      "distance": 1.0414607692082698
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.674836843925103,
+        "structure_coverage_scale": 1.080942372577811,
+        "tree_density_scale": 5.179270864543507,
+        "ground_rcs_mean": -23.16194433571779,
+        "highpass_corner_m": 3.3822670016646645,
+        "lowpass_edge": 0.8863841215197094,
+        "lowpass_order": 10.54898654823144,
+        "thermal_over_adc_db": 22.246834780037013,
+        "snr_offset_db": 2.2159687784361743
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 59.76785195255297,
+        "range-profile spread": 31.755807876586914,
+        "Doppler-profile spread": 0.9226799011230469,
+        "near range (0-4 m) vs mid": -11.320871353149414,
+        "far range (>98 m) vs mid": -10.791594505310059,
+        "vehicle prominence": 19.958547592163086
+      },
+      "distance": 1.0580530444145244
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.028171108863547012,
+        "structure_coverage_scale": 0.9391294592293027,
+        "tree_density_scale": 3.5055857582117325,
+        "ground_rcs_mean": -15.59101186502986,
+        "highpass_corner_m": 1.4998601793743795,
+        "lowpass_edge": 0.9437566318273961,
+        "lowpass_order": 9.705099443052745,
+        "thermal_over_adc_db": 12.597470495462693,
+        "snr_offset_db": -2.678393826586829
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 46.60953926014905,
+        "range-profile spread": 21.86973762512207,
+        "Doppler-profile spread": 1.1401805877685547,
+        "near range (0-4 m) vs mid": -2.6526947021484375,
+        "far range (>98 m) vs mid": -5.635735034942627,
+        "vehicle prominence": 15.251810073852539
+      },
+      "distance": 1.082431173857053
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.4476304381479018,
+        "structure_coverage_scale": 0.631167676204533,
+        "tree_density_scale": 6.028756258545655,
+        "ground_rcs_mean": -17.791753302421505,
+        "highpass_corner_m": 7.23253454798459,
+        "lowpass_edge": 0.9112106808981644,
+        "lowpass_order": 5.841454796375766,
+        "thermal_over_adc_db": 14.51314824556956,
+        "snr_offset_db": -0.9295222195812975
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 49.49603261613872,
+        "range-profile spread": 23.553701400756836,
+        "Doppler-profile spread": 1.1544303894042969,
+        "near range (0-4 m) vs mid": -15.40549087524414,
+        "far range (>98 m) vs mid": -6.101292610168457,
+        "vehicle prominence": 14.816579818725586
+      },
+      "distance": 1.0935768877506182
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.699837380316845,
+        "structure_coverage_scale": 1.171787542983115,
+        "tree_density_scale": 3.5495963377538597,
+        "ground_rcs_mean": -28.869855649385954,
+        "highpass_corner_m": 2.619608008583219,
+        "lowpass_edge": 0.9280919601716078,
+        "lowpass_order": 7.176232021872346,
+        "thermal_over_adc_db": 27.24551041286095,
+        "snr_offset_db": -4.587032086957834
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 57.38571033668548,
+        "range-profile spread": 29.118309020996094,
+        "Doppler-profile spread": 0.3432302474975586,
+        "near range (0-4 m) vs mid": -6.900137901306152,
+        "far range (>98 m) vs mid": -5.186009407043457,
+        "vehicle prominence": 15.413030624389648
+      },
+      "distance": 1.1010589709599898
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.9022099380423296,
+        "structure_coverage_scale": 1.2448575406982796,
+        "tree_density_scale": 1.726575621473602,
+        "ground_rcs_mean": -21.525331245454527,
+        "highpass_corner_m": 3.2261217149205863,
+        "lowpass_edge": 0.9353055835919134,
+        "lowpass_order": 9.524263946407897,
+        "thermal_over_adc_db": 20.14939721089054,
+        "snr_offset_db": 5.7933146491974075
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 61.69501294040686,
+        "range-profile spread": 32.01515197753906,
+        "Doppler-profile spread": 1.5888824462890625,
+        "near range (0-4 m) vs mid": -11.168282508850098,
+        "far range (>98 m) vs mid": -6.976998329162598,
+        "vehicle prominence": 24.204797744750977
+      },
+      "distance": 1.1042723539034534
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.950004119660264,
+        "structure_coverage_scale": 1.7555705475800059,
+        "tree_density_scale": 6.336861695764462,
+        "ground_rcs_mean": -17.230202261769996,
+        "highpass_corner_m": 5.420440620831316,
+        "lowpass_edge": 0.8927637455651886,
+        "lowpass_order": 10.339389280683916,
+        "thermal_over_adc_db": 14.530007913647271,
+        "snr_offset_db": 5.550882477634108
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 58.042676473140716,
+        "range-profile spread": 31.82272720336914,
+        "Doppler-profile spread": 2.943636894226074,
+        "near range (0-4 m) vs mid": -16.309480667114258,
+        "far range (>98 m) vs mid": -10.73598861694336,
+        "vehicle prominence": 20.633342742919922
+      },
+      "distance": 1.1081129477659848
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.9707043497770314,
+        "structure_coverage_scale": 1.5311225034699898,
+        "tree_density_scale": 4.896981582638624,
+        "ground_rcs_mean": -32.69442093842971,
+        "highpass_corner_m": 5.684426056660359,
+        "lowpass_edge": 0.8507918228536846,
+        "lowpass_order": 6.194114547456408,
+        "thermal_over_adc_db": 18.417568103906966,
+        "snr_offset_db": -2.4326123918269076
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.69397816562656,
+        "range-profile spread": 21.307126998901367,
+        "Doppler-profile spread": 0.4870872497558594,
+        "near range (0-4 m) vs mid": -16.09491539001465,
+        "far range (>98 m) vs mid": -8.063554763793945,
+        "vehicle prominence": 14.207564353942871
+      },
+      "distance": 1.1269119451204934
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.1348617366427525,
+        "structure_coverage_scale": 1.7661664523585638,
+        "tree_density_scale": 5.583490835719693,
+        "ground_rcs_mean": -27.623569666080996,
+        "highpass_corner_m": 5.030054638533365,
+        "lowpass_edge": 0.9176094968408788,
+        "lowpass_order": 15.238793001691526,
+        "thermal_over_adc_db": 17.753484239113785,
+        "snr_offset_db": -6.704346958679929
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 50.066071446418846,
+        "range-profile spread": 20.044384002685547,
+        "Doppler-profile spread": 0.4013080596923828,
+        "near range (0-4 m) vs mid": -14.674110412597656,
+        "far range (>98 m) vs mid": -8.830953598022461,
+        "vehicle prominence": 12.655120849609375
+      },
+      "distance": 1.1733375016212448
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.4971934558568165,
+        "structure_coverage_scale": 1.7107518951402347,
+        "tree_density_scale": 0.6695789791016009,
+        "ground_rcs_mean": -27.507860565302845,
+        "highpass_corner_m": 4.312427799719982,
+        "lowpass_edge": 0.8759833960812189,
+        "lowpass_order": 8.270874634207486,
+        "thermal_over_adc_db": 14.455828710569044,
+        "snr_offset_db": -4.363437873305484
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.24344694757467,
+        "range-profile spread": 16.85464096069336,
+        "Doppler-profile spread": 0.43538570404052734,
+        "near range (0-4 m) vs mid": -11.901999473571777,
+        "far range (>98 m) vs mid": -7.94359827041626,
+        "vehicle prominence": 15.416656494140625
+      },
+      "distance": 1.184404122972488
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.21679579658963033,
+        "structure_coverage_scale": 1.2499592354879279,
+        "tree_density_scale": 6.080731094619862,
+        "ground_rcs_mean": -31.455465190506825,
+        "highpass_corner_m": 3.7164671224916344,
+        "lowpass_edge": 0.8575474598145966,
+        "lowpass_order": 12.710570365309321,
+        "thermal_over_adc_db": 11.755357735189735,
+        "snr_offset_db": -2.098165832840648
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 46.283473039627246,
+        "range-profile spread": 14.578972816467285,
+        "Doppler-profile spread": 0.5189952850341797,
+        "near range (0-4 m) vs mid": -9.547536849975586,
+        "far range (>98 m) vs mid": -10.81302547454834,
+        "vehicle prominence": 13.818855285644531
+      },
+      "distance": 1.201935584704077
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.4560237075676111,
+        "structure_coverage_scale": 1.384940888974296,
+        "tree_density_scale": 5.721613295775924,
+        "ground_rcs_mean": -32.269131713982276,
+        "highpass_corner_m": 3.188169529708199,
+        "lowpass_edge": 0.9359101416310593,
+        "lowpass_order": 14.81329712107404,
+        "thermal_over_adc_db": 16.834853004122706,
+        "snr_offset_db": -5.221125766174389
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.280860550403894,
+        "range-profile spread": 18.83060646057129,
+        "Doppler-profile spread": 0.45403480529785156,
+        "near range (0-4 m) vs mid": -9.247525215148926,
+        "far range (>98 m) vs mid": -6.902195930480957,
+        "vehicle prominence": 11.137441635131836
+      },
+      "distance": 1.2055412808577133
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.1215321335653039,
+        "structure_coverage_scale": 1.598009293484841,
+        "tree_density_scale": 5.107799352117475,
+        "ground_rcs_mean": -34.43269269772958,
+        "highpass_corner_m": 6.034538409787182,
+        "lowpass_edge": 0.8519190075428286,
+        "lowpass_order": 13.095412028277137,
+        "thermal_over_adc_db": 20.25517446524156,
+        "snr_offset_db": 8.582084415940123
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 66.18710042858126,
+        "range-profile spread": 30.840913772583008,
+        "Doppler-profile spread": 1.2829761505126953,
+        "near range (0-4 m) vs mid": -18.20697021484375,
+        "far range (>98 m) vs mid": -15.418563842773438,
+        "vehicle prominence": 22.644542694091797
+      },
+      "distance": 1.2152927959124242
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.9219532145570657,
+        "structure_coverage_scale": 1.2555154688008685,
+        "tree_density_scale": 6.150849039379289,
+        "ground_rcs_mean": -16.723246646536744,
+        "highpass_corner_m": 4.333029503781272,
+        "lowpass_edge": 0.9536543489316501,
+        "lowpass_order": 12.418822792742473,
+        "thermal_over_adc_db": 15.878485119491152,
+        "snr_offset_db": 5.3530453996694725
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 57.758102989196786,
+        "range-profile spread": 31.467823028564453,
+        "Doppler-profile spread": 2.922445297241211,
+        "near range (0-4 m) vs mid": -15.472633361816406,
+        "far range (>98 m) vs mid": -7.394050598144531,
+        "vehicle prominence": 18.84869384765625
+      },
+      "distance": 1.2290819595336904
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.1950066532947061,
+        "structure_coverage_scale": 0.9411145402524266,
+        "tree_density_scale": 2.5784066707771833,
+        "ground_rcs_mean": -27.780571483432983,
+        "highpass_corner_m": 5.038353501813835,
+        "lowpass_edge": 0.9133384093734973,
+        "lowpass_order": 8.264190174072356,
+        "thermal_over_adc_db": 22.748419584763628,
+        "snr_offset_db": 3.5153488389491994
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.152044461250334,
+        "range-profile spread": 28.887088775634766,
+        "Doppler-profile spread": 0.776188850402832,
+        "near range (0-4 m) vs mid": -16.832746505737305,
+        "far range (>98 m) vs mid": -6.758051872253418,
+        "vehicle prominence": 23.558279037475586
+      },
+      "distance": 1.2449747377077736
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.8991356716121544,
+        "structure_coverage_scale": 1.1340308317964878,
+        "tree_density_scale": 0.7123975335909722,
+        "ground_rcs_mean": -32.51433447000872,
+        "highpass_corner_m": 5.694370902855412,
+        "lowpass_edge": 0.92766274138891,
+        "lowpass_order": 11.384621337775046,
+        "thermal_over_adc_db": 17.67355108523767,
+        "snr_offset_db": 9.944198715784221
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.99169876718521,
+        "range-profile spread": 25.449565887451172,
+        "Doppler-profile spread": 0.931884765625,
+        "near range (0-4 m) vs mid": -16.313037872314453,
+        "far range (>98 m) vs mid": -6.902338981628418,
+        "vehicle prominence": 28.270305633544922
+      },
+      "distance": 1.2600396878083535
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.0083511816369812,
+        "structure_coverage_scale": 0.7254192003422586,
+        "tree_density_scale": 3.8775452498696525,
+        "ground_rcs_mean": -19.073514594254114,
+        "highpass_corner_m": 2.6144954629562323,
+        "lowpass_edge": 0.8562425561277291,
+        "lowpass_order": 8.854622077858338,
+        "thermal_over_adc_db": 13.970260890185106,
+        "snr_offset_db": -8.184939087617561
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 41.44728490161919,
+        "range-profile spread": 16.94605255126953,
+        "Doppler-profile spread": 0.4350566864013672,
+        "near range (0-4 m) vs mid": -6.536531448364258,
+        "far range (>98 m) vs mid": -9.75995922088623,
+        "vehicle prominence": 12.394922256469727
+      },
+      "distance": 1.2704275144894854
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.3867050984303484,
+        "structure_coverage_scale": 1.382801377909029,
+        "tree_density_scale": 1.4792979367591843,
+        "ground_rcs_mean": -33.32519352206442,
+        "highpass_corner_m": 3.261375851740725,
+        "lowpass_edge": 0.9613070571359155,
+        "lowpass_order": 9.671410346001789,
+        "thermal_over_adc_db": 27.909478142952963,
+        "snr_offset_db": -0.8065009344595016
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.514138870239265,
+        "range-profile spread": 29.865047454833984,
+        "Doppler-profile spread": 0.3832101821899414,
+        "near range (0-4 m) vs mid": -10.116930961608887,
+        "far range (>98 m) vs mid": -4.14036750793457,
+        "vehicle prominence": 19.6766357421875
+      },
+      "distance": 1.2955262001037586
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.269401331078834,
+        "structure_coverage_scale": 0.6756596120773893,
+        "tree_density_scale": 2.355059153036419,
+        "ground_rcs_mean": -18.872793608500476,
+        "highpass_corner_m": 4.157332251262644,
+        "lowpass_edge": 0.9552181283919531,
+        "lowpass_order": 11.219969250787072,
+        "thermal_over_adc_db": 25.79089293916764,
+        "snr_offset_db": -6.251934541417579
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.84799380207092,
+        "range-profile spread": 30.022380828857422,
+        "Doppler-profile spread": 0.5281839370727539,
+        "near range (0-4 m) vs mid": -14.1444673538208,
+        "far range (>98 m) vs mid": -4.922524929046631,
+        "vehicle prominence": 15.02086067199707
+      },
+      "distance": 1.3037718198458441
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3224316851584418,
+        "structure_coverage_scale": 1.1781331824906627,
+        "tree_density_scale": 3.4599484780322,
+        "ground_rcs_mean": -30.35377049428938,
+        "highpass_corner_m": 6.241290075027545,
+        "lowpass_edge": 0.9272445714496372,
+        "lowpass_order": 12.709092220622438,
+        "thermal_over_adc_db": 11.656171517929895,
+        "snr_offset_db": -2.945131686071898
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 45.13293669354917,
+        "range-profile spread": 13.780950546264648,
+        "Doppler-profile spread": 0.48006725311279297,
+        "near range (0-4 m) vs mid": -11.807914733886719,
+        "far range (>98 m) vs mid": -6.413664817810059,
+        "vehicle prominence": 18.972213745117188
+      },
+      "distance": 1.3183978090167054
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.1982474901722242,
+        "structure_coverage_scale": 1.761975919418575,
+        "tree_density_scale": 1.0001750657532607,
+        "ground_rcs_mean": -28.113800423917496,
+        "highpass_corner_m": 4.012091123634833,
+        "lowpass_edge": 0.9659274496940884,
+        "lowpass_order": 10.746782106741485,
+        "thermal_over_adc_db": 15.177291863418645,
+        "snr_offset_db": -5.166485718113101
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 48.557380236625725,
+        "range-profile spread": 17.71255111694336,
+        "Doppler-profile spread": 0.4399986267089844,
+        "near range (0-4 m) vs mid": -11.535192489624023,
+        "far range (>98 m) vs mid": -3.9071950912475586,
+        "vehicle prominence": 13.325721740722656
+      },
+      "distance": 1.3372066089948014
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.1546637952795047,
+        "structure_coverage_scale": 1.097717664177368,
+        "tree_density_scale": 4.242569809923761,
+        "ground_rcs_mean": -31.023483992688423,
+        "highpass_corner_m": 7.506580596088923,
+        "lowpass_edge": 0.8739574016057424,
+        "lowpass_order": 10.739040448901722,
+        "thermal_over_adc_db": 21.946912471536063,
+        "snr_offset_db": 7.168868545990232
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 64.52791932296763,
+        "range-profile spread": 30.67646026611328,
+        "Doppler-profile spread": 0.8412456512451172,
+        "near range (0-4 m) vs mid": -20.66873550415039,
+        "far range (>98 m) vs mid": -11.681376457214355,
+        "vehicle prominence": 24.30577850341797
+      },
+      "distance": 1.3422359236399355
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.910885061964363,
+        "structure_coverage_scale": 0.9046800706458055,
+        "tree_density_scale": 0.8073014295214602,
+        "ground_rcs_mean": -34.66944728942942,
+        "highpass_corner_m": 6.692891674401907,
+        "lowpass_edge": 0.9595306692733265,
+        "lowpass_order": 11.279629309206157,
+        "thermal_over_adc_db": 24.58993121967997,
+        "snr_offset_db": 0.8724998293084578
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 61.63991418266653,
+        "range-profile spread": 26.352951049804688,
+        "Doppler-profile spread": 0.3551015853881836,
+        "near range (0-4 m) vs mid": -20.28192138671875,
+        "far range (>98 m) vs mid": -4.315492630004883,
+        "vehicle prominence": 24.086841583251953
+      },
+      "distance": 1.3433946736019038
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.321131464147352,
+        "structure_coverage_scale": 1.9318857405361058,
+        "tree_density_scale": 4.249218602657352,
+        "ground_rcs_mean": -26.49542750301849,
+        "highpass_corner_m": 5.341494164107645,
+        "lowpass_edge": 0.9694115806282388,
+        "lowpass_order": 15.387324099253185,
+        "thermal_over_adc_db": 19.20090278618192,
+        "snr_offset_db": 5.154576906165829
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 61.73064228916168,
+        "range-profile spread": 29.933605194091797,
+        "Doppler-profile spread": 1.1220693588256836,
+        "near range (0-4 m) vs mid": -16.840347290039062,
+        "far range (>98 m) vs mid": -4.779155731201172,
+        "vehicle prominence": 22.071735382080078
+      },
+      "distance": 1.3700505483309413
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.5594992230026952,
+        "structure_coverage_scale": 1.1400817155953615,
+        "tree_density_scale": 0.8046317140455892,
+        "ground_rcs_mean": -31.119450901984138,
+        "highpass_corner_m": 7.615172538132386,
+        "lowpass_edge": 0.8695083669703981,
+        "lowpass_order": 14.224627989553303,
+        "thermal_over_adc_db": 26.4427431812888,
+        "snr_offset_db": -2.1741248584378408
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 58.37627047634131,
+        "range-profile spread": 27.79645538330078,
+        "Doppler-profile spread": 0.3279762268066406,
+        "near range (0-4 m) vs mid": -22.351577758789062,
+        "far range (>98 m) vs mid": -14.613717079162598,
+        "vehicle prominence": 12.597342491149902
+      },
+      "distance": 1.3851716656684883
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.21953101024438,
+        "structure_coverage_scale": 1.8649384424934454,
+        "tree_density_scale": 0.8230016642615313,
+        "ground_rcs_mean": -18.54587439636996,
+        "highpass_corner_m": 3.9076882615985724,
+        "lowpass_edge": 0.9495764782333723,
+        "lowpass_order": 4.1194547296875035,
+        "thermal_over_adc_db": 17.300923155165414,
+        "snr_offset_db": -8.427399256687202
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 46.668657625198506,
+        "range-profile spread": 20.49886703491211,
+        "Doppler-profile spread": 0.5110931396484375,
+        "near range (0-4 m) vs mid": -12.019908905029297,
+        "far range (>98 m) vs mid": -3.9476375579833984,
+        "vehicle prominence": 11.235468864440918
+      },
+      "distance": 1.3894012425104743
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.5555721208168407,
+        "structure_coverage_scale": 1.4752961282529031,
+        "tree_density_scale": 2.5565521771499315,
+        "ground_rcs_mean": -19.881227168856412,
+        "highpass_corner_m": 4.048081227244271,
+        "lowpass_edge": 0.9679316734232998,
+        "lowpass_order": 9.144725649817664,
+        "thermal_over_adc_db": 26.743926978070924,
+        "snr_offset_db": -9.709167372779612
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 52.21986154747073,
+        "range-profile spread": 28.766298294067383,
+        "Doppler-profile spread": 0.339691162109375,
+        "near range (0-4 m) vs mid": -13.55845832824707,
+        "far range (>98 m) vs mid": -3.831631660461426,
+        "vehicle prominence": 8.709571838378906
+      },
+      "distance": 1.4077868552526036
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.5864475389297891,
+        "structure_coverage_scale": 1.9577561249166682,
+        "tree_density_scale": 5.53363085217047,
+        "ground_rcs_mean": -24.375677535803476,
+        "highpass_corner_m": 6.8882274608147736,
+        "lowpass_edge": 0.9083824519963786,
+        "lowpass_order": 9.711338441203921,
+        "thermal_over_adc_db": 15.165488001550738,
+        "snr_offset_db": -6.877290372186153
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 46.754233917236476,
+        "range-profile spread": 18.271583557128906,
+        "Doppler-profile spread": 0.47498130798339844,
+        "near range (0-4 m) vs mid": -14.965667724609375,
+        "far range (>98 m) vs mid": -7.273567199707031,
+        "vehicle prominence": 12.33651065826416
+      },
+      "distance": 1.4126214558919237
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.670823056014377,
+        "structure_coverage_scale": 0.8407363903000695,
+        "tree_density_scale": 5.173903585145318,
+        "ground_rcs_mean": -33.319693128352306,
+        "highpass_corner_m": 6.828509033573784,
+        "lowpass_edge": 0.944451796898642,
+        "lowpass_order": 6.872433315915426,
+        "thermal_over_adc_db": 27.529684616214077,
+        "snr_offset_db": -8.828639303896113
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 53.21097740364206,
+        "range-profile spread": 28.39150619506836,
+        "Doppler-profile spread": 0.2273397445678711,
+        "near range (0-4 m) vs mid": -21.245512008666992,
+        "far range (>98 m) vs mid": -4.363204002380371,
+        "vehicle prominence": 15.671731948852539
+      },
+      "distance": 1.4385200686773087
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.1485140266935647,
+        "structure_coverage_scale": 1.3486608608243829,
+        "tree_density_scale": 7.893272263973143,
+        "ground_rcs_mean": -26.43950961912097,
+        "highpass_corner_m": 6.9011030021299336,
+        "lowpass_edge": 0.8597588429568348,
+        "lowpass_order": 14.502739044423663,
+        "thermal_over_adc_db": 28.834123110597726,
+        "snr_offset_db": -4.762719682921254
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 59.12875534439095,
+        "range-profile spread": 32.56999969482422,
+        "Doppler-profile spread": 0.5275344848632812,
+        "near range (0-4 m) vs mid": -22.007503509521484,
+        "far range (>98 m) vs mid": -17.23123550415039,
+        "vehicle prominence": 14.042072296142578
+      },
+      "distance": 1.4590004764556899
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.081953629439486,
+        "structure_coverage_scale": 1.378219378640933,
+        "tree_density_scale": 5.996645576440364,
+        "ground_rcs_mean": -24.59949485590704,
+        "highpass_corner_m": 4.2400746639049025,
+        "lowpass_edge": 0.8844122638538242,
+        "lowpass_order": 6.749820039960479,
+        "thermal_over_adc_db": 23.906042121836368,
+        "snr_offset_db": 3.9142270562491532
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 63.16578603076945,
+        "range-profile spread": 33.4474983215332,
+        "Doppler-profile spread": 1.1005935668945312,
+        "near range (0-4 m) vs mid": -14.84886646270752,
+        "far range (>98 m) vs mid": -8.10665512084961,
+        "vehicle prominence": 18.93763542175293
+      },
+      "distance": 1.4629049618085246
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.9347971415204372,
+        "structure_coverage_scale": 1.3848050424814258,
+        "tree_density_scale": 2.8976122721199875,
+        "ground_rcs_mean": -31.249845685444303,
+        "highpass_corner_m": 5.707686437418085,
+        "lowpass_edge": 0.8734128878148166,
+        "lowpass_order": 10.93225471021431,
+        "thermal_over_adc_db": 22.044783527592514,
+        "snr_offset_db": 9.24846186248762
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 66.64117846775055,
+        "range-profile spread": 30.62383270263672,
+        "Doppler-profile spread": 1.025808334350586,
+        "near range (0-4 m) vs mid": -18.400726318359375,
+        "far range (>98 m) vs mid": -11.917524337768555,
+        "vehicle prominence": 29.108016967773438
+      },
+      "distance": 1.4813742668469734
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.42900625279284155,
+        "structure_coverage_scale": 0.5206067879247178,
+        "tree_density_scale": 3.7541841826244857,
+        "ground_rcs_mean": -19.75605656281561,
+        "highpass_corner_m": 5.299100916200215,
+        "lowpass_edge": 0.8888975650968851,
+        "lowpass_order": 12.60689127154592,
+        "thermal_over_adc_db": 19.690292662197464,
+        "snr_offset_db": 9.990027045140536
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 63.9835004453676,
+        "range-profile spread": 37.62398147583008,
+        "Doppler-profile spread": 4.008808135986328,
+        "near range (0-4 m) vs mid": -19.930152893066406,
+        "far range (>98 m) vs mid": -14.638208389282227,
+        "vehicle prominence": 21.788841247558594
+      },
+      "distance": 1.487119728946741
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.4671214826292114,
+        "structure_coverage_scale": 1.2199818857117481,
+        "tree_density_scale": 2.2427968972947787,
+        "ground_rcs_mean": -18.962388425633844,
+        "highpass_corner_m": 7.464711118484287,
+        "lowpass_edge": 0.8819356326750751,
+        "lowpass_order": 10.467212891466243,
+        "thermal_over_adc_db": 18.85505657949063,
+        "snr_offset_db": 8.6203463196231
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 63.16076511096954,
+        "range-profile spread": 34.863319396972656,
+        "Doppler-profile spread": 3.320383071899414,
+        "near range (0-4 m) vs mid": -21.45754623413086,
+        "far range (>98 m) vs mid": -12.63720703125,
+        "vehicle prominence": 27.10759162902832
+      },
+      "distance": 1.493584034633635
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.801306729870528,
+        "structure_coverage_scale": 1.5260756721125495,
+        "tree_density_scale": 6.6783601879457875,
+        "ground_rcs_mean": -17.063975354724803,
+        "highpass_corner_m": 5.083240328464331,
+        "lowpass_edge": 0.854826186508552,
+        "lowpass_order": 12.537841889413096,
+        "thermal_over_adc_db": 21.380517085267165,
+        "snr_offset_db": 6.519144443407985
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 64.4946751251221,
+        "range-profile spread": 38.68010330200195,
+        "Doppler-profile spread": 3.6291580200195312,
+        "near range (0-4 m) vs mid": -19.65559959411621,
+        "far range (>98 m) vs mid": -18.141029357910156,
+        "vehicle prominence": 22.085275650024414
+      },
+      "distance": 1.4947244392395014
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.9486656030294003,
+        "structure_coverage_scale": 1.065059077701024,
+        "tree_density_scale": 4.20649404411526,
+        "ground_rcs_mean": -25.550659510449393,
+        "highpass_corner_m": 6.757263103077303,
+        "lowpass_edge": 0.870782863829445,
+        "lowpass_order": 14.217830975555824,
+        "thermal_over_adc_db": 27.780925882868193,
+        "snr_offset_db": -8.489619288778048
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 54.794928516388325,
+        "range-profile spread": 29.270389556884766,
+        "Doppler-profile spread": 0.3409690856933594,
+        "near range (0-4 m) vs mid": -21.314620971679688,
+        "far range (>98 m) vs mid": -14.551816940307617,
+        "vehicle prominence": 5.67939567565918
+      },
+      "distance": 1.512587983067842
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.2446728252437347,
+        "structure_coverage_scale": 0.6300219846718143,
+        "tree_density_scale": 3.693921802205162,
+        "ground_rcs_mean": -27.064962256931494,
+        "highpass_corner_m": 2.4151766578283924,
+        "lowpass_edge": 0.9625486130363187,
+        "lowpass_order": 5.137320140334004,
+        "thermal_over_adc_db": 10.097988299771512,
+        "snr_offset_db": -3.541583926720433
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 41.95838284730932,
+        "range-profile spread": 12.80562686920166,
+        "Doppler-profile spread": 0.3370361328125,
+        "near range (0-4 m) vs mid": -4.967661380767822,
+        "far range (>98 m) vs mid": -3.2503156661987305,
+        "vehicle prominence": 16.807313919067383
+      },
+      "distance": 1.5168765228112482
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.238689028042678,
+        "structure_coverage_scale": 1.7271814564563657,
+        "tree_density_scale": 5.198798468148151,
+        "ground_rcs_mean": -15.818447146051156,
+        "highpass_corner_m": 3.585830877641766,
+        "lowpass_edge": 0.9163133812625545,
+        "lowpass_order": 11.12709041935802,
+        "thermal_over_adc_db": 26.9658241655012,
+        "snr_offset_db": -7.090529236269365
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 58.036601866722165,
+        "range-profile spread": 33.31734085083008,
+        "Doppler-profile spread": 0.7100658416748047,
+        "near range (0-4 m) vs mid": -12.155542373657227,
+        "far range (>98 m) vs mid": -8.013189315795898,
+        "vehicle prominence": 9.569461822509766
+      },
+      "distance": 1.5262216753323878
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.605293463251689,
+        "structure_coverage_scale": 0.9740074786403612,
+        "tree_density_scale": 4.310481475672175,
+        "ground_rcs_mean": -23.112507949744824,
+        "highpass_corner_m": 6.056647217517866,
+        "lowpass_edge": 0.8676966945358427,
+        "lowpass_order": 7.370452736837877,
+        "thermal_over_adc_db": 24.614119917168054,
+        "snr_offset_db": 1.3638462858525315
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.52024853324911,
+        "range-profile spread": 31.557861328125,
+        "Doppler-profile spread": 0.9004364013671875,
+        "near range (0-4 m) vs mid": -19.799945831298828,
+        "far range (>98 m) vs mid": -8.85732650756836,
+        "vehicle prominence": 18.417760848999023
+      },
+      "distance": 1.5424138027827
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.7806131821857747,
+        "structure_coverage_scale": 1.125763049464739,
+        "tree_density_scale": 3.3939870594554002,
+        "ground_rcs_mean": -22.776510951316517,
+        "highpass_corner_m": 5.648992997239539,
+        "lowpass_edge": 0.9292331853913222,
+        "lowpass_order": 5.017107606688167,
+        "thermal_over_adc_db": 21.638051580693784,
+        "snr_offset_db": 4.7184719979595116
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.22130294990539,
+        "range-profile spread": 32.20782470703125,
+        "Doppler-profile spread": 1.280344009399414,
+        "near range (0-4 m) vs mid": -18.445404052734375,
+        "far range (>98 m) vs mid": -5.46929407119751,
+        "vehicle prominence": 20.418270111083984
+      },
+      "distance": 1.5425501888910915
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.08344771859180777,
+        "structure_coverage_scale": 1.4989169573935315,
+        "tree_density_scale": 2.151745183353464,
+        "ground_rcs_mean": -23.47159637413903,
+        "highpass_corner_m": 6.567562949237972,
+        "lowpass_edge": 0.8898176702390205,
+        "lowpass_order": 6.948129912509041,
+        "thermal_over_adc_db": 24.5081717428115,
+        "snr_offset_db": -0.4820441340085928
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 60.1689671583178,
+        "range-profile spread": 30.395305633544922,
+        "Doppler-profile spread": 0.9080305099487305,
+        "near range (0-4 m) vs mid": -20.647567749023438,
+        "far range (>98 m) vs mid": -7.547672748565674,
+        "vehicle prominence": 16.99261474609375
+      },
+      "distance": 1.5444468228340213
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.9668601742194953,
+        "structure_coverage_scale": 1.694958774119082,
+        "tree_density_scale": 2.1899633140674886,
+        "ground_rcs_mean": -27.753840990308618,
+        "highpass_corner_m": 3.922136785430659,
+        "lowpass_edge": 0.9149691980356197,
+        "lowpass_order": 5.351363986486686,
+        "thermal_over_adc_db": 18.138956012786124,
+        "snr_offset_db": -9.993986197861542
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 45.52839385938644,
+        "range-profile spread": 19.62054443359375,
+        "Doppler-profile spread": 0.28305721282958984,
+        "near range (0-4 m) vs mid": -11.954177856445312,
+        "far range (>98 m) vs mid": -4.802269458770752,
+        "vehicle prominence": 7.663768768310547
+      },
+      "distance": 1.552666557200751
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.2881120798842876,
+        "structure_coverage_scale": 0.7051509272265696,
+        "tree_density_scale": 5.477628044967329,
+        "ground_rcs_mean": -20.000885001475716,
+        "highpass_corner_m": 2.1475985724547817,
+        "lowpass_edge": 0.9327162084316221,
+        "lowpass_order": 8.267645036581431,
+        "thermal_over_adc_db": 28.30237229779366,
+        "snr_offset_db": 5.030793752167826
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 67.66349160003662,
+        "range-profile spread": 41.512367248535156,
+        "Doppler-profile spread": 1.951603889465332,
+        "near range (0-4 m) vs mid": -6.17320442199707,
+        "far range (>98 m) vs mid": -6.783877372741699,
+        "vehicle prominence": 21.223323822021484
+      },
+      "distance": 1.557417046610513
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.3568954872435528,
+        "structure_coverage_scale": 1.140436406059831,
+        "tree_density_scale": 5.177129327175067,
+        "ground_rcs_mean": -27.45073136935132,
+        "highpass_corner_m": 5.959496383006964,
+        "lowpass_edge": 0.8777106514453932,
+        "lowpass_order": 5.7259032672510815,
+        "thermal_over_adc_db": 24.977996889769727,
+        "snr_offset_db": 3.3745625952410983
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 63.87318653678898,
+        "range-profile spread": 32.72004699707031,
+        "Doppler-profile spread": 0.9565706253051758,
+        "near range (0-4 m) vs mid": -19.680377960205078,
+        "far range (>98 m) vs mid": -7.520113945007324,
+        "vehicle prominence": 20.461166381835938
+      },
+      "distance": 1.5968547563552855
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.8052172713633046,
+        "structure_coverage_scale": 1.7237803311822981,
+        "tree_density_scale": 0.5205387512761107,
+        "ground_rcs_mean": -17.851914468248612,
+        "highpass_corner_m": 1.2350990271382505,
+        "lowpass_edge": 0.9375586535715933,
+        "lowpass_order": 6.107867447230708,
+        "thermal_over_adc_db": 27.26357844699773,
+        "snr_offset_db": 0.8292244049818347
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 64.53802720069888,
+        "range-profile spread": 36.71631622314453,
+        "Doppler-profile spread": 1.1515836715698242,
+        "near range (0-4 m) vs mid": -2.0934019088745117,
+        "far range (>98 m) vs mid": -5.517024517059326,
+        "vehicle prominence": 17.93197250366211
+      },
+      "distance": 1.6079674292882282
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.582104228643033,
+        "structure_coverage_scale": 0.8707201104831612,
+        "tree_density_scale": 1.559349176757737,
+        "ground_rcs_mean": -21.59876301370128,
+        "highpass_corner_m": 6.002329756583269,
+        "lowpass_edge": 0.8700463514538727,
+        "lowpass_order": 8.746687277258513,
+        "thermal_over_adc_db": 28.205115324321095,
+        "snr_offset_db": 1.2280153510044585
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.94431240463265,
+        "range-profile spread": 35.63021469116211,
+        "Doppler-profile spread": 0.8909034729003906,
+        "near range (0-4 m) vs mid": -20.46071434020996,
+        "far range (>98 m) vs mid": -10.616287231445312,
+        "vehicle prominence": 19.73568344116211
+      },
+      "distance": 1.6120749813079849
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.5179179021955507,
+        "structure_coverage_scale": 1.723265609988517,
+        "tree_density_scale": 2.1280038580409464,
+        "ground_rcs_mean": -33.49734610254433,
+        "highpass_corner_m": 4.857314970553133,
+        "lowpass_edge": 0.8730180577762305,
+        "lowpass_order": 4.809084645811235,
+        "thermal_over_adc_db": 25.465291960825365,
+        "snr_offset_db": 6.42453212155845
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 69.54237845420838,
+        "range-profile spread": 32.20866012573242,
+        "Doppler-profile spread": 0.8394718170166016,
+        "near range (0-4 m) vs mid": -16.595630645751953,
+        "far range (>98 m) vs mid": -6.806495666503906,
+        "vehicle prominence": 26.532817840576172
+      },
+      "distance": 1.661477526791889
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.233142179042197,
+        "structure_coverage_scale": 1.7778138683513856,
+        "tree_density_scale": 1.5419875934014815,
+        "ground_rcs_mean": -20.924284614664046,
+        "highpass_corner_m": 6.747721618762471,
+        "lowpass_edge": 0.9678193987446152,
+        "lowpass_order": 14.12548674842472,
+        "thermal_over_adc_db": 18.482129708880258,
+        "snr_offset_db": 9.593774170193129
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 65.49378451156616,
+        "range-profile spread": 35.010772705078125,
+        "Doppler-profile spread": 3.0671119689941406,
+        "near range (0-4 m) vs mid": -20.22185516357422,
+        "far range (>98 m) vs mid": -6.713161468505859,
+        "vehicle prominence": 25.41795539855957
+      },
+      "distance": 1.6677813635508205
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.982080313629953,
+        "structure_coverage_scale": 1.6717857531145672,
+        "tree_density_scale": 4.141513540846908,
+        "ground_rcs_mean": -26.547432071504375,
+        "highpass_corner_m": 7.142702341102573,
+        "lowpass_edge": 0.8604177846657872,
+        "lowpass_order": 12.501025082966393,
+        "thermal_over_adc_db": 25.783092474102922,
+        "snr_offset_db": 5.983927594322296
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 69.32281704711916,
+        "range-profile spread": 37.38990783691406,
+        "Doppler-profile spread": 1.1420555114746094,
+        "near range (0-4 m) vs mid": -22.425262451171875,
+        "far range (>98 m) vs mid": -15.616283416748047,
+        "vehicle prominence": 22.735837936401367
+      },
+      "distance": 1.6737897539774569
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.1502520416911843,
+        "structure_coverage_scale": 1.4690675353495322,
+        "tree_density_scale": 5.085040132064009,
+        "ground_rcs_mean": -33.52567134750925,
+        "highpass_corner_m": 2.724841783356829,
+        "lowpass_edge": 0.9189253657717518,
+        "lowpass_order": 8.73024119234677,
+        "thermal_over_adc_db": 29.8404645716289,
+        "snr_offset_db": 8.474907147503625
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 72.81824061012269,
+        "range-profile spread": 39.00590896606445,
+        "Doppler-profile spread": 1.034402847290039,
+        "near range (0-4 m) vs mid": -8.1563138961792,
+        "far range (>98 m) vs mid": -7.024094104766846,
+        "vehicle prominence": 25.726360321044922
+      },
+      "distance": 1.6753044354120876
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.265354319680381,
+        "structure_coverage_scale": 1.2276907635344605,
+        "tree_density_scale": 5.815266960742878,
+        "ground_rcs_mean": -28.656414466656408,
+        "highpass_corner_m": 7.229056845456927,
+        "lowpass_edge": 0.8818849682483899,
+        "lowpass_order": 4.074121945411338,
+        "thermal_over_adc_db": 24.423315722336838,
+        "snr_offset_db": 3.5320892648915923
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 62.805848427772524,
+        "range-profile spread": 31.214895248413086,
+        "Doppler-profile spread": 0.7539730072021484,
+        "near range (0-4 m) vs mid": -21.49021339416504,
+        "far range (>98 m) vs mid": -5.828239440917969,
+        "vehicle prominence": 18.990121841430664
+      },
+      "distance": 1.6836168309847503
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.4003505595327903,
+        "structure_coverage_scale": 1.7360027114748788,
+        "tree_density_scale": 5.605147441776594,
+        "ground_rcs_mean": -18.26112527141858,
+        "highpass_corner_m": 6.303176100824866,
+        "lowpass_edge": 0.9329525775328725,
+        "lowpass_order": 14.955689272082537,
+        "thermal_over_adc_db": 26.456142661891775,
+        "snr_offset_db": -6.418746248340135
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 58.49797088146211,
+        "range-profile spread": 32.12731170654297,
+        "Doppler-profile spread": 0.6644668579101562,
+        "near range (0-4 m) vs mid": -20.54495620727539,
+        "far range (>98 m) vs mid": -7.886660575866699,
+        "vehicle prominence": 12.604516983032227
+      },
+      "distance": 1.6861492175738004
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.38207541576501314,
+        "structure_coverage_scale": 1.5891852664009705,
+        "tree_density_scale": 2.600618013998746,
+        "ground_rcs_mean": -31.187648791919635,
+        "highpass_corner_m": 7.040649990082362,
+        "lowpass_edge": 0.9177295385344713,
+        "lowpass_order": 9.813987308155005,
+        "thermal_over_adc_db": 27.97647530496969,
+        "snr_offset_db": -8.279751278779948
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.22256747818021,
+        "range-profile spread": 29.0865478515625,
+        "Doppler-profile spread": 0.3310966491699219,
+        "near range (0-4 m) vs mid": -21.85344696044922,
+        "far range (>98 m) vs mid": -6.907021522521973,
+        "vehicle prominence": 9.627592086791992
+      },
+      "distance": 1.6955578060150227
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.6307986799870324,
+        "structure_coverage_scale": 1.8420927453303026,
+        "tree_density_scale": 0.8619919625142148,
+        "ground_rcs_mean": -31.035519383210353,
+        "highpass_corner_m": 5.453985575196219,
+        "lowpass_edge": 0.9446614186761806,
+        "lowpass_order": 11.280310080886604,
+        "thermal_over_adc_db": 13.831783922531164,
+        "snr_offset_db": -7.647168494756018
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 43.88607007217423,
+        "range-profile spread": 15.051502227783203,
+        "Doppler-profile spread": 0.24048233032226562,
+        "near range (0-4 m) vs mid": -12.815528869628906,
+        "far range (>98 m) vs mid": -4.822464942932129,
+        "vehicle prominence": 9.786201477050781
+      },
+      "distance": 1.71842201372782
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.7409971579605519,
+        "structure_coverage_scale": 0.9480441992283839,
+        "tree_density_scale": 5.539961584672695,
+        "ground_rcs_mean": -31.009691120635733,
+        "highpass_corner_m": 7.594791773545484,
+        "lowpass_edge": 0.8938132201893794,
+        "lowpass_order": 5.265943354842754,
+        "thermal_over_adc_db": 22.582163030794185,
+        "snr_offset_db": 8.543091061357348
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 66.66002701473238,
+        "range-profile spread": 32.458396911621094,
+        "Doppler-profile spread": 1.2314910888671875,
+        "near range (0-4 m) vs mid": -21.338233947753906,
+        "far range (>98 m) vs mid": -6.3405656814575195,
+        "vehicle prominence": 26.650915145874023
+      },
+      "distance": 1.738210749022165
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.3999996190568296,
+        "structure_coverage_scale": 1.7448369217414232,
+        "tree_density_scale": 4.4292242317017845,
+        "ground_rcs_mean": -15.873306811547621,
+        "highpass_corner_m": 6.0162548361258805,
+        "lowpass_edge": 0.9594526313180818,
+        "lowpass_order": 15.308326387703854,
+        "thermal_over_adc_db": 26.044923126361176,
+        "snr_offset_db": -7.552649068089865
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 56.273595589637786,
+        "range-profile spread": 31.460947036743164,
+        "Doppler-profile spread": 0.6652193069458008,
+        "near range (0-4 m) vs mid": -19.86978530883789,
+        "far range (>98 m) vs mid": -5.263946533203125,
+        "vehicle prominence": 9.412273406982422
+      },
+      "distance": 1.7610923612276708
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.972234154723666,
+        "structure_coverage_scale": 0.8970426925826598,
+        "tree_density_scale": 6.730206991382982,
+        "ground_rcs_mean": -31.537727259590692,
+        "highpass_corner_m": 5.104648483588644,
+        "lowpass_edge": 0.965009120221527,
+        "lowpass_order": 12.598158814789684,
+        "thermal_over_adc_db": 29.610159503569726,
+        "snr_offset_db": 1.491132981780794
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 66.78459242820745,
+        "range-profile spread": 34.04998016357422,
+        "Doppler-profile spread": 0.531773567199707,
+        "near range (0-4 m) vs mid": -17.502792358398438,
+        "far range (>98 m) vs mid": -4.350996971130371,
+        "vehicle prominence": 21.017852783203125
+      },
+      "distance": 1.766887459246318
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 1.142704221242732,
+        "structure_coverage_scale": 0.8653587504532188,
+        "tree_density_scale": 2.7077281814290983,
+        "ground_rcs_mean": -26.6016233759485,
+        "highpass_corner_m": 7.73582976440328,
+        "lowpass_edge": 0.9050632682777899,
+        "lowpass_order": 15.40162014534781,
+        "thermal_over_adc_db": 10.61064143167111,
+        "snr_offset_db": -8.67779482853561
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 36.31029807806026,
+        "range-profile spread": 11.98360824584961,
+        "Doppler-profile spread": 0.2954587936401367,
+        "near range (0-4 m) vs mid": -11.025702476501465,
+        "far range (>98 m) vs mid": -8.15852165222168,
+        "vehicle prominence": 11.633392333984375
+      },
+      "distance": 1.83894253217379
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.036304247016578084,
+        "structure_coverage_scale": 1.224512620150699,
+        "tree_density_scale": 1.8703419324670847,
+        "ground_rcs_mean": -15.567374914294643,
+        "highpass_corner_m": 7.283889045822838,
+        "lowpass_edge": 0.9652797863116326,
+        "lowpass_order": 11.246435892889032,
+        "thermal_over_adc_db": 20.303207338052843,
+        "snr_offset_db": 6.6543569876046185
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 63.37348669816441,
+        "range-profile spread": 37.00395584106445,
+        "Doppler-profile spread": 4.514204978942871,
+        "near range (0-4 m) vs mid": -23.50117301940918,
+        "far range (>98 m) vs mid": -8.275254249572754,
+        "vehicle prominence": 19.42230987548828
+      },
+      "distance": 1.8729818322504173
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.9847520444827533,
+        "structure_coverage_scale": 0.9739153180515503,
+        "tree_density_scale": 1.8703428419492183,
+        "ground_rcs_mean": -17.398037573918607,
+        "highpass_corner_m": 6.686347786778778,
+        "lowpass_edge": 0.9301467286685621,
+        "lowpass_order": 15.500963581335423,
+        "thermal_over_adc_db": 28.514291544288376,
+        "snr_offset_db": 4.964970066035082
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 69.77172512054445,
+        "range-profile spread": 41.66722869873047,
+        "Doppler-profile spread": 2.212294578552246,
+        "near range (0-4 m) vs mid": -23.585176467895508,
+        "far range (>98 m) vs mid": -10.192623138427734,
+        "vehicle prominence": 20.24872589111328
+      },
+      "distance": 2.0980122942606596
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 0.27823642657014225,
+        "structure_coverage_scale": 1.3681377549852538,
+        "tree_density_scale": 1.9792621047190142,
+        "ground_rcs_mean": -18.837264963728636,
+        "highpass_corner_m": 4.421922252904819,
+        "lowpass_edge": 0.9686434400041384,
+        "lowpass_order": 6.195319896108625,
+        "thermal_over_adc_db": 29.260382802485346,
+        "snr_offset_db": 6.018340732172181
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 72.2526500720978,
+        "range-profile spread": 44.511680603027344,
+        "Doppler-profile spread": 2.7625694274902344,
+        "near range (0-4 m) vs mid": -17.441448211669922,
+        "far range (>98 m) vs mid": -5.811931610107422,
+        "vehicle prominence": 23.522796630859375
+      },
+      "distance": 2.1042606209437045
+    },
+    {
+      "knobs": {
+        "surface_incidence_power": 2.7822717858736796,
+        "structure_coverage_scale": 1.9518892848869696,
+        "tree_density_scale": 0.6102972872402697,
+        "ground_rcs_mean": -17.727198195088484,
+        "highpass_corner_m": 7.86836528046441,
+        "lowpass_edge": 0.9648652215533156,
+        "lowpass_order": 5.7851681467899745,
+        "thermal_over_adc_db": 29.452576276459098,
+        "snr_offset_db": 7.798711114410413
+      },
+      "stats": {
+        "dynamic range (0.1-99.9%)": 73.81547198486328,
+        "range-profile spread": 45.00505828857422,
+        "Doppler-profile spread": 3.3847036361694336,
+        "near range (0-4 m) vs mid": -26.880094528198242,
+        "far range (>98 m) vs mid": -6.558917999267578,
+        "vehicle prominence": 21.192981719970703
+      },
+      "distance": 2.560920909118651
+    }
+  ]
+}
