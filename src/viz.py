@@ -450,3 +450,38 @@ def show_rd_rows(rows, marks=None, range_res_m=0.2, title="", col_titles=None):
         fig.suptitle(title)
     fig.tight_layout()
     plt.show()
+
+
+def show_camera_rd(image, rd_map, vehicles, title="", ddma_offsets=(), range_res_m=0.2):
+    """Camera image and RD map of one frame, vehicles numbered alike in both.
+
+    In the RD map the numbered circle is the vehicle's label (its Tx0 copy);
+    small ticks mark its other DDMA copies, one per transmitter.
+    """
+    import matplotlib.patches as patches
+    colours = plt.cm.tab10.colors
+    fig, (a, b) = plt.subplots(1, 2, figsize=(13, 3.8),
+                               gridspec_kw={"width_ratios": [1.6, 1]})
+    a.imshow(image)
+    a.set_axis_off()
+    m = np.asarray(rd_map)
+    lo, hi = np.percentile(m, (5, 99.5))
+    b.imshow(m, aspect="auto", origin="lower", vmin=lo, vmax=hi, cmap="viridis",
+             extent=[0, m.shape[1], 0, m.shape[0] * range_res_m])
+    b.set_xlabel("Doppler bin")
+    b.set_ylabel("range (m)")
+    for n, v in enumerate(vehicles, 1):
+        c = colours[(n - 1) % len(colours)]
+        x1, y1, x2, y2 = v["box"]
+        a.add_patch(patches.Rectangle((x1, y1), x2 - x1, y2 - y1, fill=False,
+                                      ec=c, lw=2))
+        a.text(x1, y1 - 4, str(n), color=c, fontsize=12, weight="bold")
+        r = v["range_bin"] * range_res_m
+        for off in ddma_offsets[1:]:
+            b.plot((v["doppler_bin"] + off) % m.shape[1], r, "|", color=c, ms=8, mew=1.5)
+        b.plot(v["doppler_bin"], r, "o", mfc="none", mec=c, ms=11, mew=2)
+        b.text(v["doppler_bin"] + 4, r + 2, str(n), color=c, fontsize=12, weight="bold")
+    if title:
+        fig.suptitle(title)
+    fig.tight_layout()
+    plt.show()

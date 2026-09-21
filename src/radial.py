@@ -179,3 +179,27 @@ def background_stats(maps):
         "near range (0-4 m) vs mid": float(np.median(prof_r[:20]) - mid),
         "far range (>98 m) vs mid": float(np.median(prof_r[490:]) - mid),
     }
+
+
+CAMERA_SCALE = 0.5   # boxes are in the 1920x1080 sensor frame; stored images are 960x540
+
+
+def camera_image(sample, root=DEFAULT_ROOT):
+    from PIL import Image
+    return np.asarray(Image.open(os.path.join(root, "camera", f"image_{sample:06d}.jpg")))
+
+
+def vehicles(sample, by_frame):
+    """Labelled vehicles of one frame, in both views.
+
+    box: (x1, y1, x2, y2) in the stored camera image; range_bin / doppler_bin
+    in the RD map (doppler_bin is the Tx0 copy -- see scene_sim.DDMA_OFFSETS).
+    """
+    out = []
+    for lab in by_frame.get(sample, []):
+        box = tuple(float(lab[k]) * CAMERA_SCALE
+                    for k in ("x1_pix", "y1_pix", "x2_pix", "y2_pix"))
+        out.append({"box": box, "range_m": float(lab["radar_R_m"]),
+                    "range_bin": float(lab["radar_R_m"]) / DR_M,
+                    "doppler_bin": float(lab["radar_D_mps"]) % N_DOPPLER})
+    return out
