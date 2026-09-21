@@ -13,7 +13,7 @@ def _tiny_config(tmp_path):
     # The tiny single-batch overfit needs a higher lr than the production
     # default (tuned for full-scale, many-epoch training) to visibly converge
     # within 150 steps; the config owns hyperparameters, not train().
-    # log_file under tmp_path: the default (logs/phase1.log) would append test
+    # log_file under tmp_path: the default (archive/ablations_aug/logs/phase1.log) would append test
     # runs to the real training log.
     cfg["train"].update(batch_size=2, epochs=1, lr=3.0e-4,
                         ckpt_dir=str(tmp_path / "ckpt"),

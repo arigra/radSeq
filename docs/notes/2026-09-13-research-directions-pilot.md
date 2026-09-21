@@ -36,7 +36,7 @@ had no new terms; the candidate added `lambda_range_doppler=0.0005` and
 `lambda_target_support=0.003`, active only for diffusion t <= 700. Scores use
 32 generated sequences for each of seeds 1, 2 and 3, 50 DDIM steps, and the
 same 64 held-out E0 reference sequences. Full raw results are in
-`samples/research_kinematic_ablation.json`.
+`archive/codex_research/results/research_kinematic_ablation.json`.
 
 | Metric (mean across seeds) | Control | Candidate | Real reference |
 |---|---:|---:|---:|
@@ -64,7 +64,7 @@ strong detector-aware and gain-invariant baselines.
 **Implemented.** `soft_cfar_map` in `src/research_losses.py` converts dB
 amplitude to linear power before computing a differentiable CA-CFAR response.
 The candidate loss matches occupancy and spatiotemporal detection moments at
-three Pfa settings. `scripts/research_cfar_calibration.py` asks it to recover
+three Pfa settings. `archive/codex_research/research_cfar_calibration.py` asks it to recover
 known clutter correlation rho and texture shape nu on a 5x5 grid, from 16
 fresh clutter sequences per setting. The fair baseline uses gain-invariant
 skew, kurtosis and lag-one correlation, not raw mean alone.
@@ -75,8 +75,8 @@ skew, kurtosis and lag-one correlation, not raw mean alone.
 | Same test with unknown receiver-gain offsets | 8/9 | 9/9 |
 
 The raw mean/std baseline also scored 9/9 without gain shift, but failed under
-gain shift. Raw results are in `samples/research_cfar_calibration.json` and
-`samples/research_cfar_gain_shift.json`.
+gain shift. Raw results are in `archive/codex_research/results/research_cfar_calibration.json` and
+`archive/codex_research/results/research_cfar_gain_shift.json`.
 
 **Decision.** Detector calibration did not beat a competent simple baseline.
 Do not claim this as a new method on the present evidence.

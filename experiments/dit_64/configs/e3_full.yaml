@@ -1,0 +1,50 @@
+# Full-data run with joint space-time attention (standard video DiT); otherwise
+# identical to experiments/dit_64/configs/e3_standard.yaml. Rule: docs/notes/2026-09-15-e3-full-attention.md
+# v-prediction, resolution-shifted schedule, no x0 clamp, non-overlapping
+# patches (no overlap averaging), factorized space-time attention, DiT-S width,
+# EMA, no smoothness loss. Run unattended by experiments/dit_64/run_e3_full.sh.
+data:
+  n_train: 20000
+  n_val: 2000
+  seq_len: 16
+  frame_interval: 0.5
+  cache_dir: data/cache
+  shard_size: 1000
+  seed: 1234
+model:
+  patch: 8
+  stride: 8
+  dim: 384
+  depth: 12
+  heads: 6
+  attn_mode: full             # joint attention over all 16 x 64 tokens
+diffusion:
+  timesteps: 1000
+  parameterization: v
+  schedule_shift: 4.0        # SNR / 16
+  x0_clamp: "off"
+  terminal_x0: model         # v-prediction is well-defined at SNR 0
+train:
+  seed: 2026
+  batch_size: 32
+  lr: 1.0e-4
+  weight_decay: 0.0
+  epochs: 100                # 2M sequences, same budget as e3_standard
+  lambda_smooth: 0.0
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  amp: bf16
+  ema_decay: 0.9999
+  phase: 1
+  ckpt_dir: checkpoints/e3_full
+  log_file: experiments/dit_64/logs/e3_full.log
+  log_every_steps: 100
+  save_every_steps: 1000
+  snapshot_every_epochs: 10
+  val_every_epochs: 5
+  val_batch_size: 32
+  val_seed: 4321
+  wandb: false
+sample:
+  ddim_steps: 50
+  weights: ema

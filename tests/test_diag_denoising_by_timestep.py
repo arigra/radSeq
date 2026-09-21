@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from scripts.diag_denoising_by_timestep import (
+from experiments.dit_64.diag_denoising_by_timestep import (
     PairMoments,
     build_region_masks,
     evaluate_arm,

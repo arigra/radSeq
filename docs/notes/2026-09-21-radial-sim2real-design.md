@@ -32,7 +32,7 @@ Claim: D > B (and D > C shows fine-tuning matters).
 
 ## Measured RADIal grid and statistics (2026-09-21)
 
-### Grid, established empirically (scripts/radial_calibrate.py)
+### Grid, established empirically (experiments/radial_facts/radial_calibrate.py)
 `radar_FFT/fft_NNNNNN.npy` is (512, 256, 16) complex64 = (range, Doppler, Rx).
 - **axis0 = range at exactly 0.2 m/bin** (512 bins -> 102.4 m). Confirmed by
   regressing argmax against `radar_R_m`.
@@ -52,7 +52,7 @@ Claim: D > B (and D > C shows fine-tuning matters).
 - Doppler: 81.4 % of vehicles within +/-32 bins of zero, 93.6 % within +/-64.
 - some rows carry radar_R_m = -1 (invalid) and must be filtered.
 
-### Simulator vs RADIal, measured in the same terms (scripts/radial_stats.py)
+### Simulator vs RADIal, measured in the same terms (experiments/radial_facts/radial_stats.py)
 | quantity | our simulator | RADIal | verdict |
 |---|---|---|---|
 | range bin | 3.0 m | 0.2 m | 15x mismatch |
@@ -72,7 +72,7 @@ quantification of the sim-to-real gap so far, and it is a CNR/SCNR fit parameter
 
 ## Fitted simulator (2026-09-21)
 
-Fit on TRAINING recordings only (scripts/fit_simulator_to_radial.py); val/test
+Fit on TRAINING recordings only (archive/first_radial_simulator/fit_simulator_to_radial.py); val/test
 recordings are untouched so the "simulator" arm carries no real test data.
 
 Three model deficiencies were found by measurement, not assumed:
@@ -98,8 +98,8 @@ Three model deficiencies were found by measurement, not assumed:
 | Doppler profile spread | 2.54 | 2.32 | -0.22 |
 | range profile spread | 24.26 | 25.34 | +1.08 |
 
-Parameters in `configs/radial_sim.yaml`, range response in
-`data/radial/range_gain_db.npy`, full sweep in `samples/simulator_fit_radial.json`.
+Parameters in `archive/first_radial_simulator/radial_sim.yaml`, range response in
+`archive/first_radial_simulator/range_gain_db.npy`, full sweep in `archive/first_radial_simulator/results/simulator_fit_radial.json`.
 
 This is deliberately a *good* baseline: a strawman simulator would make the
 generator look good for the wrong reason. What it still cannot model is real
@@ -157,5 +157,5 @@ curve rather than three scattered points.
 - delta in {0, 4, 8, 16}; 200 real sequences; 6,000 simulated for pretraining.
 - `B` and `D` pools are matched in size, so the comparison isolates where the
   extra sequences came from, not how many.
-- scripts/run_fidelity_pilot.sh (resumable per stage),
-  scripts/fidelity_pilot.sbatch to resubmit, results in samples/fidelity_pilot.json.
+- archive/fidelity_pilot_64/run_fidelity_pilot.sh (resumable per stage),
+  archive/fidelity_pilot_64/fidelity_pilot.sbatch to resubmit, results in archive/fidelity_pilot_64/results/fidelity_pilot.json.

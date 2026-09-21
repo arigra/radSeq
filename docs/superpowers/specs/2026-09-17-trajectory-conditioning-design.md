@@ -37,12 +37,12 @@ and noise (not labelled in real radar); the model invents them.
 
 ## 3. Training
 
-Same data (`data/cache`, 20k train / 2k val) and recipe as `configs/e3_long.yaml`
+Same data (`data/cache`, 20k train / 2k val) and recipe as `experiments/dit_64/configs/e3_long.yaml`
 (v-prediction, schedule shift 4, no clamp, bf16, batch 32, lr 1e-4, EMA 0.9999,
 no smoothness loss), plus `model.cond_channels: 4`,
 `train.cond_dropout: 0.1`, `train.init_from`. Fresh optimizer. 40 epochs
-(25,000 steps, ~2 h). Resumable pipeline `scripts/run_cond_traj.sh` and
-`scripts/cond_traj.sbatch`, checkpoints every 1000 steps.
+(25,000 steps, ~2 h). Resumable pipeline `experiments/dit_64/run_cond_traj.sh` and
+`experiments/dit_64/cond_traj.sbatch`, checkpoints every 1000 steps.
 
 ## 4. Evaluation and decision rule
 

@@ -5,12 +5,12 @@ sequences, so none establishes real-data fidelity or a publishable method.
 
 ## Rare detector errors
 
-Implemented `scripts/research_tail_risk.py`, which derives a local-power CFAR
+Implemented `archive/codex_research/research_tail_risk.py`, which derives a local-power CFAR
 score from independent target-free clutter sequences. It calibrates thresholds
 using a Gaussian score model, direct empirical quantiles, and a generalized
 Pareto peaks-over-threshold (POT) fit. Training uses 6 sequences (150,528 cells)
 and evaluation uses 12 independent sequences (301,056 cells) per clutter
-setting. Results are in `samples/research_tail_risk.json`.
+setting. Results are in `archive/codex_research/results/research_tail_risk.json`.
 
 At nominal Pfa 1e-3, the Gaussian model produced observed Pfa 0.0118–0.0191;
 empirical quantiles produced 0.00059–0.00150; POT produced 0.00053–0.00144.

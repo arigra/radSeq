@@ -4,7 +4,7 @@
 
 ## Starting evidence
 
-The factorized-attention control in `samples/control_comparison.json` did not
+The factorized-attention control in `archive/ablations_aug/results/control_comparison.json` did not
 meet its preregistered success threshold. At the matched 12,500-step budget,
 normalized generated standard deviation was 0.6554 for the temporal baseline,
 0.7043 for factorized depth 5, and 0.6999 for factorized depth 6, against 1.0043

@@ -1,0 +1,48 @@
+data:
+  n_train: 2000
+  n_val: 800
+  seq_len: 16
+  frame_interval: 0.5
+  cache_dir: data/pilot/reality
+  shard_size: 1000
+  seed: 1234
+  train_subset: 200
+model:
+  patch: 8
+  stride: 8
+  dim: 256
+  depth: 8
+  heads: 8
+  attn_mode: factorized
+  cond_channels: 4
+diffusion:
+  timesteps: 1000
+  parameterization: v
+  schedule_shift: 4.0
+  x0_clamp: 'off'
+  terminal_x0: model
+train:
+  seed: 2026
+  batch_size: 32
+  lr: 0.0001
+  weight_decay: 0.0
+  epochs: 300
+  lambda_smooth: 0.0
+  lambda_traj: 0.01
+  lambda_doppler: 0.01
+  amp: bf16
+  ema_decay: 0.9999
+  phase: 1
+  cond_dropout: 0.1
+  log_every_steps: 200
+  save_every_steps: 1000
+  val_every_epochs: 10
+  val_batch_size: 32
+  val_seed: 4321
+  wandb: false
+  init_from: checkpoints/pilot_pre_d8/last.pt
+  ckpt_dir: checkpoints/pilot_ft_d8
+  log_file: archive/fidelity_pilot_64/logs/pilot_ft_d8.log
+sample:
+  ddim_steps: 30
+  weights: ema

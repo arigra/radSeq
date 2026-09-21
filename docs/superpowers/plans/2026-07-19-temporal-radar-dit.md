@@ -1806,7 +1806,7 @@ Exit criteria (spec §8 Phase 1): overfit test passed (Task 8); generated GIFs s
 > Rescored `checkpoints/phase1_wandb/best.pt`: passes the letter of the
 > criteria, but is worse than the real reference on `velocity_consistency`
 > (2.147 vs 1.358) and `persistence` (0.059 vs 0.144). Reproduce with
-> `python -m scripts.rescore_phase1`.
+> `python -m archive.ablations_aug.rescore_phase1`.
 
 ---
 

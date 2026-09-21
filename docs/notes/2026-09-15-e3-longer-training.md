@@ -4,7 +4,7 @@ Written before the run.
 
 ## Why
 
-The factorized full-data model (`configs/e3_standard.yaml`, 62,625 steps)
+The factorized full-data model (`experiments/dit_64/configs/e3_standard.yaml`, 62,625 steps)
 passes Ari's rule only with EMA weights and DDIM 20-30, with a thin
 persistence margin (0.121 vs limit 0.108). Continuity is lost in the
 high-noise stage (t >= 700). Joint attention made it worse
@@ -17,12 +17,12 @@ of that late training.
 
 ## Setup
 
-`configs/e3_long.yaml`: identical to `e3_standard` except epochs 180. Starts
+`experiments/dit_64/configs/e3_long.yaml`: identical to `e3_standard` except epochs 180. Starts
 from a copy of `checkpoints/e3_standard_bs32/last.pt` (step 62,625, epoch 100; model,
 EMA and optimizer state) in `checkpoints/e3_long_bs32/`, adding 80 epochs
 (50,000 steps, ~3.5 h). The original checkpoint is not modified (sha256
 prefix 8f1b9a3f7e6ed0b9; the copy was verified weight-identical).
-Scored by `scripts/score_hard_standard.py`: raw and EMA, DDIM 30 and 50,
+Scored by `experiments/dit_64/score_hard_standard.py`: raw and EMA, DDIM 30 and 50,
 seeds 1-6 x 32 sequences.
 
 ## Decision rule (Ari's rule, unchanged)
@@ -37,14 +37,14 @@ EMA DDIM 30 stays.
 ## If the session closes
 
 At most ~1000 steps (~4 min) are lost. Continue with either
-- a new session: `setsid nohup bash scripts/run_e3_long.sh > logs/e3_long_pipeline.console.log 2>&1 < /dev/null &`
-- the login host `ece-hpc`: `sbatch scripts/e3_long.sbatch`
+- a new session: `setsid nohup bash experiments/dit_64/run_e3_long.sh > experiments/dit_64/logs/e3_long_pipeline.console.log 2>&1 < /dev/null &`
+- the login host `ece-hpc`: `sbatch experiments/dit_64/e3_long.sbatch`
 
 Both resume from `checkpoints/e3_long_bs32/last.pt` and refuse to start if a
-training process is already running. Progress: `logs/e3_long_pipeline.log`
-(ends in DONE or FAILED) and `logs/e3_long_bs32.log`.
+training process is already running. Progress: `experiments/dit_64/logs/e3_long_pipeline.log`
+(ends in DONE or FAILED) and `experiments/dit_64/logs/e3_long_bs32.log`.
 
-## Result (`samples/e3_long_scores.json`)
+## Result (`experiments/dit_64/results/e3_long_scores.json`)
 
 Checkpoint `checkpoints/e3_long_bs32/last.pt`, step 112625, 32 sequences x seeds 1,2,3,4,5,6.
 

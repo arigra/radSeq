@@ -6,7 +6,7 @@ Design: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
 
 ## Setup
 
-`configs/cond_traj.yaml`: the passing full-data recipe (`e3_long`) plus
+`experiments/dit_64/configs/cond_traj.yaml`: the passing full-data recipe (`e3_long`) plus
 `model.cond_channels: 4` (3 class blob channels + presence), warm-started from
 `checkpoints/e3_long_bs32/last.pt` (EMA weights; new input weights zero, so
 training starts from exactly the unconditional model), condition dropout 0.1,
@@ -38,11 +38,11 @@ Not measured: whether generated targets look like their requested class.
 
 ## If the session closes
 
-Rerun `setsid nohup bash scripts/run_cond_traj.sh > logs/cond_traj_pipeline.console.log 2>&1 < /dev/null &`
-in a new session, or `sbatch scripts/cond_traj.sbatch` from `ece-hpc`. Both
+Rerun `setsid nohup bash experiments/dit_64/run_cond_traj.sh > experiments/dit_64/logs/cond_traj_pipeline.console.log 2>&1 < /dev/null &`
+in a new session, or `sbatch experiments/dit_64/cond_traj.sbatch` from `ece-hpc`. Both
 resume from `checkpoints/cond_traj_bs32/last.pt`.
 
-## Result (`samples/cond_traj_scores.json`)
+## Result (`experiments/dit_64/results/cond_traj_scores.json`)
 
 Checkpoint `checkpoints/cond_traj_bs32/last.pt`. Guidance w = 1.0, chosen on val 0-95 / seeds 1-3 (w=1.0: hit 0.964, passes True, w=2.0: hit 0.979, passes False, w=3.0: hit 0.977, passes False). Verdict on val 96-287, seeds 4-9, 192 sequences.
 

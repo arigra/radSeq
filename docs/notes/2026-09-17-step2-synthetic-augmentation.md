@@ -17,7 +17,7 @@ std (two numbers).
 
 ## Setup
 
-- Generator: `configs/cond_traj_n2000.yaml` (the step-1 recipe, 640 epochs,
+- Generator: `experiments/step2_detector/configs/cond_traj_n2000.yaml` (the step-1 recipe, 640 epochs,
   ~39,700 steps), EMA weights, DDIM 30, guidance w = 1 (step 1's choice).
 - Generator quality check: the step-1 trajectory rule on held-out requests
   (reported; it does not gate the detector experiment).
@@ -36,8 +36,8 @@ larger than the bigger of the two arms' seed ranges (max - min over 3 seeds).
 
 ## If the session closes
 
-Rerun `setsid nohup bash scripts/run_step2.sh > logs/step2_pipeline.console.log 2>&1 < /dev/null &`
-in a new session, or `sbatch scripts/step2.sbatch` from `ece-hpc`. Training
+Rerun `setsid nohup bash experiments/step2_detector/run_step2.sh > experiments/step2_detector/logs/step2_pipeline.console.log 2>&1 < /dev/null &`
+in a new session, or `sbatch experiments/step2_detector/step2.sbatch` from `ece-hpc`. Training
 resumes from its last checkpoint; finished stages are skipped.
 
 ## Found in the smoke test, before launch: the detection task is saturated
@@ -57,7 +57,7 @@ The detector experiment is on hold until a task with headroom is chosen (for
 example weak targets only, target class, or much smaller N), and its rule will
 be re-registered then.
 
-## Result (`samples/cond_traj_n2000_scores.json`)
+## Result (`experiments/step2_detector/results/cond_traj_n2000_scores.json`)
 
 Checkpoint `checkpoints/cond_traj_n2000_bs32/last.pt`. Guidance w = 1.0, chosen on val 0-95 / seeds 1-3 (w=1.0: hit 0.976, passes True). Verdict on val 96-287, seeds 4-9, 192 sequences.
 
@@ -82,7 +82,7 @@ RMS difference (normalised) between each generated sequence and the real
 sequence with the same labels. **Memorising if** median (training labels) <
 0.8 x median (held-out labels).
 
-**Target-class detector** (`scripts/detector_class_augmentation.py`): the
+**Target-class detector** (`experiments/step2_detector/detector_class_augmentation.py`): the
 detector sees all 16 frames and outputs one heatmap per class (steady,
 Swerling-1, extended) per frame; a detection counts only in its class channel,
 within 2 bins of a true target of that class. Metric: mean AP over classes on
@@ -99,15 +99,15 @@ seeds, w = 1).
 - If the memorisation check says the generator copies, a positive result is
   reported but flagged as possibly reflecting copied real sequences.
 
-Run: `scripts/run_step2b.sh` (resumable; `sbatch scripts/step2b.sbatch` from `ece-hpc`).
+Run: `experiments/step2_detector/run_step2b.sh` (resumable; `sbatch experiments/step2_detector/step2b.sbatch` from `ece-hpc`).
 
-## Memorisation check (`samples/memorization_n2000.json`)
+## Memorisation check (`experiments/step2_detector/results/memorization_n2000.json`)
 
 128 requests each, EMA, DDIM 30, w=1.0. RMS difference (normalised units) between a generated sequence and the real sequence with the same labels: training labels 0.795, held-out labels 1.112 (unrelated real pairs 1.423). Ratio 0.72 (memorising if < 0.8).
 
 **Verdict (pre-set rule): the generator IS copying its training sequences.**
 
-## Result, target-class task (`samples/detector_class_augmentation.json`)
+## Result, target-class task (`experiments/step2_detector/results/detector_class_augmentation.json`)
 
 Mean AP over classes (within 2 bins, correct class) on val 1000-1511, 3000 steps x 32 sequences per arm.
 

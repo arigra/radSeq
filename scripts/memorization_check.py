@@ -37,7 +37,7 @@ def main():
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--n", type=int, default=128)
     ap.add_argument("--guidance", type=float, default=1.0)
-    ap.add_argument("--out", default="samples/memorization_n2000.json")
+    ap.add_argument("--out", default="experiments/step2_detector/results/memorization_n2000.json")
     ap.add_argument("--note")
     args = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

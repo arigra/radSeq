@@ -20,15 +20,15 @@ Three things were stacked against it, all fixable:
 
 | config | attention | lambda_smooth | params | other |
 |---|---|---:|---:|---|
-| `configs/e0_fact_s0.yaml` | factorized (temporal + spatial) | 0 | 13.5 M | bf16 |
-| `configs/e0_temp_s0.yaml` | temporal only | 0 | 9.8 M | bf16 |
+| `experiments/dit_64/configs/e0_fact_s0.yaml` | factorized (temporal + spatial) | 0 | 13.5 M | bf16 |
+| `experiments/dit_64/configs/e0_temp_s0.yaml` | temporal only | 0 | 9.8 M | bf16 |
 
 Both: E0 cache, seed 2026, batch 16, lr 1e-4, 12,500 steps, eps-prediction.
 Sampling with `terminal_x0=mean`, 50 DDIM steps, n=32, seeds 1-3.
 bf16 is new: fp32 factorized needs 14.7 GB and ~14.5 GB is free (another
 user's process holds 9 GB).
 
-## Scoring (`scripts/score_e0.py`)
+## Scoring (`experiments/dit_64/score_e0.py`)
 
 Real E0 reference (16 val sequences): std 0.95, peak 105 dB, peak prominence
 22 dB over the next peak >4 bins away, 100% of sequences with peak range and
@@ -46,7 +46,7 @@ prominence 1.2 dB, 6% on a line.
 - Neither works: continue debugging on E0 (budget, parameterization) before
   touching harder data.
 
-## Result at 12,500 steps (`samples/e0_final_scores.json`)
+## Result at 12,500 steps (`experiments/dit_64/results/e0_final_scores.json`)
 
 Final validation dit loss: factorized 0.0033, temporal 0.0122.
 3 seeds x 32 sequences, 50 DDIM steps, terminal_x0=mean. Real: std 1.04, peak
@@ -68,9 +68,9 @@ Next hypothesis: in a noise-free 16-frame sequence the full-map cross is
 visible at very low SNR, so the target position is decided in the first 2-3
 DDIM steps, where alpha_bar jumps 0 -> 1e-3 -> 4e-3. Coarse steps there blend
 several positions. Test: more DDIM steps and ancestral sampling on the same
-checkpoint (`samples/e0_fact_step_sweep.json`).
+checkpoint (`experiments/dit_64/results/e0_fact_step_sweep.json`).
 
-## Step count / sampler (`samples/e0_fact_step_sweep.json`, factorized, n=16, seed 1)
+## Step count / sampler (`experiments/dit_64/results/e0_fact_step_sweep.json`, factorized, n=16, seed 1)
 
 | decode | DDIM 50 | DDIM 250 | DDIM 1000 | ancestral 1000 |
 |---|---|---|---|---|
@@ -87,9 +87,9 @@ against that ceiling at several places at once (temporal tile, frame 0 top five:
 97, 97, 97, 96, 96 dB at different locations), so no single peak can dominate.
 The clamp existed to contain the terminal-step blow-up, which
 `terminal_x0=mean` now handles. Test: sample the same checkpoints with clamp
-+/-8 and off (`samples/e0_clamp_test.json`).
++/-8 and off (`experiments/dit_64/results/e0_clamp_test.json`).
 
-## Clamp result (`samples/e0_clamp_test.json`, n=16, seed 1, DDIM 50)
+## Clamp result (`experiments/dit_64/results/e0_clamp_test.json`, n=16, seed 1, DDIM 50)
 
 Real frame peaks: median z 4.48 (above the +/-4 clamp); 0.17% of pixels |z|>4.
 
@@ -113,9 +113,9 @@ Locate the failing noise range: noise real E0 sequences to t in
 {900, 700, 500, 300}, run DDIM from there, and score. The largest t that still
 yields a single target on a line marks where synthesis breaks.
 
-## Standard recipe result (`samples/e0_standard_scores.json`)
+## Standard recipe result (`experiments/dit_64/results/e0_standard_scores.json`)
 
-Checkpoint `checkpoints/e0_standard_bs32/last.pt`, step 62500, 32 sequences x seeds 1,2,3. Recipe: `configs/e0_standard.yaml` (v-pred, schedule shift 4, no clamp, non-overlapping 8x8 patches, factorized attention, dim 384 x 12, EMA 0.9999, no smoothness).
+Checkpoint `checkpoints/e0_standard_bs32/last.pt`, step 62500, 32 sequences x seeds 1,2,3. Recipe: `experiments/dit_64/configs/e0_standard.yaml` (v-pred, schedule shift 4, no clamp, non-overlapping 8x8 patches, factorized attention, dim 384 x 12, EMA 0.9999, no smoothness).
 
 | arm | mean | std | peak dB | prominence dB | on line | marginal L1 | verdict |
 |---|---:|---:|---:|---:|---:|---:|---|
@@ -127,7 +127,7 @@ Checkpoint `checkpoints/e0_standard_bs32/last.pt`, step 62500, 32 sequences x se
 
 **Verdict (pre-set rule): the standard recipe WORKS on E0; earlier failures were setup issues.**
 
-## Memorisation / diversity (`samples/e0_diversity.json`, `scripts/e0_diversity.py`)
+## Memorisation / diversity (`experiments/dit_64/results/e0_diversity.json`, `experiments/dit_64/e0_diversity.py`)
 
 256 EMA samples (DDIM 50) vs 256 held-out val sequences, both compared with the
 20k training set.

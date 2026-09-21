@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from scripts.evaluate_ablations import (
+from experiments.dit_64.evaluate_ablations import (
     Arm,
     _json_safe,
     distribution_stats,

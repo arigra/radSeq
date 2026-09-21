@@ -8,7 +8,7 @@ Every architecture/objective control (U-Net, factorized attention, v-pred,
 min-SNR) kept `lambda_smooth=0.1`, so they did not test architecture
 independently of the smoothness loss.
 
-## Evidence (`scripts/diag_ddim_trace.py`, `samples/diag_ddim_trace.json`)
+## Evidence (`experiments/dit_64/diag_ddim_trace.py`, `experiments/dit_64/results/diag_ddim_trace.json`)
 
 Cosine schedule: alpha_bar(999) = 2.4e-9, so the first DDIM step computes
 x0 = (x - sqrt(1-ab) eps_hat) / sqrt(ab) with a 20,291x error gain.
@@ -43,7 +43,7 @@ eps := x / sqrt(1-ab) at steps with alpha_bar < 1e-6 (only t=999).
 - **Partial** if either moves by >= 0.1 toward real but misses the bands.
 - **Rejected** if both change by < 0.1 (run-to-run noise is ~0.06).
 
-## Result (`samples/diag_ddim_trace_meanx0.json`)
+## Result (`experiments/dit_64/results/diag_ddim_trace_meanx0.json`)
 
 | | before mean / std | after mean / std |
 |---|---:|---:|
@@ -64,7 +64,7 @@ shifts. It does not cause under-dispersion: after the fix both models sit at
 | 1000 | +0.39 / 0.789 | +0.18 / 0.870 |
 
 Single seed, n=16. Discretisation is not the main cause for epoch70: it stays
-under-dispersed for every step count, and `samples/sampler_stochasticity.json`
+under-dispersed for every step count, and `experiments/dit_64/results/sampler_stochasticity.json`
 already showed ancestral 1000-step sampling at 0.67-0.69. The smoothness-trained
 model is biased regardless of sampler. The earlier finding that lambda=0
 destroys targets (0.34 tracks/seq) was measured with the broken terminal step

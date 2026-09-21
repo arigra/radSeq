@@ -9,7 +9,7 @@ tags:
 
 # Phase 1 diagnosis: why `marginal_l1` is 0.44 against a 0.05 floor
 
-Reproduce with `python -m scripts.diag_marginal_l1`, `diag_tail_origin`,
+Reproduce with `python -m experiments.dit_64.diag_marginal_l1`, `diag_tail_origin`,
 `diag_track_validity`. Raw reports land in `samples/diag_*.json`.
 
 ## Summary
@@ -125,7 +125,7 @@ motion" is not supported by this evidence.
   temporal coherence* and *insufficient for unconditional spatial synthesis*.
   That is a real, defensible finding either way it gets resolved.
 
-## Rescoring under corrected metrics (`scripts/rescore_phase1.py`)
+## Rescoring under corrected metrics (`archive/ablations_aug/rescore_phase1.py`)
 
 Detection now uses `max_peaks=5` with a `min_track_len = seq_len // 2` filter.
 Validated on 64 real val sequences against ground truth: **93.5% track
@@ -208,5 +208,5 @@ be rationalized after the fact:
 - Both arms remain near 0.66 → the diagnosis is incomplete; something beyond
   spatial coordination is responsible, and the investigation reopens.
 
-Reproduce with `scripts/compare_control.py`, which also reports tail percentiles,
+Reproduce with `archive/ablations_aug/compare_control.py`, which also reports tail percentiles,
 `marginal_l1`, and the corrected kinematic metrics for every arm.

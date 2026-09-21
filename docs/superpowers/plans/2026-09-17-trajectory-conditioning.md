@@ -21,7 +21,7 @@ Spec: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
 - Adherence: evaluator detector (`detect_peaks`, 12 dB over median, top 5), radius 2 bins, lasting track = linked track of >= 8 frames.
 - Decision rule: hit rate >= simulator hit rate - 0.05; unrequested lasting tracks/seq <= simulator's; Ari's four checks (std within 0.1, marginal L1 <= 0.15, target tracks within 15%, persistence within 25% of real) pass. Null check: unconditional `e3_long` hit rate at least 0.20 below the conditional model's.
 - Guidance sweep w in {1, 2, 3} on val 0-95 / seeds 1-3; verdict on val 96-287 / seeds 4-9; DDIM 30, EMA weights.
-- Tests and runs must not write to `logs/phase1.log` (always set `train.log_file`).
+- Tests and runs must not write to `archive/ablations_aug/logs/phase1.log` (always set `train.log_file`).
 - Commit messages end with `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`.
 
 ---
@@ -627,13 +627,13 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ### Task 6: Scorer, config, resumable pipeline, pre-run note, smoke test
 
 **Files:**
-- Create: `scripts/score_conditional.py`, `configs/cond_traj.yaml`, `scripts/run_cond_traj.sh`, `scripts/cond_traj.sbatch`, `docs/notes/2026-09-17-trajectory-conditioning.md`
+- Create: `experiments/dit_64/score_conditional.py`, `experiments/dit_64/configs/cond_traj.yaml`, `experiments/dit_64/run_cond_traj.sh`, `experiments/dit_64/cond_traj.sbatch`, `docs/notes/2026-09-17-trajectory-conditioning.md`
 
 **Interfaces:**
-- Consumes: `generate_trajectory_conditioned` (Task 4), `trajectory_adherence` (Task 5), `generate`, `resolve_cache_dir` (existing), `checks` from `scripts/score_hard_standard.py`, `evaluate_sequences`.
-- Produces: `samples/cond_traj_scores.json`, `samples/cond_traj.png`, verdict appended to the note.
+- Consumes: `generate_trajectory_conditioned` (Task 4), `trajectory_adherence` (Task 5), `generate`, `resolve_cache_dir` (existing), `checks` from `experiments/dit_64/score_hard_standard.py`, `evaluate_sequences`.
+- Produces: `experiments/dit_64/results/cond_traj_scores.json`, `experiments/dit_64/results/cond_traj.png`, verdict appended to the note.
 
-- [ ] **Step 1: Write `scripts/score_conditional.py`**
+- [ ] **Step 1: Write `experiments/dit_64/score_conditional.py`**
 
 ```python
 """Score a trajectory-conditioned DiT against the pre-set rule; append the verdict.
@@ -696,7 +696,7 @@ def main():
     ap.add_argument("--uncond-ckpt", required=True)
     ap.add_argument("--guidance", default="1,2,3")
     ap.add_argument("--n", type=int, default=32, help="sequences per seed")
-    ap.add_argument("--out", default="samples/cond_traj_scores.json")
+    ap.add_argument("--out", default="experiments/dit_64/results/cond_traj_scores.json")
     ap.add_argument("--note")
     ap.add_argument("--png")
     args = ap.parse_args()
@@ -784,12 +784,12 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 2: Write `configs/cond_traj.yaml`**
+- [ ] **Step 2: Write `experiments/dit_64/configs/cond_traj.yaml`**
 
 ```yaml
 # Trajectory-conditioned DiT (research plan step 1). Warm-starts from the passing
 # unconditional full-data model. Design: docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md
-# Rule: docs/notes/2026-09-17-trajectory-conditioning.md. Run by scripts/run_cond_traj.sh.
+# Rule: docs/notes/2026-09-17-trajectory-conditioning.md. Run by experiments/dit_64/run_cond_traj.sh.
 data:
   n_train: 20000
   n_val: 2000
@@ -827,7 +827,7 @@ train:
   init_from: checkpoints/e3_long_bs32/last.pt
   cond_dropout: 0.1
   ckpt_dir: checkpoints/cond_traj
-  log_file: logs/cond_traj.log
+  log_file: experiments/dit_64/logs/cond_traj.log
   log_every_steps: 100
   save_every_steps: 1000
   snapshot_every_epochs: 10
@@ -840,25 +840,25 @@ sample:
   weights: ema
 ```
 
-- [ ] **Step 3: Write `scripts/run_cond_traj.sh` and `scripts/cond_traj.sbatch`**
+- [ ] **Step 3: Write `experiments/dit_64/run_cond_traj.sh` and `experiments/dit_64/cond_traj.sbatch`**
 
-`scripts/run_cond_traj.sh`:
+`experiments/dit_64/run_cond_traj.sh`:
 
 ```bash
 #!/usr/bin/env bash
 # Unattended trajectory-conditioned DiT run (research plan step 1).
 # Safe to rerun: training resumes from the newest checkpoint (last.pt, written
 # atomically every 1000 steps and at each epoch end); a finished run skips to scoring.
-# Progress: logs/cond_traj_pipeline.log   Rule/verdict: docs/notes/2026-09-17-trajectory-conditioning.md
+# Progress: experiments/dit_64/logs/cond_traj_pipeline.log   Rule/verdict: docs/notes/2026-09-17-trajectory-conditioning.md
 set -u
 cd "$(dirname "$0")/.."
 export PYTHONPATH=.:scripts
 PY=/truenas/home/arigra/.venv/bin/python
-LOG=logs/cond_traj_pipeline.log
+LOG=experiments/dit_64/logs/cond_traj_pipeline.log
 NOTE=docs/notes/2026-09-17-trajectory-conditioning.md
 say() { echo "$(date '+%F %T') | $*" | tee -a "$LOG"; }
 
-if pgrep -f "src.train --config configs/cond_traj_bs" > /dev/null; then
+if pgrep -f "src.train --config experiments/dit_64/configs/cond_traj_bs" > /dev/null; then
   say "REFUSED: a cond_traj training process is already running"; exit 1
 fi
 say "start"
@@ -869,35 +869,35 @@ fi
 
 CKPT=""
 for BS in 32 16 8; do
-  CFG=configs/cond_traj_bs$BS.yaml
+  CFG=experiments/dit_64/configs/cond_traj_bs$BS.yaml
   sed -e "s/^  batch_size: .*/  batch_size: $BS/" \
       -e "s#checkpoints/cond_traj\$#checkpoints/cond_traj_bs$BS#" \
-      -e "s#logs/cond_traj.log#logs/cond_traj_bs$BS.log#" \
-      configs/cond_traj.yaml > "$CFG"
+      -e "s#experiments/dit_64/logs/cond_traj.log#experiments/dit_64/logs/cond_traj_bs$BS.log#" \
+      experiments/dit_64/configs/cond_traj.yaml > "$CFG"
   RESUME=()
   if [ -f "checkpoints/cond_traj_bs$BS/last.pt" ]; then
     RESUME=(--resume "checkpoints/cond_traj_bs$BS/last.pt")
   fi
   say "training batch=$BS ($CFG) ${RESUME[*]}"
-  if $PY -m src.train --config "$CFG" "${RESUME[@]}" >> "logs/cond_traj_bs$BS.console.log" 2>&1; then
+  if $PY -m src.train --config "$CFG" "${RESUME[@]}" >> "experiments/dit_64/logs/cond_traj_bs$BS.console.log" 2>&1; then
     CKPT=checkpoints/cond_traj_bs$BS/last.pt; break
   fi
-  if tail -50 "logs/cond_traj_bs$BS.console.log" | grep -qiE "out of memory|OutOfMemoryError"; then
+  if tail -50 "experiments/dit_64/logs/cond_traj_bs$BS.console.log" | grep -qiE "out of memory|OutOfMemoryError"; then
     say "OOM at batch=$BS, retrying smaller"; continue
   fi
-  say "FAILED: training crashed, see logs/cond_traj_bs$BS.console.log (rerun this script to resume)"; exit 1
+  say "FAILED: training crashed, see experiments/dit_64/logs/cond_traj_bs$BS.console.log (rerun this script to resume)"; exit 1
 done
 [ -z "$CKPT" ] && { say "FAILED: OOM at every batch size"; exit 1; }
 
 say "scoring $CKPT"
-if ! $PY scripts/score_conditional.py --ckpt "$CKPT" --uncond-ckpt checkpoints/e3_long_bs32/last.pt \
-     --out samples/cond_traj_scores.json --note "$NOTE" --png samples/cond_traj.png >> "$LOG" 2>&1; then
+if ! $PY experiments/dit_64/score_conditional.py --ckpt "$CKPT" --uncond-ckpt checkpoints/e3_long_bs32/last.pt \
+     --out experiments/dit_64/results/cond_traj_scores.json --note "$NOTE" --png experiments/dit_64/results/cond_traj.png >> "$LOG" 2>&1; then
   say "FAILED: scoring (rerun this script; training will be skipped)"; exit 1
 fi
 say "DONE: verdict appended to $NOTE"
 ```
 
-`scripts/cond_traj.sbatch`:
+`experiments/dit_64/cond_traj.sbatch`:
 
 ```bash
 #!/bin/bash
@@ -910,12 +910,12 @@ say "DONE: verdict appended to $NOTE"
 #SBATCH --output=/truenas/home/arigra/jobs/radseq_cond_traj_%j.out
 #SBATCH --error=/truenas/home/arigra/jobs/radseq_cond_traj_%j.err
 # Continue (or start) the trajectory-conditioned run from its last checkpoint.
-# Submit from the login host ece-hpc:  sbatch scripts/cond_traj.sbatch
+# Submit from the login host ece-hpc:  sbatch experiments/dit_64/cond_traj.sbatch
 cd /truenas/home/arigra/permuter/ariGranevich/radSeq
-bash scripts/run_cond_traj.sh
+bash experiments/dit_64/run_cond_traj.sh
 ```
 
-Then: `chmod +x scripts/run_cond_traj.sh scripts/cond_traj.sbatch && bash -n scripts/run_cond_traj.sh && bash -n scripts/cond_traj.sbatch`. Expected: no output.
+Then: `chmod +x experiments/dit_64/run_cond_traj.sh experiments/dit_64/cond_traj.sbatch && bash -n experiments/dit_64/run_cond_traj.sh && bash -n experiments/dit_64/cond_traj.sbatch`. Expected: no output.
 
 - [ ] **Step 4: Write the pre-run note `docs/notes/2026-09-17-trajectory-conditioning.md`**
 
@@ -928,7 +928,7 @@ Design: `docs/superpowers/specs/2026-09-17-trajectory-conditioning-design.md`.
 
 ## Setup
 
-`configs/cond_traj.yaml`: the passing full-data recipe (`e3_long`) plus
+`experiments/dit_64/configs/cond_traj.yaml`: the passing full-data recipe (`e3_long`) plus
 `model.cond_channels: 4` (3 class blob channels + presence), warm-started from
 `checkpoints/e3_long_bs32/last.pt` (EMA weights; new input weights zero, so
 training starts from exactly the unconditional model), condition dropout 0.1,
@@ -960,8 +960,8 @@ Not measured: whether generated targets look like their requested class.
 
 ## If the session closes
 
-Rerun `setsid nohup bash scripts/run_cond_traj.sh > logs/cond_traj_pipeline.console.log 2>&1 < /dev/null &`
-in a new session, or `sbatch scripts/cond_traj.sbatch` from `ece-hpc`. Both
+Rerun `setsid nohup bash experiments/dit_64/run_cond_traj.sh > experiments/dit_64/logs/cond_traj_pipeline.console.log 2>&1 < /dev/null &`
+in a new session, or `sbatch experiments/dit_64/cond_traj.sbatch` from `ece-hpc`. Both
 resume from `checkpoints/cond_traj_bs32/last.pt`.
 ```
 
@@ -973,13 +973,13 @@ rm -rf $S && mkdir -p $S && export PYTHONPATH=.:scripts && PY=/truenas/home/arig
 $PY -c "
 import yaml, torch
 from src.train import train
-cfg = yaml.safe_load(open('configs/cond_traj.yaml'))
+cfg = yaml.safe_load(open('experiments/dit_64/configs/cond_traj.yaml'))
 cfg['train'].update(ckpt_dir='$S', log_file='$S/train.log', log_every_steps=20, save_every_steps=20, val_every_epochs=None)
 train(cfg, device=torch.device('cuda'), max_steps=40)
 train(cfg, device=torch.device('cuda'), max_steps=60, resume='$S/last.pt')
 print('step', torch.load('$S/last.pt', map_location='cpu', weights_only=False)['step'], 'peak GB', round(torch.cuda.max_memory_allocated()/1e9, 2))
 "
-$PY scripts/score_conditional.py --ckpt $S/last.pt --uncond-ckpt checkpoints/e3_long_bs32/last.pt \
+$PY experiments/dit_64/score_conditional.py --ckpt $S/last.pt --uncond-ckpt checkpoints/e3_long_bs32/last.pt \
     --n 2 --guidance 1 --out $S/scores.json --note $S/note.md --png $S/p.png && tail -4 $S/note.md
 ```
 
@@ -988,7 +988,7 @@ Expected: `step 60`, peak memory below ~13 GB, the scorer prints a `w=1.0` line 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/score_conditional.py configs/cond_traj.yaml scripts/run_cond_traj.sh scripts/cond_traj.sbatch docs/notes/2026-09-17-trajectory-conditioning.md
+git add experiments/dit_64/score_conditional.py experiments/dit_64/configs/cond_traj.yaml experiments/dit_64/run_cond_traj.sh experiments/dit_64/cond_traj.sbatch docs/notes/2026-09-17-trajectory-conditioning.md
 git commit -m "exp: scorer, config and resumable pipeline for the trajectory-conditioned DiT
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
@@ -1002,8 +1002,8 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 ```bash
 date; date -d @$SLURM_JOB_END_TIME; nvidia-smi --query-gpu=memory.free --format=csv,noheader
-setsid nohup bash scripts/run_cond_traj.sh > logs/cond_traj_pipeline.console.log 2>&1 < /dev/null & disown
-sleep 90; tail -3 logs/cond_traj_pipeline.log; tail -2 logs/cond_traj_bs32.log
+setsid nohup bash experiments/dit_64/run_cond_traj.sh > experiments/dit_64/logs/cond_traj_pipeline.console.log 2>&1 < /dev/null & disown
+sleep 90; tail -3 experiments/dit_64/logs/cond_traj_pipeline.log; tail -2 experiments/dit_64/logs/cond_traj_bs32.log
 ```
 
 Expected: at least ~3 h left in the session (else use `sbatch`), `training batch=32`, a `start device=cuda` line with `epoch=0 step=0`, and step logs.

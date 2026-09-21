@@ -139,27 +139,6 @@ def range_profile(samples, root=DEFAULT_ROOT):
     return np.median(m, axis=(0, 2))
 
 
-def fitted_simulator(seq_len=16, root=None, **kwargs):
-    """The simulator as fitted to RADIal's training recordings.
-
-    Parameters come from configs/radial_sim.yaml; see
-    docs/notes/2026-09-21-radial-sim2real-design.md for the fit and residuals.
-    """
-    import yaml
-    from src.simulator import RADIAL_GEOMETRY, TemporalRadarSimulator
-    import dataclasses
-    cfg = yaml.safe_load(open("configs/radial_sim.yaml"))["simulator"]
-    gain = torch.from_numpy(np.load(cfg["range_gain_db"])).float()
-    geom = dataclasses.replace(RADIAL_GEOMETRY, CNR_DB=float(cfg["cnr_db"]))
-    return TemporalRadarSimulator(
-        seq_len=seq_len, geometry=geom, sigma_f=float(cfg["sigma_f"]),
-        n_looks=int(cfg["n_looks"]), range_gain_db=gain, **kwargs), cfg
-
-
-def target_gain_draw(n, cfg, generator=None):
-    lo, hi = cfg["target_gain_db"]
-    return torch.empty(n).uniform_(float(lo), float(hi), generator=generator)
-
 
 def background_stats(maps):
     """Scene-level statistics of RD maps (dB), used to compare sources.

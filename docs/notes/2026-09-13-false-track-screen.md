@@ -3,13 +3,13 @@
 Question: does matching a per-cell clutter false-alarm rate also match the
 number of false tracks? No, in this simulator.
 
-`scripts/research_false_tracks.py` draws independent target-free clutter
+`archive/codex_research/research_false_tracks.py` draws independent target-free clutter
 sequences, calibrates a local-power threshold to nominal Pfa=0.01 on eight
 training sequences per condition, then evaluates 32 new sequences per
 condition. A false path is three consecutive detections with at most one
 range and Doppler cell of movement per frame. The frame-shuffled control
 preserves every observed frame and its cell detections but breaks temporal
-relationships across sequences. Results: `samples/research_false_tracks.json`.
+relationships across sequences. Results: `archive/codex_research/results/research_false_tracks.json`.
 
 | Texture nu | Rho | Observed cell Pfa | Three-frame paths | Frame-shuffled paths |
 |---:|---:|---:|---:|---:|

@@ -45,12 +45,3 @@ def test_overlapping_windows_are_opt_in():
     out = radial.sequences({"A": list(range(6))}, seq_len=4, stride=1)
     assert [s[0] for _, s in out] == [0, 1, 2]
 
-
-def test_fitted_simulator_matches_the_radial_grid():
-    import torch
-    sim, cfg = radial.fitted_simulator(seq_len=2)
-    assert (sim.N, sim.K) == (512, 256)
-    assert sim.n_looks == cfg["n_looks"] and sim.range_gain_db is not None
-    x = sim.gen_sequence(n_targets=1,
-                         gain_db=radial.target_gain_draw(1, cfg))["x"]
-    assert x.shape == (2, 512, 256) and torch.isfinite(x).all()

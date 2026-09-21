@@ -3,7 +3,7 @@ import json
 import pytest
 import torch
 
-from scripts.diag_diffusion_sanity import (
+from experiments.dit_64.diag_diffusion_sanity import (
     GaussianOracle,
     TwoPointOracle,
     run_sanity,

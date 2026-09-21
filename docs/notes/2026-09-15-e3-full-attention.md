@@ -4,7 +4,7 @@ Written before the run.
 
 ## Why
 
-`configs/e3_standard.yaml` (factorized attention) passes Ari's rule on the full
+`experiments/dit_64/configs/e3_standard.yaml` (factorized attention) passes Ari's rule on the full
 data only with EMA weights and 20-30 DDIM steps
 (`2026-09-14-hard-standard-recipe.md`, seeds 4-9). Its persistence margin is
 thin (0.121 vs limit 0.108; 2 of 6 seeds below on their own), and continuity is
@@ -15,9 +15,9 @@ the most direct training-side fix for that stage.
 
 ## Setup
 
-`configs/e3_full.yaml`: identical to `e3_standard` except `attn_mode: full`
+`experiments/dit_64/configs/e3_full.yaml`: identical to `e3_standard` except `attn_mode: full`
 (`FullBlock` in `src/dit.py`). 100 epochs, batch 32, bf16, EMA 0.9999.
-Scored by `scripts/score_hard_standard.py`: raw and EMA weights, DDIM 30 and
+Scored by `experiments/dit_64/score_hard_standard.py`: raw and EMA weights, DDIM 30 and
 50, seeds 1-6 x 32 sequences (fresh for this model).
 
 ## Decision rule (Ari's rule, unchanged)
@@ -32,12 +32,12 @@ persistence >= 0.121 (e3_standard's value), or EMA DDIM 50 passes all four
 ## If the session closes
 
 Nothing is lost beyond at most ~1000 steps (~4 min). To continue, either
-- in a new session: `setsid nohup bash scripts/run_e3_full.sh > logs/e3_full_pipeline.console.log 2>&1 < /dev/null &`
-- or from the login host `ece-hpc`: `sbatch scripts/e3_full.sbatch`
+- in a new session: `setsid nohup bash experiments/dit_64/run_e3_full.sh > experiments/dit_64/logs/e3_full_pipeline.console.log 2>&1 < /dev/null &`
+- or from the login host `ece-hpc`: `sbatch experiments/dit_64/e3_full.sbatch`
 
 Both resume from `checkpoints/e3_full_bs32/last.pt`; the script refuses to
 start if a training process is already running. Progress:
-`logs/e3_full_pipeline.log` (ends in DONE or FAILED) and `logs/e3_full_bs32.log`.
+`experiments/dit_64/logs/e3_full_pipeline.log` (ends in DONE or FAILED) and `experiments/dit_64/logs/e3_full_bs32.log`.
 Note: resuming restarts the interrupted epoch, so the run may take up to 625
 extra steps.
 
@@ -52,7 +52,7 @@ steps), so the result should land around 11:30, well inside the session.
 45.0 M for factorized (one attention per block instead of two). If it wins,
 that is despite fewer parameters; if it loses, capacity is a possible cause.
 
-## Result (`samples/e3_full_scores.json`)
+## Result (`experiments/dit_64/results/e3_full_scores.json`)
 
 Checkpoint `checkpoints/e3_full_bs32/last.pt`, step 62500, 32 sequences x seeds 1,2,3,4,5,6.
 

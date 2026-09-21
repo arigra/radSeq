@@ -24,7 +24,7 @@ def test_unet_zero_init_output():
 
 
 def test_build_model_selects_unet_from_config():
-    with open("configs/abl_unet2d.yaml") as fh:
+    with open("archive/ablations_aug/configs/abl_unet2d.yaml") as fh:
         cfg = yaml.safe_load(fh)
     cfg["model"].update(base_channels=16, dim=32)
     model = build_model(cfg, torch.device("cpu"))
@@ -33,7 +33,7 @@ def test_build_model_selects_unet_from_config():
 
 
 def test_unet_uses_shared_training_loop(tmp_path):
-    with open("configs/abl_unet2d.yaml") as fh:
+    with open("archive/ablations_aug/configs/abl_unet2d.yaml") as fh:
         cfg = yaml.safe_load(fh)
     cfg["data"].update(cache_dir=str(tmp_path), n_train=4, n_val=2,
                        shard_size=4)

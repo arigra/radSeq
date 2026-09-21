@@ -8,10 +8,10 @@ The intensity deficit is the project's one open problem: generated std 0.655 aga
 1.004, marginal L1 0.398 against a 0.065 real-vs-real floor. It has survived 7x training
 budget, spatial attention, a convolutional denoiser, EMA, every clamp width, every smoothness
 weighting and magnitude, v-prediction and min-SNR
-(`samples/budget_progression.json`, `samples/ablation_single_variable.json`,
-`samples/control_comparison.json`, `samples/fix_smoothness_schedule.json`,
-`samples/fix_clamp_width.json`, `samples/objective_arms_partial.json`,
-`samples/objective_minsnr.json`).
+(`experiments/dit_64/results/budget_progression.json`, `archive/ablations_aug/results/ablation_single_variable.json`,
+`archive/ablations_aug/results/control_comparison.json`, `experiments/dit_64/results/fix_smoothness_schedule.json`,
+`experiments/dit_64/results/fix_clamp_width.json`, `experiments/dit_64/results/objective_arms_partial.json`,
+`experiments/dit_64/results/objective_minsnr.json`).
 
 Every one of those arms varied the **model or the objective**. None varied the **data**. So the
 question here is:
@@ -21,7 +21,7 @@ question here is:
 
 The motivating observation is the restoration/synthesis split: handed a noisy *real* sequence
 the network returns std 0.986, essentially perfect; handed only noise it returns 0.655
-(`samples/diag_tail_origin.json`). Something about producing the distribution from scratch
+(`experiments/dit_64/results/diag_tail_origin.json`). Something about producing the distribution from scratch
 fails in a way that reproducing a given sample does not. If the training distribution were
 simple enough, that failure might not appear.
 
@@ -59,7 +59,7 @@ simplify the intensity distribution, which is worth keeping in mind when reading
 | scoring | n = 32, corrected detector (`max_peaks=5`, `min_track_len=8`) |
 
 The 12,500-step budget is known to be confounded for *target* metrics
-(`samples/budget_progression.json`: tracks/seq went 1.59 → 3.06 between 12,500 and 87,500 steps) but
+(`experiments/dit_64/results/budget_progression.json`: tracks/seq went 1.59 → 3.06 between 12,500 and 87,500 steps) but
 **budget-independent for distribution metrics**, which are what this question is about
 (std 0.652 → 0.655 and marginal L1 0.388 → 0.398 across the same 7x). Target metrics from this
 arm are therefore reported but not used in the decision.
@@ -103,7 +103,7 @@ the outcome that most advances the project being the null.
 
 ## Scope
 
-One arm. No E1/E2 without approval. Result lands in `samples/easy_regime_arm.json` in the same
+One arm. No E1/E2 without approval. Result lands in `archive/codex_research/results/easy_regime_arm.json` in the same
 shape as the other arm files, and is reported in
 `notebooks/02_radseq_self_contained.ipynb` §17 against this rule, read verbatim.
 
@@ -130,7 +130,7 @@ attributed to the model failing to learn the easy regime.
 
 **A confound that was not foreseen:** because `L_DiT` collapsed while `L_smooth` did not, the
 same `lambda_smooth = 0.1` gives the smoothness prior roughly **18x more influence** on the
-E0 objective than on the locked one. `samples/fix_smoothness_schedule.json` identifies that
+E0 objective than on the locked one. `experiments/dit_64/results/fix_smoothness_schedule.json` identifies that
 penalty as the largest single lever on generated std in the project. So "data is the only
 variable" holds for the *configuration* but not for the *optimisation*: the pressure that
 most suppresses dispersion increased in the arm.

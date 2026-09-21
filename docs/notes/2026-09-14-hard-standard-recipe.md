@@ -7,11 +7,11 @@ data (`data/cache`: 1-5 targets, all classes, clutter, noise).
 
 ## Setup
 
-`configs/e3_standard.yaml`: identical to `configs/e0_standard.yaml` except the
+`experiments/dit_64/configs/e3_standard.yaml`: identical to `experiments/dit_64/configs/e0_standard.yaml` except the
 data. v-prediction, schedule shift 4, no x0 clamp, non-overlapping 8x8
 patches, factorized attention, dim 384 x 12, EMA 0.9999, bf16, no smoothness
 loss, batch 32, 100 epochs (62,500 steps, ~4.7 h). Run unattended by
-`scripts/run_e3_standard.sh`; scored by `scripts/score_hard_standard.py`
+`experiments/dit_64/run_e3_standard.sh`; scored by `experiments/dit_64/score_hard_standard.py`
 (raw and EMA weights, DDIM 50 and 250, 3 seeds x 32 sequences).
 
 The intermediate regimes (E1 noise only, E2 noise + clutter) are skipped;
@@ -32,7 +32,7 @@ every earlier arm (reference: std 1.004, marginal L1 real-vs-real 0.065,
 
 An arm passes only if all four pass.
 
-## Result (`samples/e3_standard_scores.json`)
+## Result (`experiments/dit_64/results/e3_standard_scores.json`)
 
 Checkpoint `checkpoints/e3_standard_bs32/last.pt`, step 62625, 32 sequences x seeds 1,2,3.
 
@@ -68,7 +68,7 @@ frame-to-frame continuity of weaker returns.
 
 ## Attempt 1: noise floor, track anatomy, sampler steps, noise-level localisation (2026-09-15)
 
-**Noise floor** (`samples/diag_persistence.json`): persistence of eight disjoint
+**Noise floor** (`experiments/dit_64/results/diag_persistence.json`): persistence of eight disjoint
 32-sequence subsets is 0.147 +/- 0.020 for real data and 0.101 +/- 0.012 for
 EMA DDIM 50 samples. The gap (0.046) is real, about 2.3 real SDs.
 
@@ -85,7 +85,7 @@ Long tracks are almost all true targets. Generated sequences break a few
 targets (long -> medium) and add ~2 single-frame blips. Brightness and Doppler
 per bucket match.
 
-**Sampler steps** (`samples/e3_step_sweep.json`, 3 seeds x 32):
+**Sampler steps** (`experiments/dit_64/results/e3_step_sweep.json`, 3 seeds x 32):
 
 | EMA | std | marginal L1 | target tracks | persistence | all four |
 |---|---:|---:|---:|---:|---|
@@ -98,7 +98,7 @@ per bucket match.
 Fewer steps trade frame-level fidelity for fewer blips. Raw weights pass
 persistence only at DDIM 10.
 
-**Localisation** (`samples/diag_persistence_by_t.json`): noising real
+**Localisation** (`experiments/dit_64/results/diag_persistence_by_t.json`): noising real
 sequences to t and denoising back keeps persistence at the real level up to
 t=500 (0.145-0.149), then 0.130 at t=700 and 0.107-0.112 at t>=900. The
 continuity loss happens in the high-noise stage, where the global temporal
@@ -107,7 +107,7 @@ layout is decided, not in low-noise refinement.
 Caveat: DDIM 20/30 were chosen after seeing seeds 1-3, so they are confirmed
 on fresh seeds 4-9 before being called a fix.
 
-## Attempt 2: confirmation on fresh seeds 4-9 (`samples/e3_confirm_seeds4to9.json`)
+## Attempt 2: confirmation on fresh seeds 4-9 (`experiments/dit_64/results/e3_confirm_seeds4to9.json`)
 
 6 seeds x 32 sequences, same real reference as the rule.
 

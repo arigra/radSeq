@@ -1,10 +1,10 @@
 # Measured-data gate: does temporal background structure matter? (2026-09-13)
 
-Written before running `scripts/research_radial_gate.py`.
+Written before running `archive/codex_research/research_radial_gate.py`.
 
 ## Why not Rad-R
 
-Codex's check (`samples/research_real_track_gap.json`) used Rad-R
+Codex's check (`archive/codex_research/results/research_real_track_gap.json`) used Rad-R
 `training_cache.h5`: 9 captures x 200 frames, `rd_map` min-max normalised to
 [0,1] and resized to 224x224, no target labels, mostly static fault-injection
 scenes. Normalisation destroys absolute power, which CFAR statistics need, and
@@ -16,7 +16,7 @@ shuffled path counts differ by 0-8%. That result is not evidence either way.
 RADIal ready-to-use (`radar_FFT`, 512 range x 256 Doppler x 16 channels;
 measured driving, labelled vehicles). 84% of labelled frames follow their
 predecessor; 111 runs are >= 16 consecutive frames (4,592 frames).
-`scripts/cache_radial_power.py` caches channel-summed dB power for those runs.
+`archive/codex_research/cache_radial_power.py` caches channel-summed dB power for those runs.
 
 ## Question
 
@@ -42,7 +42,7 @@ window, 20 permutations.
 - **Premise dropped**: median ratio < 1.2 for both k.
 - Otherwise inconclusive.
 
-## Result (added after running; `samples/research_radial_gate.json`)
+## Result (added after running; `archive/codex_research/results/research_radial_gate.json`)
 
 246 windows from 111 runs. Median ordered/permuted background-path ratio:
 
