@@ -160,7 +160,8 @@ class TemporalRadarSimulator:
                  rho_clutter=None, scnr=None, nu=None, clutter=True, noise=True,
                  force_class=None, geometry=None, a_max=None,
                  sigma_f=0.05, n_looks=1, range_gain_db=None,
-                 window=None, spec=None, clutter_range_db=None):
+                 window=None, spec=None, clutter_range_db=None,
+                 gain_offset_db=0.0):
         self.geometry = geometry or RadarGeometry()
         g = self.geometry
         self.N, self.K = g.N, g.K
@@ -187,6 +188,10 @@ class TemporalRadarSimulator:
         if self.range_gain_db is not None and len(self.range_gain_db) != self.N:
             raise ValueError(f"range_gain_db must have {self.N} entries")
         # FFT window, a documented processing step of the real sensor.
+        # Controlled simulator-mismatch knob for the fidelity study: a dB
+        # offset on target brightness, the dominant gap measured against real
+        # recordings. 0.0 leaves the simulator exactly unmodified.
+        self.gain_offset_db = float(gain_offset_db)
         self.window = window
         # Published radar specification. When present, target amplitudes come
         # from the radar equation per frame instead of a constant gain.
@@ -412,6 +417,8 @@ class TemporalRadarSimulator:
                 frame_gain = target_snr_db(r[:, l], rcs_dbsm, self.spec)
             else:
                 frame_gain = gain_db
+            if self.gain_offset_db:
+                frame_gain = frame_gain + self.gain_offset_db
             S = self._frame_targets(r[:, l], v[:, l], frame_gain, cls)
             rds = []
             for C in looks:

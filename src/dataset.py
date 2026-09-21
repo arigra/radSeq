@@ -35,11 +35,15 @@ def _pad(item):
 
 
 def generate_cache(cache_dir, n_train, n_val, seq_len=16, seed=1234,
-                   shard_size=1000, frame_interval=0.5):
+                   shard_size=1000, frame_interval=0.5, **sim_kwargs):
+    """Build a cached dataset. Extra keyword arguments reach the simulator, so
+    the fidelity study can vary it (e.g. gain_offset_db) without a second
+    generation path that could drift from this one."""
     cache = Path(cache_dir)
     cache.mkdir(parents=True, exist_ok=True)
     torch.manual_seed(seed)
-    sim = TemporalRadarSimulator(seq_len=seq_len, frame_interval=frame_interval)
+    sim = TemporalRadarSimulator(seq_len=seq_len, frame_interval=frame_interval,
+                                 **sim_kwargs)
 
     def write_split(split, n):
         n_shards = math.ceil(n / shard_size)

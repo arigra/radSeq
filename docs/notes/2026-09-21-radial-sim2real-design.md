@@ -121,3 +121,41 @@ Whole recordings, balanced by the sequences each contributes (recordings differ
 scarcer than the 2,000 used in the step 2 rehearsal, and it is the dominant
 constraint on everything downstream: overlapping windows (stride 4) raise train
 to 525 but they are near-duplicates, and 8-frame sequences would give 387.
+
+## Simulator fidelity as an experimental variable (2026-09-21)
+
+Rather than choosing one simulator, fidelity becomes the independent variable.
+This also settles the earlier worry that the fitted simulator consumed real
+data: the fitted build is no longer the baseline, it is the high-fidelity end
+of a ladder.
+
+| variant | what it is | who would build it |
+|---|---|---|
+| S0 generic | published specifications only | most engineers, from a datasheet |
+| S1 physical | + antenna elevation pattern, link budget from typical 77 GHz parts | a radar engineer |
+| S2 fitted | fitted to real training recordings | someone with data to spare |
+
+Arms per variant, same real subset, same test recordings, 3 seeds:
+`A` real only; `B(S)` real + raw simulator data; `D(S)` real + a DiT pretrained
+on S and fine-tuned on the same real set.
+
+**The result is an interaction, not a single number.** `B` should degrade
+strongly with mismatch; `D` should stay flat if the generator absorbs the
+sim-to-real gap. The claim would then be *generative fine-tuning substitutes
+for simulator fidelity* -- more useful, and more surprising, than "synthetic
+data helps". Falsifier: if `D` tracks `B`, the mechanism is dead.
+
+### Sim-to-sim pilot (running)
+RADIal gives only 153-387 real training sequences, so the arms may not separate
+at all. The pilot measures the effect size first, on the 64x64 grid where the
+recipe is already proven, and dials mismatch *continuously* so the output is a
+curve rather than three scattered points.
+
+- Knob: target brightness offset in dB -- the dominant measured gap (the
+  specification-driven simulator's targets were +39 dB too prominent).
+- One simulator configuration is "reality"; others are wrong by delta dB.
+- delta in {0, 4, 8, 16}; 200 real sequences; 6,000 simulated for pretraining.
+- `B` and `D` pools are matched in size, so the comparison isolates where the
+  extra sequences came from, not how many.
+- scripts/run_fidelity_pilot.sh (resumable per stage),
+  scripts/fidelity_pilot.sbatch to resubmit, results in samples/fidelity_pilot.json.
