@@ -100,3 +100,24 @@ seeds, w = 1).
   reported but flagged as possibly reflecting copied real sequences.
 
 Run: `scripts/run_step2b.sh` (resumable; `sbatch scripts/step2b.sbatch` from `ece-hpc`).
+
+## Memorisation check (`samples/memorization_n2000.json`)
+
+128 requests each, EMA, DDIM 30, w=1.0. RMS difference (normalised units) between a generated sequence and the real sequence with the same labels: training labels 0.795, held-out labels 1.112 (unrelated real pairs 1.423). Ratio 0.72 (memorising if < 0.8).
+
+**Verdict (pre-set rule): the generator IS copying its training sequences.**
+
+## Result, target-class task (`samples/detector_class_augmentation.json`)
+
+Mean AP over classes (within 2 bins, correct class) on val 1000-1511, 3000 steps x 32 sequences per arm.
+
+| arm | training sequences | mAP per seed | mean mAP | seed range |
+|---|---:|---|---:|---:|
+| real_n | 2000 | 0.676, 0.658, 0.660 | 0.665 | 0.018 |
+| real_n_synth | 10000 | 0.701, 0.706, 0.707 | 0.705 | 0.006 |
+| synth_only | 8000 | 0.678, 0.686, 0.703 | 0.689 | 0.025 |
+| real_full | 20000 | 0.731, 0.766, 0.783 | 0.760 | 0.052 |
+
+Headroom (real_full - real_n): +0.095 vs bar 0.052. Gain (real_n_synth - real_n): +0.040 vs bar 0.018.
+
+**Verdict (pre-set rule): synthetic data from the conditional DiT HELPS the class detector.**
