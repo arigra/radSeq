@@ -363,3 +363,55 @@ def show_normalization(x_db, stats):
     ax.set(xlabel="normalised value", yscale="log", title="normalised")
     ax.legend(fontsize=8)
     plt.show()
+
+
+def show_real_vs_sim(real_db, sim_db, targets=None, title="",
+                     percentiles=(5, 99.5)):
+    """One real RADIal range-Doppler map beside a simulated one.
+
+    Both are drawn on their own colour scale, set by percentiles rather than
+    min/max: the two differ by tens of dB in absolute level and in dynamic
+    range, so a shared scale would render one of them flat and hide the
+    structure the comparison is about. Axes are physical (metres, Doppler bin).
+    """
+    real_db, sim_db = np.asarray(real_db), np.asarray(sim_db)
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+    for ax, m, name in zip(axes, (real_db, sim_db), ("real RADIal", "simulated")):
+        lo, hi = np.percentile(m, percentiles)
+        im = ax.imshow(m, aspect="auto", origin="lower", vmin=lo, vmax=hi,
+                       cmap="viridis",
+                       extent=[0, m.shape[1], 0, m.shape[0] * 0.2])
+        ax.set_title(f"{name}\n{m.min():.0f} to {m.max():.0f} dB "
+                     f"(span {m.max() - m.min():.0f})")
+        ax.set_xlabel("Doppler bin")
+        ax.set_ylabel("range (m)")
+        fig.colorbar(im, ax=ax, label="dB")
+    if targets is not None:
+        for rb, db in targets:
+            axes[0].plot(db, rb * 0.2, "o", mfc="none", mec="red", ms=11, mew=1.6)
+    if title:
+        fig.suptitle(title)
+    fig.tight_layout()
+    plt.show()
+
+
+def show_fidelity_curve(deltas, arms, title="simulator mismatch vs detector AP"):
+    """Detector accuracy against simulator mismatch, one line per arm.
+
+    The claim under test is the *interaction*: the raw-simulator line should
+    fall as the simulator gets worse while the generator line stays flat.
+    """
+    fig, ax = plt.subplots(figsize=(6.5, 4.2))
+    styles = {"real": ("grey", "--", "real only"),
+              "real_sim": ("tab:red", "-o", "real + raw simulator"),
+              "real_synth": ("tab:blue", "-o", "real + DiT (pretrained on it, fine-tuned)")}
+    for name, values in arms.items():
+        colour, style, label = styles.get(name, ("black", "-o", name))
+        ax.plot(deltas, values, style, color=colour, label=label)
+    ax.set_xlabel("simulator mismatch (dB of target brightness)")
+    ax.set_ylabel("detector mAP")
+    ax.set_title(title)
+    ax.grid(alpha=0.3)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    plt.show()
