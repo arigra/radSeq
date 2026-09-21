@@ -92,3 +92,17 @@ class RadarSequenceDataset(torch.utils.data.Dataset):
         item = dict(self.items[idx])
         item["x"] = (item["x"] - self.stats["mean"]) / self.stats["std"]
         return item
+
+
+def held_out_batch(dataset, n=32, offset=0):
+    """`n` consecutive items from `dataset`, back in dB, stacked for evaluation.
+
+    Two calls with disjoint offsets give the "real vs real" reference that
+    bounds how well any generator can score.
+    """
+    items = [dataset[i] for i in range(offset, offset + n)]
+    return {
+        "x": torch.stack([denormalize(item["x"], dataset.stats) for item in items]),
+        "traj": torch.stack([item["traj"] for item in items]),
+        "n_targets": torch.stack([item["n_targets"] for item in items]),
+    }

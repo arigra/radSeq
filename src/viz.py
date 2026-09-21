@@ -415,3 +415,38 @@ def show_fidelity_curve(deltas, arms, title="simulator mismatch vs detector AP")
     ax.legend(fontsize=8)
     fig.tight_layout()
     plt.show()
+
+
+def show_rd_rows(rows, marks=None, range_res_m=0.2, title="", col_titles=None):
+    """Range-Doppler maps in a grid: one row per source, one column per example.
+
+    Every panel has its own colour scale (5th-99.5th percentile): sources
+    differ by tens of dB in absolute level, and a shared scale would flatten
+    one of them and hide the structure being compared. Range is in metres.
+
+    rows:  {label: [2-D map, ...]}, all rows the same length
+    marks: optional {label: [[(range_bin, doppler_bin), ...] per panel]}
+    """
+    labels = list(rows)
+    ncol = len(rows[labels[0]])
+    fig, axes = plt.subplots(len(labels), ncol, figsize=(3.6 * ncol, 3.2 * len(labels)),
+                             squeeze=False)
+    for r, label in enumerate(labels):
+        for c, m in enumerate(rows[label]):
+            m = np.asarray(m)
+            ax = axes[r][c]
+            lo, hi = np.percentile(m, (5, 99.5))
+            ax.imshow(m, aspect="auto", origin="lower", vmin=lo, vmax=hi, cmap="viridis",
+                      extent=[0, m.shape[1], 0, m.shape[0] * range_res_m])
+            for rb, db in (marks or {}).get(label, [[]] * ncol)[c]:
+                ax.plot(db, rb * range_res_m, "o", mfc="none", mec="red", ms=9, mew=1.4)
+            if c == 0:
+                ax.set_ylabel(f"{label}\nrange (m)")
+            if r == len(labels) - 1:
+                ax.set_xlabel("Doppler bin")
+            if r == 0 and col_titles:
+                ax.set_title(col_titles[c])
+    if title:
+        fig.suptitle(title)
+    fig.tight_layout()
+    plt.show()

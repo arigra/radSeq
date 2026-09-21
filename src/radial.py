@@ -159,3 +159,23 @@ def fitted_simulator(seq_len=16, root=None, **kwargs):
 def target_gain_draw(n, cfg, generator=None):
     lo, hi = cfg["target_gain_db"]
     return torch.empty(n).uniform_(float(lo), float(hi), generator=generator)
+
+
+def background_stats(maps):
+    """Scene-level statistics of RD maps (dB), used to compare sources.
+
+    They describe the background (level shape over range and Doppler, spread of
+    values) rather than targets, so they apply to any map, labelled or not.
+    """
+    m = np.asarray(maps)
+    prof_r = np.median(m, axis=(0, 2))
+    prof_d = np.median(m, axis=(0, 1))
+    lo, hi = np.percentile(m, (0.1, 99.9))
+    mid = np.median(prof_r[100:300])
+    return {
+        "dynamic range (0.1-99.9%)": float(hi - lo),
+        "range-profile spread": float(prof_r.max() - prof_r.min()),
+        "Doppler-profile spread": float(prof_d.max() - prof_d.min()),
+        "near range (0-4 m) vs mid": float(np.median(prof_r[:20]) - mid),
+        "far range (>98 m) vs mid": float(np.median(prof_r[490:]) - mid),
+    }
