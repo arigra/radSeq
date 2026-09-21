@@ -21,7 +21,11 @@ def _pad(item):
     out = dict(item)
     out["traj"] = torch.zeros(MAX_TARGETS, item["traj"].shape[1], 2)
     out["traj"][:m] = item["traj"]
-    for k in ("v0", "acc"):
+    # rcs_dbsm is per-target like v0/acc, and is absent from sequences drawn
+    # without a radar specification, so it is padded only when present.
+    for k in ("v0", "acc", "rcs_dbsm"):
+        if k not in item:
+            continue
         out[k] = torch.zeros(MAX_TARGETS)
         out[k][:m] = item[k]
     out["cls"] = torch.zeros(MAX_TARGETS, dtype=torch.long)

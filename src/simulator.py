@@ -126,12 +126,18 @@ def generate_doppler_steering_matrix(K=64, dV=64, fc=9.39e9, T0=1e-3, c=3e8):
     return V
 
 
-def create_rd_map(IQ_map, geometry: "RadarGeometry | None" = None):
+def create_rd_map(IQ_map, geometry: "RadarGeometry | None" = None,
+                  window: str | None = None):
     if not torch.is_tensor(IQ_map):
         IQ_map = torch.from_numpy(IQ_map)
     if not torch.is_complex(IQ_map):
         IQ_map = IQ_map.to(torch.complex64)
     device = IQ_map.device
+    if window and window != "none":
+        from src.radar_physics import window as _win
+        n, k = IQ_map.shape[-2], IQ_map.shape[-1]
+        IQ_map = (IQ_map * _win(n, window).to(device).unsqueeze(1)
+                  * _win(k, window).to(device).unsqueeze(0))
     R, V = _get_rd_matrices(geometry)
     RD_map = R.T.conj().to(device) @ IQ_map @ V.conj().to(device)
     return RD_map
@@ -153,7 +159,8 @@ class TemporalRadarSimulator:
     def __init__(self, seq_len=16, frame_interval=0.5, max_targets=5,
                  rho_clutter=None, scnr=None, nu=None, clutter=True, noise=True,
                  force_class=None, geometry=None, a_max=None,
-                 sigma_f=0.05, n_looks=1, range_gain_db=None):
+                 sigma_f=0.05, n_looks=1, range_gain_db=None,
+                 window=None, spec=None, clutter_range_db=None):
         self.geometry = geometry or RadarGeometry()
         g = self.geometry
         self.N, self.K = g.N, g.K
@@ -179,6 +186,15 @@ class TemporalRadarSimulator:
                               else torch.as_tensor(range_gain_db, dtype=torch.float))
         if self.range_gain_db is not None and len(self.range_gain_db) != self.N:
             raise ValueError(f"range_gain_db must have {self.N} entries")
+        # FFT window, a documented processing step of the real sensor.
+        self.window = window
+        # Published radar specification. When present, target amplitudes come
+        # from the radar equation per frame instead of a constant gain.
+        self.spec = spec
+        # Clutter power per range bin, from surface-clutter geometry (1/R^3).
+        self.clutter_range_db = (
+            None if clutter_range_db is None
+            else torch.as_tensor(clutter_range_db, dtype=torch.float))
 
         self.r_min, self.r_max, self.dr = 0.0, g.r_max, g.dr
         # Doppler grid MUST match generate_doppler_steering_matrix exactly:
@@ -292,6 +308,11 @@ class TemporalRadarSimulator:
         A = Vm @ torch.diag(torch.sqrt(torch.clamp(e.real, min=0.0))).to(Vm.dtype)
         steer = _get_clutter_range_steer(self.N, self.R, self.B_HZ, self.C_LIGHT)
         s = torch.clamp(self._sample_texture(nu), min=0.0)             # (dR,)
+        if self.clutter_range_db is not None:
+            # Surface clutter falls as 1/R^3 (illuminated patch grows with
+            # range while returned power falls as 1/R^4). Applied to the
+            # texture, so it scales clutter power without touching noise.
+            s = s * 10 ** (self.clutter_range_db / 10)
 
         rho_t = torch.tensor(float(rho))
         z = torch.randn(self.K, self.dR, dtype=torch.cfloat) / torch.sqrt(torch.tensor(2.0))
@@ -320,7 +341,7 @@ class TemporalRadarSimulator:
 
     # ---------------- sequence assembly ----------------
     def gen_sequence(self, r0=None, v0=None, a=None, n_targets=None, cls=None,
-                     gain_db=None):
+                     gain_db=None, rcs_dbsm=None):
         """One labelled L-frame sequence.
 
         Every argument is optional; anything left as None is drawn at random
@@ -338,7 +359,9 @@ class TemporalRadarSimulator:
 
         r0, v0, a = (as_vec(t, torch.float) for t in (r0, v0, a))
         cls, gain_db = as_vec(cls, torch.long), as_vec(gain_db, torch.float)
-        lengths = {len(t) for t in (r0, v0, a, cls, gain_db) if t is not None}
+        rcs_dbsm = as_vec(rcs_dbsm, torch.float)
+        lengths = {len(t) for t in (r0, v0, a, cls, gain_db, rcs_dbsm)
+                   if t is not None}
         if len(lengths) > 1:
             raise ValueError("per-target arguments must have one value per target")
         if n_targets is not None:
@@ -363,7 +386,13 @@ class TemporalRadarSimulator:
         if cls is None:
             cls = (torch.randint(0, 3, (n,)) if self.force_class is None
                    else torch.full((n,), int(self.force_class), dtype=torch.long))
-        if gain_db is None:
+        if self.spec is not None and gain_db is None:
+            # Radar equation: brightness follows RCS and range, so it changes
+            # along the track instead of being one fitted constant per target.
+            from src.radar_physics import sample_rcs
+            if rcs_dbsm is None:
+                rcs_dbsm, _ = sample_rcs(n)
+        elif gain_db is None:
             gain_db = (torch.empty(n).uniform_(-5, 10) if self.scnr is None
                        else torch.full((n,), float(self.scnr)))
         rho = (float(torch.rand(1).item()) if self.rho_clutter is None
@@ -378,7 +407,12 @@ class TemporalRadarSimulator:
                   else torch.zeros(self.L, self.N, self.K, dtype=torch.cfloat))
                  for _ in range(self.n_looks)]
         for l in range(self.L):
-            S = self._frame_targets(r[:, l], v[:, l], gain_db, cls)
+            if self.spec is not None and rcs_dbsm is not None:
+                from src.radar_physics import target_snr_db
+                frame_gain = target_snr_db(r[:, l], rcs_dbsm, self.spec)
+            else:
+                frame_gain = gain_db
+            S = self._frame_targets(r[:, l], v[:, l], frame_gain, cls)
             rds = []
             for C in looks:
                 W = (torch.randn(self.N, self.K, dtype=torch.cfloat)
@@ -388,7 +422,7 @@ class TemporalRadarSimulator:
                 X = S + C[l] + W
                 s_energy += S.abs().pow(2).sum().item()
                 cn_energy += (C[l] + W).abs().pow(2).sum().item()
-                rds.append(create_rd_map(X, self.geometry))
+                rds.append(create_rd_map(X, self.geometry, self.window))
             if self.n_looks == 1 and self.range_gain_db is None:
                 # Historical single-look path, kept as the literal expression
                 # it shipped with: the cached training set and every trained
@@ -406,6 +440,7 @@ class TemporalRadarSimulator:
             "traj": traj.float(),
             "v0": v0.float(), "acc": a.float(),
             "cls": cls.long(),
+            "rcs_dbsm": (torch.zeros(n) if rcs_dbsm is None else rcs_dbsm.float()),
             "env": torch.tensor([self.CNR_DB, scnr_dB.item(), rho]).float(),
             "n_targets": n,
         }
@@ -501,3 +536,24 @@ def generate_sequences(n=1, seq_len=16, frame_interval=0.5, n_targets=None,
                 for k, v in per_target.items()}
         items.append(_pad(sim.gen_sequence(n_targets=m, **args)))
     return {k: torch.stack([item[k] for item in items]) for k in items[0]}
+
+
+def spec_simulator(spec, seq_len=8, **kwargs):
+    """A simulator configured entirely from a published radar specification.
+
+    Nothing here is fitted to recorded data: the grid, frame interval, FFT
+    window and number of integrated looks are all published or documented
+    properties of the sensor, and target brightness comes from the radar
+    equation. The residual against real recordings is then a *measurement* of
+    the sim-to-real gap rather than a quantity that has been minimised.
+    """
+    from src.radar_physics import clutter_cnr_db
+    geometry = RadarGeometry(
+        N=spec.n_range, K=spec.n_doppler, B_HZ=spec.bandwidth_hz,
+        T0=spec.chirp_interval_s, FC=spec.fc_hz, CNR_DB=spec.ref_cnr_db)
+    ranges = torch.arange(spec.n_range, dtype=torch.float) * spec.range_res_m
+    clutter_profile = clutter_cnr_db(ranges, spec) - spec.ref_cnr_db
+    return TemporalRadarSimulator(
+        seq_len=seq_len, frame_interval=spec.frame_interval_s,
+        geometry=geometry, n_looks=spec.n_looks, window=spec.window,
+        spec=spec, clutter_range_db=clutter_profile, **kwargs)
