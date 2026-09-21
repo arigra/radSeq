@@ -46,3 +46,15 @@ def test_near_range_is_dark_but_floored():
     near, mid = float(x[:10].median()), float(x[100:300].median())
     assert near < mid
     assert float(x.max() - x.min()) < 120.0
+
+
+def test_labels_cover_moving_traffic_at_the_published_rate():
+    """RADIal publishes 9,550 vehicles over 8,252 labelled frames (~1.16 per
+    frame), so parked cars are scene rather than labels."""
+    counts = []
+    for seed in range(40):
+        sim = SceneSimulator(seq_len=1, generator=torch.Generator().manual_seed(seed))
+        labels = sim.gen_sequence()["labels"][0]
+        assert all(l["moving"] for l in labels)
+        counts.append(len(labels))
+    assert 0.5 < sum(counts) / len(counts) < 1.6
