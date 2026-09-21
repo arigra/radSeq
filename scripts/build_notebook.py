@@ -61,7 +61,8 @@ def reuse(cells, i, replace=None):
 def build():
     nb = old_cells()
     old = nb["cells"]
-    cells = [reuse(old, 0), reuse(old, 1)]
+    # old cell 1 (the project introduction) moves to the README, not the notebook
+    cells = [reuse(old, 0)]
 
     cells += [md(r"""
 ### At a glance
