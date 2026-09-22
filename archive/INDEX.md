@@ -32,16 +32,20 @@ Sizes as of 2026-09-21. **Nothing has been deleted** — freeing space is Ari's 
 | `data/scene_engineer`, `data/scene_fitted` | 13G each | step 3 caches |
 | `data/radial` | 12K | pinned RADIal split |
 
-### Candidates to free (~76 GB)
+### Deleted 2026-09-22 (~76 GB, on Ari's instruction)
 
-| path | size | what |
-|---|---|---|
-| `archive/fidelity_pilot_64/pilot_emabug/pilot_ft_d*` | 26G | fine-tuned checkpoints of the **invalid** pilot run (EMA bug); its logs and JSONs already document the bug |
-| `checkpoints/e3_standard_bs32` | 8.1G | shorter run superseded by `e3_long` |
-| `checkpoints/e3_full_bs32` | 5.9G | full-attention variant, worse than factorized |
-| `checkpoints/pilot_*` (6 dirs) | 14.4G | dropped 64×64 pilot |
-| `data/pilot` | 7.1G | dropped 64×64 pilot caches |
-| `checkpoints/scene_smoke_A_p16_s16`, `B_p16_s4`, `C_p32_s16`, `B_long` | 7.0G | recipe-check runs that lost |
-| `checkpoints/abl_*`, `ctrl_*`, `obj_*`, `phase*`, `e0_fact_s0`, `e0_temp_s0`, `easy_regime`, `research_easy_*` | ~9G | August/September ablations and screens |
-| `data/measured` | 4.5G | Codex-era measured-RADIal power cache |
-| `data/synthetic` | 1.0G | step 2 synthetic sequences (regenerable from `cond_traj_n2000_bs32`) |
+Removed because nothing in the current pipeline, notebook or tests used them and
+each is either superseded or regenerable: the invalid pilot's fine-tuned
+checkpoints (26G, its logs and JSONs document the bug), the dropped 64x64
+pilot's checkpoints and caches (21G), the three losing recipe-check runs and
+`B_long` (7G; the winner `scene_smoke_A_long` is kept), the August/September
+ablation and screen checkpoints (9G; their result JSONs are kept), the
+superseded `e3_standard_bs32` and `e3_full_bs32` (14G), and the regenerable
+`data/measured` and `data/synthetic` caches (5.5G).
+
+### Kept
+
+`checkpoints/`: `e0_standard_bs32`, `e3_long_bs32`, `cond_traj_bs32`,
+`cond_traj_n2000_bs32`, `pretrain_engineer`, `pretrain_fitted`,
+`scene_smoke_A_long`, `easy_latent.pt`, `hard_latent.pt`.
+`data/`: `cache`, `cache_easy`, `scene_engineer`, `scene_fitted`, `radial`.
