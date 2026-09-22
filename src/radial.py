@@ -182,3 +182,48 @@ def vehicles(sample, by_frame):
                     "range_bin": float(lab["radar_R_m"]) / DR_M,
                     "doppler_bin": float(lab["radar_D_mps"]) % N_DOPPLER})
     return out
+
+
+def link_vehicles(frame_labels, range_gate=30.0, doppler_gate=24.0,
+                  max_vehicles=None):
+    """Link per-frame vehicle labels into stable slots over a sequence.
+
+    RADIal labels every frame independently, with no vehicle identity, but the
+    generator's condition needs one slot per vehicle across the whole sequence
+    (otherwise vehicles swap slots mid-sequence and the condition teaches
+    nonsense). Labels are linked greedily to the nearest open track within a
+    gate. Doppler distance wraps, because the axis is circular.
+
+    frame_labels: list over frames of [(range_bin, doppler_bin), ...]
+    returns traj (slots, frames, 2) and present (slots, frames) bool
+    """
+    from src.scene_data import MAX_VEHICLES
+    max_vehicles = max_vehicles or MAX_VEHICLES
+    n_frames = len(frame_labels)
+    tracks = []          # each: {"last": (r, d), "points": {frame: (r, d)}}
+    for t, labels in enumerate(frame_labels):
+        free = list(range(len(tracks)))
+        for r, d in labels:
+            best, best_cost = None, None
+            for i in free:
+                lr, ld = tracks[i]["last"]
+                dr = abs(r - lr)
+                dd = abs((d - ld + N_DOPPLER / 2) % N_DOPPLER - N_DOPPLER / 2)
+                if dr <= range_gate and dd <= doppler_gate:
+                    cost = dr / range_gate + dd / doppler_gate
+                    if best_cost is None or cost < best_cost:
+                        best, best_cost = i, cost
+            if best is None:
+                tracks.append({"last": (r, d), "points": {t: (r, d)}})
+            else:
+                free.remove(best)
+                tracks[best]["last"] = (r, d)
+                tracks[best]["points"][t] = (r, d)
+    tracks.sort(key=lambda tr: -len(tr["points"]))        # longest tracks first
+    traj = torch.zeros(max_vehicles, n_frames, 2)
+    present = torch.zeros(max_vehicles, n_frames, dtype=torch.bool)
+    for i, tr in enumerate(tracks[:max_vehicles]):
+        for t, (r, d) in tr["points"].items():
+            traj[i, t, 0], traj[i, t, 1] = r, d
+            present[i, t] = True
+    return traj, present

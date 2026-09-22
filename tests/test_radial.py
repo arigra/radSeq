@@ -45,3 +45,33 @@ def test_overlapping_windows_are_opt_in():
     out = radial.sequences({"A": list(range(6))}, seq_len=4, stride=1)
     assert [s[0] for _, s in out] == [0, 1, 2]
 
+
+
+# ---- linking vehicles across the frames of a sequence -----------------------
+
+def test_vehicles_are_linked_across_frames_into_stable_slots():
+    """RADIal labels each frame on its own, with no vehicle identity. The DiT's
+    condition needs one slot per vehicle over the whole sequence, so labels are
+    linked frame to frame by proximity."""
+    frames = [[(200.0, 10.0), (400.0, 40.0)],      # two vehicles
+              [(202.0, 11.0), (403.0, 41.0)],      # both moved slightly
+              [(205.0, 12.0)]]                     # the far one left the view
+    traj, present = radial.link_vehicles(frames)
+    assert present[0].tolist() == [True, True, True]
+    assert present[1].tolist() == [True, True, False]
+    assert traj[0, :, 0].tolist() == [200.0, 202.0, 205.0]
+    assert traj[1, 1, 0] == 403.0
+
+
+def test_a_distant_detection_starts_a_new_track():
+    frames = [[(100.0, 10.0)], [(400.0, 200.0)]]
+    traj, present = radial.link_vehicles(frames)
+    assert present[0].tolist() == [True, False]
+    assert present[1].tolist() == [False, True]
+
+
+def test_doppler_gate_wraps_around_the_axis():
+    """Doppler is circular: bin 255 and bin 1 are two bins apart, not 254."""
+    frames = [[(200.0, 255.0)], [(200.0, 1.0)]]
+    traj, present = radial.link_vehicles(frames)
+    assert present[0].tolist() == [True, True]      # one vehicle, not two

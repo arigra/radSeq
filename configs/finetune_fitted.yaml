@@ -1,0 +1,52 @@
+# Step 3: fine-tune the fitted-pretrained DiT on REAL RADIal sequences.
+# 387 real training sequences, ~48 steps/epoch; lr halved and EMA shortened
+# for the small set. Warm start from the pretrained EMA weights (60k steps,
+# so the EMA is warmed up).
+data:
+  kind: scene
+  cache_dir: data/radial_seq
+  seq_len: 8
+  n_range: 512
+  n_doppler: 256
+  num_workers: 4
+  seed: 1234
+model:
+  patch: 16
+  stride: 16
+  dim: 384
+  depth: 12
+  heads: 6
+  attn_mode: factorized
+  cond_channels: 2
+diffusion:
+  timesteps: 1000
+  parameterization: v
+  schedule_shift: 16.0
+  x0_clamp: 'off'
+  terminal_x0: mean
+train:
+  seed: 2026
+  batch_size: 8
+  lr: 5.0e-05
+  weight_decay: 0.0
+  epochs: 200
+  lambda_smooth: 0.0
+  lambda_traj: 0.0
+  lambda_doppler: 0.0
+  amp: bf16
+  ema_decay: 0.999
+  phase: 1
+  cond_dropout: 0.1
+  init_from: checkpoints/pretrain_fitted/last.pt
+  init_weights: ema
+  ckpt_dir: checkpoints/finetune_fitted
+  log_file: logs/finetune_fitted.log
+  log_every_steps: 100
+  save_every_steps: 500
+  val_every_epochs: 10
+  val_batch_size: 8
+  val_seed: 4321
+  wandb: false
+sample:
+  ddim_steps: 30
+  weights: ema
