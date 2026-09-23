@@ -62,3 +62,19 @@ def test_wrapped_average_precision_still_rejects_far_detections():
     dets = [[(0.9, 100.0, 128.0)]]
     tgts = [torch.tensor([[100.0, 1.0]])]
     assert average_precision_wrapped(dets, tgts, 256, radius=2.0) == 0.0
+
+
+def test_training_batches_are_frames_not_whole_sequences():
+    """The detector is per-frame, and a batch of whole 512x256 sequences does
+    not fit in GPU memory (it ran out overnight). Batches sample one frame at a
+    time, and the target must be that frame's vehicles."""
+    from scripts.radial_detector_arms import batch_from
+    pool = [{"x": torch.zeros(8, 512, 256, dtype=torch.float16),
+             "traj": torch.zeros(8, 8, 2), "present": torch.zeros(8, 8, dtype=torch.bool)}
+            for _ in range(3)]
+    pool[0]["traj"][0, 5] = torch.tensor([100.0, 40.0])
+    pool[0]["present"][0, 5] = True
+    x, heat = batch_from(pool, 4, {"mean": 0.0, "std": 1.0}, torch.device("cpu"),
+                         torch.Generator().manual_seed(0))
+    assert x.shape == (4, 1, 512, 256)
+    assert heat.shape == (4, 1, 512, 256)

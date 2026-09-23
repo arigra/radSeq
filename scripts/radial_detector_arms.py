@@ -66,12 +66,19 @@ def hit_rate(pool, radius=2.0, n=64):
 
 
 def batch_from(pool, batch, stats, device, generator):
+    """One random frame per batch element.
+
+    The detector is per-frame, and a batch of whole 8-frame 512x256 sequences
+    does not fit in GPU memory.
+    """
     idx = torch.randint(len(pool), (batch,), generator=generator).tolist()
-    x = torch.stack([pool[i]["x"].float() for i in idx])
-    traj = torch.stack([pool[i]["traj"] for i in idx]).to(device)
-    present = torch.stack([pool[i]["present"] for i in idx]).to(device)
+    n_frames = pool[0]["x"].shape[0]
+    frames = torch.randint(n_frames, (batch,), generator=generator).tolist()
+    x = torch.stack([pool[i]["x"][t].float() for i, t in zip(idx, frames)])[:, None]
+    traj = torch.stack([pool[i]["traj"][:, t] for i, t in zip(idx, frames)])[:, :, None]
+    present = torch.stack([pool[i]["present"][:, t] for i, t in zip(idx, frames)])[:, :, None]
     x = ((x - stats["mean"]) / stats["std"]).to(device)
-    return x, scene_heatmap_targets(traj, present)
+    return x, scene_heatmap_targets(traj.to(device), present.to(device))
 
 
 def train_detector(pool, stats, device, seed, steps, batch, width):
@@ -98,9 +105,12 @@ def evaluate(model, test_pool, stats, device):
     model.eval()
     dets, tgts = [], []
     for item in test_pool:
-        x = ((item["x"].float() - stats["mean"]) / stats["std"])[None].to(device)
-        prob = torch.sigmoid(model(x).float())[0].cpu()
-        dets += detect(prob, threshold=0.05, top_k=10)
+        x = ((item["x"].float() - stats["mean"]) / stats["std"])
+        probs = []
+        for t in range(x.shape[0]):          # frame by frame: the whole sequence
+            frame = x[t][None, None].to(device)   # does not fit in memory at once
+            probs.append(torch.sigmoid(model(frame).float())[0, 0].cpu())
+        dets += detect(torch.stack(probs), threshold=0.05, top_k=10)
         for t in range(item["traj"].shape[1]):
             keep = item["present"][:, t]
             tgts.append(item["traj"][keep, t].float())
@@ -114,7 +124,7 @@ def main():
     ap.add_argument("--synthetic", required=True)
     ap.add_argument("--repeats", type=int, default=4)
     ap.add_argument("--steps", type=int, default=3000)
-    ap.add_argument("--batch", type=int, default=4)
+    ap.add_argument("--batch", type=int, default=8, help="frames per step")
     ap.add_argument("--width", type=int, default=32)
     ap.add_argument("--seeds", default="1,2,3")
     ap.add_argument("--out", required=True)
