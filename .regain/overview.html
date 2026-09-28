@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>radSeq Overview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600&family=Assistant:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --sunk:#F6F8FA; --ink:#15202A; --muted:#5A6874; --line:#D5DDE4;
+  --data:#0E7A89; --data-soft:#E1F1F3;
+  --model:#4250C0; --model-soft:#E7E9F8;
+  --exp:#A8691A; --exp-soft:#F6ECDD;
+  --shadow:0 1px 2px rgba(21,32,42,.06),0 4px 14px rgba(21,32,42,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
+    --data:#4FC0CF; --data-soft:#16303A;
+    --model:#8C97F0; --model-soft:#212743;
+    --exp:#E0A552; --exp-soft:#352A1A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
+  --data:#4FC0CF; --data-soft:#16303A;
+  --model:#8C97F0; --model-soft:#212743;
+  --exp:#E0A552; --exp-soft:#352A1A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Assistant",Arial,sans-serif;font-size:16px;line-height:1.5}
+.app{max-width:1000px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:18px}
+h1{font-family:"Rubik",Arial,sans-serif;font-weight:600;margin:0;font-size:28px}
+.eyebrow{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.essence{margin:6px 0 0;color:var(--muted);max-width:68ch;font-size:17px}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 18px 12px}
+.diagram .scroll{overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:720px;height:auto;color:var(--ink)}
+.blk{cursor:pointer}
+.blk rect.box{stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
+.blk:hover rect.box{stroke:var(--muted)}
+.blk.sel rect.box{stroke:var(--ink);stroke-width:2.5}
+.blk:focus{outline:none}
+.blk:focus-visible rect.box{stroke:var(--model);stroke-width:3}
+.blk .t{font-family:"Rubik",sans-serif;font-weight:500;font-size:14.5px;fill:var(--ink)}
+.blk .s{font-size:12px;fill:var(--muted)}
+.blk .n{font-family:"Rubik",sans-serif;font-size:11px;fill:var(--muted)}
+.edge{fill:none;stroke:currentColor;stroke-opacity:.55;stroke-width:1.5}
+.elab{font-size:11.5px;fill:var(--muted)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);padding:8px 4px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--line)}
+.focus{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:92px}
+.focus .nm{font-family:"Rubik",sans-serif;font-weight:500;font-size:17px}
+.focus .d{color:var(--muted);margin:4px 0 10px}
+.files{display:flex;gap:6px;flex-wrap:wrap}
+.files a,.files span{font-family:"JetBrains Mono",monospace;font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+.files a:hover{border-color:var(--model)}
+.hint{font-size:13.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">Level 0 · the big picture</div>
+    <h1>radSeq</h1>
+    <p class="essence">A diffusion model (DiT) that generates sequences of radar Range-Doppler maps. The question: is a model pretrained on a simulator and fine-tuned on a little real data (RADIal) a better source of detector training data than the simulator itself?</p>
+  </header>
+
+  <section class="diagram" aria-label="How radSeq flows">
+    <div class="scroll">
+      <svg viewBox="0 0 920 246" role="img" aria-label="radSeq flow diagram">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="currentColor" fill-opacity=".6"/>
+          </marker>
+        </defs>
+        <path class="edge" d="M80 104V160" marker-end="url(#ah)"/>
+        <text class="elab" x="90" y="136">calibrates</text>
+        <path class="edge" d="M144 192H200" marker-end="url(#ah)"/>
+        <text class="elab" x="172" y="184" text-anchor="middle">scenes</text>
+        <path class="edge" d="M334 192H390" marker-end="url(#ah)"/>
+        <text class="elab" x="362" y="184" text-anchor="middle">batches</text>
+        <path class="edge" d="M460 104V160" marker-end="url(#ah)"/>
+        <text class="elab" x="470" y="136">learns</text>
+        <path class="edge" d="M524 192H580" marker-end="url(#ah)"/>
+        <text class="elab" x="552" y="184" text-anchor="middle">checkpoint</text>
+        <path class="edge" d="M714 192H770" marker-end="url(#ah)"/>
+        <text class="elab" x="742" y="184" text-anchor="middle">DiT data</text>
+        <path class="edge" d="M80 40V18H840V160" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+        <text class="elab" x="620" y="12" text-anchor="middle">real sequences: fine-tune + test</text>
+        <g id="blocks"></g>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--data-soft)"></i>data</span>
+      <span><i class="sw" style="background:var(--model-soft)"></i>model</span>
+      <span><i class="sw" style="background:var(--exp-soft);border-style:dashed"></i>not built yet</span>
+      <span>Click a block to see it. Ask about it in the Claude chat.</span>
+    </div>
+  </section>
+
+  <section class="focus" id="focus" aria-live="polite"></section>
+</div>
+
+<script>
+const B = [
+  {n:1, id:"radial", x:16, y:40, t:"RADIal", s:"real radar recordings", g:"data",
+   d:"Real recordings from a 77 GHz radar, read into dB Range-Doppler maps with vehicle labels. Right now RADIal only calibrates the simulator. Later it will be the real data for fine-tuning and testing.",
+   files:[["radial.py · read_labels","src/radial.py",21],["power_map","src/radial.py",114],["split.json","data/radial/split.json",1]]},
+  {n:2, id:"sim", x:16, y:160, t:"Simulator", s:"physics → 8 frames", g:"data",
+   d:"Builds a road scene and renders 8 radar frames from physics. It has two variants: engineer, which was never tuned to RADIal, and fitted, which was calibrated to it.",
+   files:[["scene_sim.py · gen_sequence","src/scene_sim.py",321],["radar_physics.py · RADIAL_SPEC","src/radar_physics.py",74],["fit_scene_simulator.py","scripts/fit_scene_simulator.py",92]]},
+  {n:3, id:"prep", x:206, y:160, t:"Prepare", s:"6,000 seqs · normalise", g:"data",
+   d:"Renders 6,000 sequences per simulator variant to disk and normalises them. Vehicle positions become condition maps.",
+   files:[["build_scene_cache.py · render_split","scripts/build_scene_cache.py",21],["scene_data.py · SceneSequenceDataset","src/scene_data.py",43],["trajectory_condition.py","src/trajectory_condition.py",51]]},
+  {n:4, id:"model", x:396, y:40, t:"DiT model", s:"noisy maps → prediction", g:"model",
+   d:"Cuts each frame into 16×16 patches. Each block runs attention over time, then attention over space. There are 12 blocks.",
+   files:[["dit.py · TemporalDiT","src/dit.py",135],["FactorizedBlock","src/dit.py",64],["patching.py","src/patching.py",17]]},
+  {n:5, id:"train", x:396, y:160, t:"Training", s:"60k steps · on the HPC", g:"model",
+   d:"Adds noise to the maps and teaches the model to remove it: 60,000 steps per simulator variant, on the HPC. It was started on 21/9. Whether it finished is not known from here.",
+   files:[["train.py · train","src/train.py",192],["diffusion.py","src/diffusion.py",40],["pretrain_engineer.yaml","configs/pretrain_engineer.yaml",1]]},
+  {n:6, id:"eval", x:586, y:160, t:"Sample, eval", s:"30 steps · metrics", g:"model",
+   d:"Generates sequences from pure noise in 30 steps and compares them with the simulator.",
+   files:[["sample.py","src/sample.py",134],["eval/","src/eval/metrics.py",1]]},
+  {n:7, id:"exp", x:776, y:160, t:"Experiment", s:"arms A / B / D", g:"exp",
+   d:"Fine-tune on RADIal, then train a detector three ways: real data only (A), real + simulator data (B), real + DiT data (D). No code exists for this yet.",
+   files:[]}
+];
+const W=128, H=64;
+const FILL={data:"var(--data-soft)", model:"var(--model-soft)", exp:"var(--exp-soft)"};
+const ACC={data:"var(--data)", model:"var(--model)", exp:"var(--exp)"};
+let selected = null;
+
+function drawBlocks(){
+  document.getElementById("blocks").innerHTML = B.map(b=>`
+    <g class="blk ${selected===b.id?"sel":""}" data-id="${b.id}" tabindex="0" role="button" aria-label="${b.n}. ${b.t}">
+      <rect class="box" x="${b.x}" y="${b.y}" width="${W}" height="${H}" rx="10" style="fill:${FILL[b.g]}" ${b.g==="exp"?'stroke-dasharray="5 4"':""}/>
+      <rect x="${b.x}" y="${b.y+12}" width="3.5" height="${H-24}" rx="1.5" style="fill:${ACC[b.g]}"/>
+      <text class="n" x="${b.x+W-10}" y="${b.y+18}" text-anchor="end">${b.n}</text>
+      <text class="t" x="${b.x+14}" y="${b.y+27}">${b.t}</text>
+      <text class="s" x="${b.x+14}" y="${b.y+46}">${b.s}</text>
+    </g>`).join("");
+  document.querySelectorAll(".blk").forEach(g=>{
+    g.onclick = ()=>select(g.dataset.id);
+    g.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); select(g.dataset.id); } };
+  });
+}
+function drawFocus(){
+  const f = document.getElementById("focus");
+  const b = B.find(x=>x.id===selected);
+  if(!b){ f.innerHTML = `<div class="hint">Click one of the 7 blocks. You'll see what it does and the files where it lives; click a file to open it.</div>`; return; }
+  const files = b.files.length
+    ? b.files.map(([label,p,l])=>`<a href="../${p}#L${l}" title="${p}:${l}">${label}</a>`).join("")
+    : `<span>no code yet</span>`;
+  f.innerHTML = `<div class="nm">${b.n} · ${b.t}</div><div class="d">${b.d}</div><div class="files">${files}</div>`;
+}
+function select(id){ selected = selected===id ? null : id; drawBlocks(); drawFocus(); }
+drawBlocks(); drawFocus();
+</script>
+</body>
+</html>

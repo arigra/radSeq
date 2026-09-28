@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>radSeq Run Order</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600&family=Assistant:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --sunk:#F6F8FA; --ink:#15202A; --muted:#5A6874; --line:#D5DDE4;
+  --model:#4250C0; --model-soft:#E7E9F8; --bite:#D14545; --bite-soft:rgba(225,70,70,.12);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
+    --model:#8C97F0; --model-soft:#212743; --bite:#F07A7A; --bite-soft:rgba(240,122,122,.14);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
+  --model:#8C97F0; --model-soft:#212743; --bite:#F07A7A; --bite-soft:rgba(240,122,122,.14);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Assistant",Arial,sans-serif;font-size:16px;line-height:1.5}
+.app{max-width:1000px;margin:0 auto;padding:28px 16px 48px}
+h1{font-family:"Rubik",sans-serif;font-weight:600;margin:0;font-size:26px}
+.eyebrow{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lead{color:var(--muted);margin:6px 0 18px;max-width:70ch}
+details.flow{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:8px 14px;margin-bottom:22px}
+details.flow summary{cursor:pointer;color:var(--muted);font-size:14px}
+details.flow pre{font-family:"JetBrains Mono",monospace;font-size:12.5px;margin:10px 0 4px;white-space:pre-wrap}
+.cell{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;margin-bottom:6px}
+.gut{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--model);padding-top:12px;text-align:right}
+.body{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.hd{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;padding:10px 14px 0}
+.file{font-family:"JetBrains Mono",monospace;font-size:13.5px;color:var(--ink);text-decoration:none;border-bottom:1px dotted var(--muted)}
+.file:hover{color:var(--model)}
+.fn{font-family:"Rubik",sans-serif;font-weight:500;font-size:14.5px}
+.lines{margin-inline-start:auto;font-size:12.5px;color:var(--muted)}
+.note{margin:4px 14px 10px;color:var(--muted);font-size:15px}
+.code{max-height:260px;overflow:auto;background:var(--sunk);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.6;padding:6px 0}
+.ln{display:flex;white-space:pre;padding:0 12px}
+.no{width:3.2em;flex:none;text-align:right;padding-right:1em;color:var(--muted);opacity:.6;user-select:none}
+.ln.bite{background:var(--bite-soft);box-shadow:inset 3px 0 0 var(--bite)}
+.why{font-family:"Assistant",sans-serif;font-size:13.5px;color:var(--bite);padding:2px 12px 6px 4.6em;white-space:normal}
+.out{padding:8px 14px;font-size:14px;color:var(--model);background:var(--model-soft)}
+.next{margin:14px 0 0 54px;color:var(--muted);font-size:14.5px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="eyebrow">Mockup · run order, step 3</div>
+  <h1>radSeq, file by file</h1>
+  <p class="lead">The real code, in the order it runs. Each cell is a window into one file with its own scroll. Red lines are the ones that can change the result. Click a file name to open it.</p>
+  <details class="flow"><summary>Where the order comes from: <code>.regain/flow.yaml</code></summary><pre># .regain/flow.yaml — you (or the agent) fill this in
+- file: src/radial.py
+  from: power_map
+  to: targets
+- file: src/scene_sim.py
+  from: gen_sequence
+  lines: 40
+- file: scripts/build_scene_cache.py
+  from: render_split
+- file: src/scene_data.py
+  from: SceneSequenceDataset
+# next: trajectory_condition.py, dit.py, train.py, sample.py</pre></details>
+  
+<section class="cell">
+  <div class="gut">[1]</div>
+  <div class="body">
+    <div class="hd"><a href="../src/radial.py#L114" class="file">src/radial.py</a><span class="fn">power_map · load_sequence</span><span class="lines">lines 114–127</span></div>
+    <p class="note">Reads a real RADIal frame and turns it into a dB map. Here it is only used to calibrate the simulator.</p>
+    <div class="code"><div class="ln"><span class="no">114</span><span>def power_map(sample, root=DEFAULT_ROOT, channels=None):</span></div><div class="ln"><span class="no">115</span><span>    &quot;&quot;&quot;RD power in dB, summed over receive channels (non-coherent looks).&quot;&quot;&quot;</span></div><div class="ln"><span class="no">116</span><span>    x = np.load(os.path.join(root, &quot;radar_FFT&quot;, f&quot;fft_{sample:06d}.npy&quot;))</span></div><div class="ln"><span class="no">117</span><span>    if channels is not None:</span></div><div class="ln"><span class="no">118</span><span>        x = x[..., :channels]</span></div><div class="ln"><span class="no">119</span><span>    return 10 * np.log10((np.abs(x) ** 2).sum(axis=-1) + 1e-12)</span></div><div class="ln"><span class="no">120</span><span> </span></div><div class="ln"><span class="no">121</span><span> </span></div><div class="ln"><span class="no">122</span><span>def load_sequence(samples, root=DEFAULT_ROOT, channels=None):</span></div><div class="ln"><span class="no">123</span><span>    return torch.from_numpy(</span></div><div class="ln"><span class="no">124</span><span>        np.stack([power_map(s, root, channels) for s in samples])).float()</span></div><div class="ln"><span class="no">125</span><span> </span></div><div class="ln"><span class="no">126</span><span> </span></div><div class="ln"><span class="no">127</span><span>def targets(sample, by_frame):</span></div></div>
+    <div class="out">→ real dB maps (512×256) + labels</div>
+  </div>
+</section>
+<section class="cell">
+  <div class="gut">[2]</div>
+  <div class="body">
+    <div class="hd"><a href="../src/scene_sim.py#L321" class="file">src/scene_sim.py</a><span class="fn">SceneSimulator.gen_sequence</span><span class="lines">lines 321–360</span></div>
+    <p class="note">Builds one road scene and renders it frame by frame.</p>
+    <div class="code"><div class="ln"><span class="no">321</span><span>    def gen_sequence(self):</span></div><div class="ln"><span class="no">322</span><span>        spec, sc = self.spec, self.sc</span></div><div class="ln"><span class="no">323</span><span>        Tf = spec.frame_interval_s</span></div><div class="ln"><span class="no">324</span><span>        name = sc.road_types[int(torch.randint(len(sc.road_types), (),</span></div><div class="ln"><span class="no">325</span><span>                                               generator=self.g))]</span></div><div class="ln"><span class="no">326</span><span>        road = ROAD_TYPES[name]</span></div><div class="ln"><span class="no">327</span><span>        stopped = torch.rand((), generator=self.g) &lt; road.p_ego_stopped</span></div><div class="ln"><span class="no">328</span><span>        v_ego = 0.0 if stopped else float(self._u(*road.ego_speed_mps))</span></div><div class="ln"><span class="no">329</span><span>        half_width = float(self._u(*road.road_half_width_m))</span></div><div class="ln"><span class="no">330</span><span>        ymax = spec.max_range_m + v_ego * Tf * self.L + 5</span></div><div class="ln"><span class="no">331</span><span>        sx, sy, srcs, ssurf, parked = self._static_scene(road, half_width, ymax)</span></div><div class="ln"><span class="no">332</span><span>        vehicles = self._vehicles(road, half_width, v_ego) + parked</span></div><div class="ln"><span class="no">333</span><span>        frames, labels = [], []</span></div><div class="ln"><span class="no">334</span><span>        for l in range(self.L):</span></div><div class="ln"><span class="no">335</span><span>            t = l * Tf</span></div><div class="ln"><span class="no">336</span><span>            ego_y = v_ego * t</span></div><div class="ln"><span class="no">337</span><span>            xs, ys, rcs = [sx], [sy - ego_y], [srcs]</span></div><div class="ln"><span class="no">338</span><span>            vys, surfs = [torch.zeros_like(sx)], [ssurf]</span></div><div class="ln"><span class="no">339</span><span>            frame_labels = []</span></div><div class="ln"><span class="no">340</span><span>            for vid, v in enumerate(vehicles):</span></div><div class="ln"><span class="no">341</span><span>                dy = v[&quot;vy&quot;] * t</span></div><div class="ln"><span class="no">342</span><span>                xs.append(v[&quot;x&quot;]); ys.append(v[&quot;y&quot;] + dy - ego_y)</span></div><div class="ln"><span class="no">343</span><span>                rcs.append(v[&quot;rcs&quot;]); vys.append(torch.full_like(v[&quot;x&quot;], v[&quot;vy&quot;]))</span></div><div class="ln"><span class="no">344</span><span>                surfs.append(torch.zeros_like(v[&quot;x&quot;]))</span></div><div class="ln"><span class="no">345</span><span>                cy = v[&quot;cy&quot;] + dy - ego_y</span></div><div class="ln bite"><span class="no">346</span><span>                if (not v[&quot;moving&quot;] or cy &lt;= 0</span></div><div class="why">▲ Parked cars get no label. If RADIal labels them, the condition means something else in fine-tuning.</div><div class="ln"><span class="no">347</span><span>                        or not 0 &lt; math.hypot(v[&quot;cx&quot;], cy) &lt; spec.max_range_m):</span></div><div class="ln"><span class="no">348</span><span>                    continue</span></div><div class="ln"><span class="no">349</span><span>                r_c = math.hypot(float(v[&quot;cx&quot;]), float(cy))</span></div><div class="ln"><span class="no">350</span><span>                az_c = math.atan2(float(v[&quot;cx&quot;]), float(cy))</span></div><div class="ln"><span class="no">351</span><span>                vr_c = (v[&quot;vy&quot;] - v_ego) * math.cos(az_c)</span></div><div class="ln"><span class="no">352</span><span>                frame_labels.append({</span></div><div class="ln"><span class="no">353</span><span>                    &quot;id&quot;: vid,                  # stable across frames</span></div><div class="ln"><span class="no">354</span><span>                    &quot;range_bin&quot;: r_c / spec.range_res_m,</span></div><div class="ln"><span class="no">355</span><span>                    &quot;doppler_bin&quot;: (vr_c / spec.velocity_res_mps) % spec.n_doppler,</span></div><div class="ln"><span class="no">356</span><span>                    &quot;kind&quot;: v[&quot;kind&quot;], &quot;moving&quot;: v[&quot;moving&quot;]})</span></div><div class="ln"><span class="no">357</span><span>            x, y = torch.cat(xs), torch.cat(ys)</span></div><div class="ln"><span class="no">358</span><span>            rcs_all, vy, surf = torch.cat(rcs), torch.cat(vys), torch.cat(surfs)</span></div><div class="ln"><span class="no">359</span><span>            rng = torch.sqrt(x ** 2 + y ** 2)</span></div><div class="ln"><span class="no">360</span><span>            az = torch.atan2(x, y)</span></div></div>
+    <div class="out">→ x (8, 512, 256) dB + labels of moving vehicles</div>
+  </div>
+</section>
+<section class="cell">
+  <div class="gut">[3]</div>
+  <div class="body">
+    <div class="hd"><a href="../scripts/build_scene_cache.py#L21" class="file">scripts/build_scene_cache.py</a><span class="fn">render_split</span><span class="lines">lines 21–50</span></div>
+    <p class="note">Calls step 2 thousands of times, one seed per sequence, and writes the results to disk.</p>
+    <div class="code"><div class="ln"><span class="no">21</span><span>def render_split(out, split, n, seq_len, scenario, device, seed0, chunk=50):</span></div><div class="ln"><span class="no">22</span><span>    x_path = out / f&quot;{split}_x.npy&quot;</span></div><div class="ln"><span class="no">23</span><span>    progress = out / f&quot;{split}_progress.json&quot;</span></div><div class="ln"><span class="no">24</span><span>    shape = (n, seq_len, RADIAL_SPEC.n_range, RADIAL_SPEC.n_doppler)</span></div><div class="ln"><span class="no">25</span><span>    done = json.loads(progress.read_text())[&quot;done&quot;] if progress.exists() else 0</span></div><div class="ln"><span class="no">26</span><span>    x = (open_memmap(x_path, mode=&quot;r+&quot;) if done else</span></div><div class="ln"><span class="no">27</span><span>         open_memmap(x_path, mode=&quot;w+&quot;, dtype=np.float16, shape=shape))</span></div><div class="ln"><span class="no">28</span><span>    parts_dir = out / f&quot;{split}_labelparts&quot;</span></div><div class="ln"><span class="no">29</span><span>    parts_dir.mkdir(exist_ok=True)</span></div><div class="ln"><span class="no">30</span><span>    # Chunks at or beyond the resume point are re-rendered below; drop their</span></div><div class="ln"><span class="no">31</span><span>    # old label parts so the assembled labels match the maps one-to-one.</span></div><div class="ln"><span class="no">32</span><span>    for part in parts_dir.glob(&quot;*.pt&quot;):</span></div><div class="ln"><span class="no">33</span><span>        start = int(part.stem)</span></div><div class="ln"><span class="no">34</span><span>        if start &gt;= done:</span></div><div class="ln"><span class="no">35</span><span>            part.unlink()</span></div><div class="ln"><span class="no">36</span><span>        else:</span></div><div class="ln"><span class="no">37</span><span>            p = torch.load(part)</span></div><div class="ln"><span class="no">38</span><span>            if start + len(p[&quot;meta&quot;]) &gt; done:          # straddles the resume point</span></div><div class="ln"><span class="no">39</span><span>                keep = done - start</span></div><div class="ln"><span class="no">40</span><span>                torch.save({&quot;traj&quot;: p[&quot;traj&quot;][:keep], &quot;present&quot;: p[&quot;present&quot;][:keep],</span></div><div class="ln"><span class="no">41</span><span>                            &quot;meta&quot;: p[&quot;meta&quot;][:keep]}, part)</span></div><div class="ln"><span class="no">42</span><span>    while done &lt; n:</span></div><div class="ln"><span class="no">43</span><span>        stop = min(done + chunk, n)</span></div><div class="ln"><span class="no">44</span><span>        trajs, presents, metas = [], [], []</span></div><div class="ln"><span class="no">45</span><span>        for i in range(done, stop):</span></div><div class="ln"><span class="no">46</span><span>            sim = SceneSimulator(scenario=scenario, seq_len=seq_len, device=device,</span></div><div class="ln"><span class="no">47</span><span>                                 generator=torch.Generator().manual_seed(seed0 + i))</span></div><div class="ln"><span class="no">48</span><span>            o = sim.gen_sequence()</span></div><div class="ln"><span class="no">49</span><span>            x[i] = o[&quot;x&quot;].numpy().astype(np.float16)</span></div><div class="ln"><span class="no">50</span><span>            t, p = pack_labels(o[&quot;labels&quot;], seq_len)</span></div></div>
+    <div class="out">→ 6,000 sequences on disk (float16) + stats.pt</div>
+  </div>
+</section>
+<section class="cell">
+  <div class="gut">[4]</div>
+  <div class="body">
+    <div class="hd"><a href="../src/scene_data.py#L43" class="file">src/scene_data.py</a><span class="fn">SceneSequenceDataset</span><span class="lines">lines 43–62</span></div>
+    <p class="note">Reads the cache back and normalises each sequence for training.</p>
+    <div class="code"><div class="ln"><span class="no">43</span><span>class SceneSequenceDataset(torch.utils.data.Dataset):</span></div><div class="ln"><span class="no">44</span><span>    &quot;&quot;&quot;Normalised sequences from a memory-mapped cache.&quot;&quot;&quot;</span></div><div class="ln"><span class="no">45</span><span> </span></div><div class="ln"><span class="no">46</span><span>    def __init__(self, cache_dir, split, normalise=True):</span></div><div class="ln"><span class="no">47</span><span>        cache = Path(cache_dir)</span></div><div class="ln"><span class="no">48</span><span>        self.x = np.load(cache / f&quot;{split}_x.npy&quot;, mmap_mode=&quot;r&quot;)</span></div><div class="ln"><span class="no">49</span><span>        labels = torch.load(cache / f&quot;{split}_labels.pt&quot;)</span></div><div class="ln"><span class="no">50</span><span>        self.traj, self.present = labels[&quot;traj&quot;], labels[&quot;present&quot;]</span></div><div class="ln"><span class="no">51</span><span>        self.meta = labels[&quot;meta&quot;]</span></div><div class="ln"><span class="no">52</span><span>        self.stats = torch.load(cache / &quot;stats.pt&quot;)</span></div><div class="ln"><span class="no">53</span><span>        self.normalise = normalise</span></div><div class="ln"><span class="no">54</span><span> </span></div><div class="ln"><span class="no">55</span><span>    def __len__(self):</span></div><div class="ln"><span class="no">56</span><span>        return self.x.shape[0]</span></div><div class="ln"><span class="no">57</span><span> </span></div><div class="ln"><span class="no">58</span><span>    def __getitem__(self, i):</span></div><div class="ln"><span class="no">59</span><span>        x = torch.from_numpy(np.asarray(self.x[i], dtype=np.float32))</span></div><div class="ln"><span class="no">60</span><span>        if self.normalise:</span></div><div class="ln bite"><span class="no">61</span><span>            x = (x - self.stats[&quot;mean&quot;]) / self.stats[&quot;std&quot;]</span></div><div class="why">▲ The mean/std come from this cache only. Fine-tuning on real data must pick sim or real stats.</div><div class="ln"><span class="no">62</span><span>        return {&quot;x&quot;: x, &quot;traj&quot;: self.traj[i], &quot;present&quot;: self.present[i]}</span></div></div>
+    <div class="out">→ normalised x (8, 512, 256), traj, present</div>
+  </div>
+</section>
+  <p class="next">… then trajectory_condition.py, dit.py, train.py, sample.py</p>
+</div>
+</body>
+</html>

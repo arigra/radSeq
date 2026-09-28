@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 280" width="940" height="280" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>radSeq: how the project flows</title>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#5A6874"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="939" height="279" rx="14" fill="#FFFFFF" stroke="#D5DDE4"/>
+
+  <!-- edges -->
+  <g fill="none" stroke="#5A6874" stroke-width="1.5">
+    <path d="M90 124V180" marker-end="url(#ah)"/>
+    <path d="M154 212H210" marker-end="url(#ah)"/>
+    <path d="M344 212H400" marker-end="url(#ah)"/>
+    <path d="M470 124V180" marker-end="url(#ah)"/>
+    <path d="M534 212H590" marker-end="url(#ah)"/>
+    <path d="M724 212H780" marker-end="url(#ah)"/>
+    <path d="M90 60V38H850V180" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+  </g>
+  <g font-size="11.5" fill="#5A6874">
+    <text x="100" y="156">calibrates</text>
+    <text x="182" y="204" text-anchor="middle">scenes</text>
+    <text x="372" y="204" text-anchor="middle">batches</text>
+    <text x="480" y="156">learns</text>
+    <text x="562" y="204" text-anchor="middle">checkpoint</text>
+    <text x="752" y="204" text-anchor="middle">DiT data</text>
+    <text x="630" y="31" text-anchor="middle">real sequences: fine-tune + test</text>
+  </g>
+
+  <!-- blocks: data -->
+  <g>
+    <rect x="26" y="60" width="128" height="64" rx="10" fill="#E1F1F3" stroke="#B9D9DE" stroke-width="1.5"/>
+    <rect x="26" y="72" width="3.5" height="40" rx="1.5" fill="#0E7A89"/>
+    <text x="40" y="87" font-size="14.5" font-weight="600" fill="#15202A">1 · RADIal</text>
+    <text x="40" y="106" font-size="12" fill="#5A6874">real radar · 91 drives</text>
+  </g>
+  <g>
+    <rect x="26" y="180" width="128" height="64" rx="10" fill="#E1F1F3" stroke="#B9D9DE" stroke-width="1.5"/>
+    <rect x="26" y="192" width="3.5" height="40" rx="1.5" fill="#0E7A89"/>
+    <text x="40" y="207" font-size="14.5" font-weight="600" fill="#15202A">2 · Simulator</text>
+    <text x="40" y="226" font-size="12" fill="#5A6874">physics → maps</text>
+  </g>
+  <g>
+    <rect x="216" y="180" width="128" height="64" rx="10" fill="#E1F1F3" stroke="#B9D9DE" stroke-width="1.5"/>
+    <rect x="216" y="192" width="3.5" height="40" rx="1.5" fill="#0E7A89"/>
+    <text x="230" y="207" font-size="14.5" font-weight="600" fill="#15202A">3 · Prepare</text>
+    <text x="230" y="226" font-size="12" fill="#5A6874">6,000 seqs · normalise</text>
+  </g>
+  <!-- blocks: model -->
+  <g>
+    <rect x="406" y="60" width="128" height="64" rx="10" fill="#E7E9F8" stroke="#C6CBEE" stroke-width="1.5"/>
+    <rect x="406" y="72" width="3.5" height="40" rx="1.5" fill="#4250C0"/>
+    <text x="420" y="87" font-size="14.5" font-weight="600" fill="#15202A">4 · DiT model</text>
+    <text x="420" y="106" font-size="12" fill="#5A6874">noisy maps → prediction</text>
+  </g>
+  <g>
+    <rect x="406" y="180" width="128" height="64" rx="10" fill="#E7E9F8" stroke="#C6CBEE" stroke-width="1.5"/>
+    <rect x="406" y="192" width="3.5" height="40" rx="1.5" fill="#4250C0"/>
+    <text x="420" y="207" font-size="14.5" font-weight="600" fill="#15202A">5 · Training</text>
+    <text x="420" y="226" font-size="12" fill="#5A6874">60k steps · on the HPC</text>
+  </g>
+  <g>
+    <rect x="596" y="180" width="128" height="64" rx="10" fill="#E7E9F8" stroke="#C6CBEE" stroke-width="1.5"/>
+    <rect x="596" y="192" width="3.5" height="40" rx="1.5" fill="#4250C0"/>
+    <text x="610" y="207" font-size="14.5" font-weight="600" fill="#15202A">6 · Sample, eval</text>
+    <text x="610" y="226" font-size="12" fill="#5A6874">30 steps · metrics</text>
+  </g>
+  <!-- block: experiment (not built) -->
+  <g>
+    <rect x="786" y="180" width="128" height="64" rx="10" fill="#F6ECDD" stroke="#A8691A" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="800" y="207" font-size="14.5" font-weight="600" fill="#15202A">7 · Experiment</text>
+    <text x="800" y="226" font-size="12" fill="#5A6874">arms A / B / D</text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="12" fill="#5A6874">
+    <rect x="26" y="258" width="12" height="12" rx="3" fill="#E1F1F3" stroke="#B9D9DE"/><text x="44" y="268">data</text>
+    <rect x="90" y="258" width="12" height="12" rx="3" fill="#E7E9F8" stroke="#C6CBEE"/><text x="108" y="268">model</text>
+    <rect x="160" y="258" width="12" height="12" rx="3" fill="#F6ECDD" stroke="#A8691A" stroke-dasharray="3 2"/><text x="178" y="268">not built yet</text>
+  </g>
+</svg>
