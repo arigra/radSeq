@@ -21,6 +21,14 @@ m = power_map(fake_frame())
 print(m.shape, "peak at", divmod(m.argmax(), m.shape[1]), f"{m.max():.1f} dB")
 ```
 
+```python
+import matplotlib.pyplot as plt
+
+plt.imshow(m.T, aspect="auto", origin="lower")
+plt.xlabel("range bin"); plt.ylabel("Doppler bin"); plt.colorbar(label="dB")
+plt.show()
+```
+
 ## 2 · Training
 Add noise to a map and learn one weight that removes it.
 
