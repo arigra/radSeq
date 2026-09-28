@@ -6,7 +6,8 @@ For the AI, not the user. Every line is marked: ✓ verified against code/result
 - Read in full: README, notebook markdown (120 cells), docs/prop.md, 2026-09-21 step-3 design note (first 60 lines), src/scene_sim.py, src/dit.py, src/patching.py, src/scene_data.py, src/train.py (loop, first ~330 lines), scripts/build_scene_cache.py, scripts/*.sh, *.sbatch, configs/pretrain_*.yaml, configs/base.yaml.
 - Results read: samples/scene_dit_smoke.json, samples/scene_sim_fit.json, experiments/step2_detector/results/*.json, experiments/dit_64/results/e3_long_scores.json (head).
 - NOT read: src/diffusion.py, src/sample.py, src/trajectory_condition.py, src/radial.py body, src/eval/*, src/simulator.py, src/detector.py, scripts/fit_scene_simulator.py body, experiments/* code, tests, docs/notes except one, archive/.
-- Cannot run: no torch, data, checkpoints or logs locally. The code runs on HPC (`ece-hpc`, `/truenas/home/arigra/permuter/ariGranevich/radSeq`). The local repo is code only.
+- Runs locally (✓ 2026-09-28): conda envs `3dc` (torch 2.3) and base (torch 2.1) run the simulator, a tiny scene cache, the DiT forward pass and one training step on CPU; see `.regain/radseq.regain.md`. (Pass 1 said "no torch": wrong, it only checked the system python3.)
+- Not local: RADIal data, full caches, checkpoints and logs. Those are on HPC (`ece-hpc`, `/truenas/home/arigra/permuter/ariGranevich/radSeq`).
 
 ## User
 - Relation (Ari, 2026-09-26): built it with agents, understands the direction but not what is inside.
