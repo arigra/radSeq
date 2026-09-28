@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 330" font-family="-apple-system, Segoe UI, Arial, sans-serif">
+  <title>data.py: from a fake radar frame to a dB map</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#7A8894"/>
+    </marker>
+  </defs>
+  <style>
+    .box{fill:rgba(26,154,170,.12);stroke:#1A9AAA;stroke-width:1.5}
+    .fn{fill:rgba(92,107,192,.14);stroke:#5C6BC0;stroke-width:1.5}
+    .t{fill:#7A8894;font-size:13px}
+    .h{fill:#1A9AAA;font-size:14px;font-weight:600}
+    .f{fill:#5C6BC0;font-size:14px;font-weight:600;font-family:Menlo, monospace}
+    .m{font-family:Menlo, monospace;font-size:12px;fill:#7A8894}
+    .edge{stroke:#7A8894;stroke-width:1.5;fill:none}
+    .hot{fill:#E0605A}
+  </style>
+
+  <!-- fake_frame -->
+  <rect class="fn" x="10" y="14" width="250" height="118" rx="10"/>
+  <text class="f" x="24" y="38">fake_frame()</text>
+  <text class="t" x="24" y="62">complex noise, 16 receive channels</text>
+  <text class="t" x="24" y="82">one target at (20, 10):</text>
+  <text class="m" x="24" y="102">x[target] += 30</text>
+  <text class="t" x="24" y="122">(the red line: sets the peak)</text>
+
+  <path class="edge" d="M135 132V172" marker-end="url(#a)"/>
+
+  <rect class="box" x="10" y="176" width="250" height="60" rx="10"/>
+  <text class="h" x="24" y="200">complex frame</text>
+  <text class="m" x="24" y="222">(64 range, 32 Doppler, 16 Rx)</text>
+
+  <!-- power_map -->
+  <path class="edge" d="M260 206H300" marker-end="url(#a)"/>
+  <rect class="fn" x="304" y="150" width="246" height="112" rx="10"/>
+  <text class="f" x="318" y="174">power_map()</text>
+  <text class="t" x="318" y="198">|x|² per channel</text>
+  <text class="t" x="318" y="218">sum over the 16 channels</text>
+  <text class="t" x="318" y="238">10·log10(…) → dB</text>
+
+  <path class="edge" d="M427 150V112" marker-end="url(#a)"/>
+  <rect class="box" x="304" y="14" width="246" height="94" rx="10"/>
+  <text class="h" x="318" y="38">dB map m</text>
+  <text class="m" x="318" y="60">(64, 32) float64</text>
+  <!-- tiny map with the hot spot -->
+  <rect x="470" y="28" width="64" height="64" rx="3" fill="none" stroke="#7A8894"/>
+  <circle class="hot" cx="490" cy="58" r="4"/>
+  <text class="t" x="318" y="84">peak ≈ 40 dB at (20, 10),</text>
+  <text class="t" x="318" y="100">noise floor ≈ 15 dB</text>
+
+  <text class="t" x="10" y="290">Then train.py adds noise to m and learns one weight that removes it.</text>
+  <text class="t" x="10" y="310" font-style="italic">Numbers from the demo run: peak 41.6 dB; the noise floor is approximate.</text>
+</svg>

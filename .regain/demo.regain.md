@@ -11,7 +11,7 @@ sys.path.insert(0, ".regain/demo")
 ## 1 · Data
 Make one fake Range-Doppler frame and turn it into a dB map.
 
-```file .regain/demo/demo_src/data.py
+```file .regain/demo/demo_src/data.py visual=visuals/data.svg
 ```
 
 ```python
