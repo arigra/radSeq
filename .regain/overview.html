@@ -1,166 +1,663 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>radSeq Overview</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600&family=Assistant:wght@400;600&family=JetBrains+Mono:wght@400&display=swap">
-<style>
-:root{
-  --bg:#F2F5F7; --surface:#FFFFFF; --sunk:#F6F8FA; --ink:#15202A; --muted:#5A6874; --line:#D5DDE4;
-  --data:#0E7A89; --data-soft:#E1F1F3;
-  --model:#4250C0; --model-soft:#E7E9F8;
-  --exp:#A8691A; --exp-soft:#F6ECDD;
-  --shadow:0 1px 2px rgba(21,32,42,.06),0 4px 14px rgba(21,32,42,.06);
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
-    --data:#4FC0CF; --data-soft:#16303A;
-    --model:#8C97F0; --model-soft:#212743;
-    --exp:#E0A552; --exp-soft:#352A1A;
-    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
-  }
-}
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --bg:#0F151B; --surface:#17212B; --sunk:#121A22; --ink:#E5ECF1; --muted:#95A3AF; --line:#2A3743;
-  --data:#4FC0CF; --data-soft:#16303A;
-  --model:#8C97F0; --model-soft:#212743;
-  --exp:#E0A552; --exp-soft:#352A1A;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
-}
+<!doctype html><!-- REGAIN_SEMANTIC_V1 -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>radSeq · ReGain</title>
+<style>:root{font-family:Inter,Segoe UI,system-ui,sans-serif;color-scheme:dark;background:#0d1721;color:#eef6f8;
+  --ink:#eef6f8;--panel:#192a37;--panel2:#1f3442;--edge:#395667;--muted:#8fa7b3;--accent:#78dade;
+  --s-done:#5cc98b;--s-in_progress:#f2b45c;--s-not_started:#8fa7b3;--s-unknown:#b79cf5}
+:root[data-theme="light"]{color-scheme:light;background:#f4f8fa;color:#19303b;
+  --ink:#19303b;--panel:#fff;--panel2:#f2f7f9;--edge:#c9dce5;--muted:#5d7684;--accent:#087d86;
+  --s-done:#1e8a4f;--s-in_progress:#b26a00;--s-not_started:#6b7f8a;--s-unknown:#6b4fc4}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Assistant",Arial,sans-serif;font-size:16px;line-height:1.5}
-.app{max-width:1000px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:18px}
-h1{font-family:"Rubik",Arial,sans-serif;font-weight:600;margin:0;font-size:28px}
-.eyebrow{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.essence{margin:6px 0 0;color:var(--muted);max-width:68ch;font-size:17px}
-.diagram{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 18px 12px}
-.diagram .scroll{overflow-x:auto}
-.diagram svg{display:block;width:100%;min-width:720px;height:auto;color:var(--ink)}
-.blk{cursor:pointer}
-.blk rect.box{stroke:var(--line);stroke-width:1.5;transition:stroke .15s}
-.blk:hover rect.box{stroke:var(--muted)}
-.blk.sel rect.box{stroke:var(--ink);stroke-width:2.5}
-.blk:focus{outline:none}
-.blk:focus-visible rect.box{stroke:var(--model);stroke-width:3}
-.blk .t{font-family:"Rubik",sans-serif;font-weight:500;font-size:14.5px;fill:var(--ink)}
-.blk .s{font-size:12px;fill:var(--muted)}
-.blk .n{font-family:"Rubik",sans-serif;font-size:11px;fill:var(--muted)}
-.edge{fill:none;stroke:currentColor;stroke-opacity:.55;stroke-width:1.5}
-.elab{font-size:11.5px;fill:var(--muted)}
-.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);padding:8px 4px 0}
+body{margin:0;padding:clamp(18px,3.5vw,44px)}
+main{max-width:1350px;margin:auto}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible,.term:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:clamp(2rem,4vw,3.2rem);margin:10px 0 14px}
+h2{font-size:1.25rem;margin:0}
+.eyebrow{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--accent)}
+
+/* The story in three lines */
+.story{display:grid;gap:10px;max-width:900px;padding:18px 22px;border-left:4px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);border-radius:0 14px 14px 0}
+.story .line{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:14px;align-items:baseline;font-size:1.08rem;line-height:1.6}
+.story .label{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--accent)}
+.story p{margin:0;font-size:1.12rem;line-height:1.7}
+.reading{margin:12px 0 0;font-size:.92rem;line-height:1.5}
+.reading .ok:before{content:"✓ ";color:var(--s-done);font-weight:800}
+.reading summary{cursor:pointer;color:var(--accent)}
+.reading ul{columns:2;color:var(--muted);font-size:.82rem;margin:8px 0}
+
+/* The project at a glance: subjects as boxes in reading order */
+.glance{margin:30px 0 0}
+.glance-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 22px;margin-bottom:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
-.sw{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--line)}
-.focus{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:92px}
-.focus .nm{font-family:"Rubik",sans-serif;font-weight:500;font-size:17px}
-.focus .d{color:var(--muted);margin:4px 0 10px}
-.files{display:flex;gap:6px;flex-wrap:wrap}
-.files a,.files span{font-family:"JetBrains Mono",monospace;font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--sunk);border:1px solid var(--line);color:var(--ink);text-decoration:none}
-.files a:hover{border-color:var(--model)}
-.hint{font-size:13.5px;color:var(--muted)}
-</style>
-</head>
-<body>
-<div class="app">
-  <header>
-    <div class="eyebrow">Level 0 · the big picture</div>
-    <h1>radSeq</h1>
-    <p class="essence">A diffusion model (DiT) that generates sequences of radar Range-Doppler maps. The question: is a model pretrained on a simulator and fine-tuned on a little real data (RADIal) a better source of detector training data than the simulator itself?</p>
-  </header>
+.legend i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.search{width:min(100%,420px);margin:0 0 14px;border:1px solid var(--edge);background:var(--panel);color:inherit;border-radius:10px;padding:10px 13px;font:inherit}
+.diagram{display:grid;gap:14px}
+.row{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.row.side{padding-left:2px}
+.row-label{width:100%;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.arrow{align-self:center;color:var(--accent);font-size:1.3rem;font-weight:700;padding:0 2px}
+.box{position:relative;display:flex;flex-direction:column;gap:8px;min-width:150px;max-width:240px;flex:1 1 150px;text-align:left;padding:13px 14px 12px;border:1px solid var(--edge);border-left:4px solid var(--c,var(--s-unknown));border-radius:12px;background:var(--panel)}
+.box:hover{border-color:var(--accent);border-left-color:var(--c)}
+.box[aria-current=true]{background:color-mix(in srgb,var(--accent) 12%,var(--panel));border-color:var(--accent);border-left-color:var(--c)}
+.box .num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:.78rem;font-weight:800;border:1.5px solid var(--edge);color:var(--muted)}
+.box.covered .num{background:var(--s-done);border-color:var(--s-done);color:var(--panel)}
+.box .name{font-weight:700;font-size:.98rem;line-height:1.3}
+.box .state{font-size:.78rem;font-weight:700;color:var(--c)}
+.box .start{position:absolute;top:-10px;right:10px;padding:2px 9px;border-radius:99px;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--accent);color:var(--panel)}
+.box.dim{opacity:.35}
+.box.glow{animation:glow 2.6s ease-out}
+@keyframes glow{0%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 55%,transparent)}100%{box-shadow:none}}
+[data-state=done]{--c:var(--s-done)}[data-state=in_progress]{--c:var(--s-in_progress)}[data-state=not_started]{--c:var(--s-not_started)}[data-state=unknown]{--c:var(--s-unknown)}
 
-  <section class="diagram" aria-label="How radSeq flows">
-    <div class="scroll">
-      <svg viewBox="0 0 920 246" role="img" aria-label="radSeq flow diagram">
-        <defs>
-          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0 0L10 5L0 10z" fill="currentColor" fill-opacity=".6"/>
-          </marker>
-        </defs>
-        <path class="edge" d="M80 104V160" marker-end="url(#ah)"/>
-        <text class="elab" x="90" y="136">calibrates</text>
-        <path class="edge" d="M144 192H200" marker-end="url(#ah)"/>
-        <text class="elab" x="172" y="184" text-anchor="middle">scenes</text>
-        <path class="edge" d="M334 192H390" marker-end="url(#ah)"/>
-        <text class="elab" x="362" y="184" text-anchor="middle">batches</text>
-        <path class="edge" d="M460 104V160" marker-end="url(#ah)"/>
-        <text class="elab" x="470" y="136">learns</text>
-        <path class="edge" d="M524 192H580" marker-end="url(#ah)"/>
-        <text class="elab" x="552" y="184" text-anchor="middle">checkpoint</text>
-        <path class="edge" d="M714 192H770" marker-end="url(#ah)"/>
-        <text class="elab" x="742" y="184" text-anchor="middle">DiT data</text>
-        <path class="edge" d="M80 40V18H840V160" stroke-dasharray="4 4" marker-end="url(#ah)"/>
-        <text class="elab" x="620" y="12" text-anchor="middle">real sequences: fine-tune + test</text>
-        <g id="blocks"></g>
-      </svg>
-    </div>
-    <div class="legend">
-      <span><i class="sw" style="background:var(--data-soft)"></i>data</span>
-      <span><i class="sw" style="background:var(--model-soft)"></i>model</span>
-      <span><i class="sw" style="background:var(--exp-soft);border-style:dashed"></i>not built yet</span>
-      <span>Click a block to see it. Ask about it in the Claude chat.</span>
-    </div>
-  </section>
+/* Open questions and words */
+.extras{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:22px 0 0;align-items:start}
+.questions,.terms{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:15px 18px}
+.questions h2{font-size:1.02rem;margin-bottom:8px}
+.questions ul{margin:0;padding-left:18px;line-height:1.55}
+.questions li{margin:6px 0}
+.link{border:0;background:none;padding:0;color:var(--accent);font-size:.85rem;font-weight:600;margin-left:6px}
+.link:hover{text-decoration:underline}
+.terms summary{cursor:pointer;font-weight:700}
+.terms summary span{font-weight:400;color:var(--muted)}
+.terms dl{margin:10px 0 0;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;line-height:1.5}
+.terms dt{font-weight:700}.terms dd{margin:0}
+.term{text-decoration:underline dotted color-mix(in srgb,var(--accent) 70%,transparent);text-underline-offset:3px;cursor:help}
 
-  <section class="focus" id="focus" aria-live="polite"></section>
-</div>
+/* The selected subject, with the guide beside it */
+.work{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,410px);gap:22px;margin-top:26px;align-items:start}
+.detail{background:var(--panel);border:1px solid var(--edge);border-radius:16px;padding:clamp(18px,2.6vw,30px);min-width:0}
+.crumb{display:flex;flex-wrap:wrap;gap:6px;font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.crumb button{border:0;background:none;padding:0;color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:.74rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.pill.state{color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent)}
+.pill.kind{color:var(--muted);border:1px solid var(--edge)}
+.detail h2{font-size:1.85rem;margin:12px 0 8px}
+.detail p{color:var(--ink);line-height:1.68;max-width:74ch}
+.detail .lead{font-size:1.1rem}
+.mine{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0 4px;font-size:.9rem;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+.action{border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:10px;color:var(--accent);padding:10px 15px;font-weight:600}
+.action:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.action.secondary{border-color:var(--edge);background:transparent;color:inherit}
+.action:disabled{opacity:.5;cursor:default}
+.action small{font-weight:400;opacity:.8;margin-left:4px}
+.toggle{border:1px solid var(--edge);background:transparent;border-radius:99px;padding:5px 12px;font-size:.85rem}
+.toggle[aria-pressed=true]{border-color:var(--s-done);color:var(--s-done);background:color-mix(in srgb,var(--s-done) 12%,transparent)}
+.detail h3{font-size:1.05rem;margin:26px 0 12px}
+.parts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.parts .box{max-width:none}
+.parts .box p{margin:0;font-size:.88rem;line-height:1.45;color:var(--ink)}
+.flow{margin:0;padding:0;list-style:none}
+.stage{position:relative;padding:0 0 18px 46px}
+.stage:before{content:attr(data-n);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.85rem;color:var(--panel);background:var(--c)}
+.stage:after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;background:color-mix(in srgb,var(--edge) 80%,transparent)}
+.stage:last-child:after{display:none}.stage:last-child{padding-bottom:0}
+.stage strong{display:inline;font-size:1.02rem;margin-right:8px}
+.stage .state{font-size:.76rem;font-weight:700;color:var(--c)}
+.stage p{font-size:.98rem;margin:4px 0 0}
+.related{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:22px;font-size:.88rem;color:var(--muted)}
+.chip{border:1px solid var(--edge);background:transparent;border-radius:99px;padding:4px 11px;font-size:.85rem}
+.chip:hover{border-color:var(--accent)}
+.files{margin-top:20px;font-size:.9rem}
+.files summary{cursor:pointer;color:var(--muted)}
+.files .list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.files a{font-size:.78rem;color:var(--accent);border:1px solid var(--edge);border-radius:8px;padding:5px 8px;text-decoration:none;overflow-wrap:anywhere}
+.note{color:var(--muted);font-size:.84rem}
 
-<script>
-const B = [
-  {n:1, id:"radial", x:16, y:40, t:"RADIal", s:"real radar recordings", g:"data",
-   d:"Real recordings from a 77 GHz radar, read into dB Range-Doppler maps with vehicle labels. Right now RADIal only calibrates the simulator. Later it will be the real data for fine-tuning and testing.",
-   files:[["radial.py · read_labels","src/radial.py",21],["power_map","src/radial.py",114],["split.json","data/radial/split.json",1]]},
-  {n:2, id:"sim", x:16, y:160, t:"Simulator", s:"physics → 8 frames", g:"data",
-   d:"Builds a road scene and renders 8 radar frames from physics. It has two variants: engineer, which was never tuned to RADIal, and fitted, which was calibrated to it.",
-   files:[["scene_sim.py · gen_sequence","src/scene_sim.py",321],["radar_physics.py · RADIAL_SPEC","src/radar_physics.py",74],["fit_scene_simulator.py","scripts/fit_scene_simulator.py",92]]},
-  {n:3, id:"prep", x:206, y:160, t:"Prepare", s:"6,000 seqs · normalise", g:"data",
-   d:"Renders 6,000 sequences per simulator variant to disk and normalises them. Vehicle positions become condition maps.",
-   files:[["build_scene_cache.py · render_split","scripts/build_scene_cache.py",21],["scene_data.py · SceneSequenceDataset","src/scene_data.py",43],["trajectory_condition.py","src/trajectory_condition.py",51]]},
-  {n:4, id:"model", x:396, y:40, t:"DiT model", s:"noisy maps → prediction", g:"model",
-   d:"Cuts each frame into 16×16 patches. Each block runs attention over time, then attention over space. There are 12 blocks.",
-   files:[["dit.py · TemporalDiT","src/dit.py",135],["FactorizedBlock","src/dit.py",64],["patching.py","src/patching.py",17]]},
-  {n:5, id:"train", x:396, y:160, t:"Training", s:"60k steps · on the HPC", g:"model",
-   d:"Adds noise to the maps and teaches the model to remove it: 60,000 steps per simulator variant, on the HPC. It was started on 21/9. Whether it finished is not known from here.",
-   files:[["train.py · train","src/train.py",192],["diffusion.py","src/diffusion.py",40],["pretrain_engineer.yaml","configs/pretrain_engineer.yaml",1]]},
-  {n:6, id:"eval", x:586, y:160, t:"Sample, eval", s:"30 steps · metrics", g:"model",
-   d:"Generates sequences from pure noise in 30 steps and compares them with the simulator.",
-   files:[["sample.py","src/sample.py",134],["eval/","src/eval/metrics.py",1]]},
-  {n:7, id:"exp", x:776, y:160, t:"Experiment", s:"arms A / B / D", g:"exp",
-   d:"Fine-tune on RADIal, then train a detector three ways: real data only (A), real + simulator data (B), real + DiT data (D). No code exists for this yet.",
-   files:[]}
-];
-const W=128, H=64;
-const FILL={data:"var(--data-soft)", model:"var(--model-soft)", exp:"var(--exp-soft)"};
-const ACC={data:"var(--data)", model:"var(--model)", exp:"var(--exp)"};
-let selected = null;
+/* The guide */
+.guide{position:sticky;top:16px;max-height:calc(100vh - 32px);display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--edge);border-radius:16px;min-width:0}
+.guide-bar{display:none}
+.guide-body{display:flex;flex-direction:column;min-height:0;padding:18px 18px 14px}
+.guide .hint{color:var(--muted);font-size:.86rem;margin:4px 0 12px;line-height:1.45}
+.messages{display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:120px;flex:1;padding-right:4px}
+.msg{max-width:94%;padding:11px 14px;border-radius:13px;line-height:1.6;font-size:.97rem}
+.msg p{margin:0 0 8px}.msg p:last-child{margin:0}.msg ul{margin:6px 0 8px;padding-left:20px}.msg li{margin:3px 0}
+.msg.agent{align-self:flex-start;background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--accent) 28%,transparent)}
+.msg.user{align-self:flex-end;background:var(--panel2);border:1px solid var(--edge)}
+.msg.error{border-color:#e07a7a;background:color-mix(in srgb,#e07a7a 10%,transparent)}
+.msg .changed{margin-top:8px;font-size:.86rem;color:var(--accent)}
+.msg.pending .live{font-size:.88rem;color:var(--muted)}.msg.pending .live b{color:var(--ink);font-weight:600}
+.dots{display:inline-flex;gap:4px;margin-right:8px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.2s infinite}.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.suggest{margin-top:10px;padding:10px 12px;border:1px dashed var(--accent);border-radius:10px;font-size:.92rem}
+.suggest .why{margin:2px 0 8px}.suggest .done{color:var(--muted);font-size:.84rem}
+.suggest button{margin-right:8px;padding:6px 12px}
+.start-chat p{line-height:1.6;margin:0 0 12px}
+.ask{margin-top:12px}
+.about{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:.8rem;color:var(--muted)}
+.about button{border:1px solid var(--edge);background:transparent;border-radius:99px;padding:2px 9px;font-size:.78rem;color:var(--ink)}
+.ask-row{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{flex:1;min-height:50px;max-height:160px;resize:vertical;border:1px solid var(--edge);background:transparent;color:inherit;border-radius:10px;padding:10px 12px;font:inherit;line-height:1.45}
+.record{margin-top:12px;border-top:1px solid var(--edge);padding-top:10px;font-size:.9rem}
+.record summary{cursor:pointer;font-weight:700}
+.record summary span{font-weight:400;color:var(--muted)}
+.record h3{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:12px 0 4px}
+.record ul{margin:0;padding-left:18px;line-height:1.5}.record li{margin:2px 0}
+.record .none{color:var(--muted);margin:0}
+#status{min-height:22px;color:var(--accent);margin:12px 0}
+.uncertain{margin-top:22px;font-size:.84rem;color:var(--muted)}
+.uncertain summary{cursor:pointer}
+.uncertain ul{line-height:1.5}
 
-function drawBlocks(){
-  document.getElementById("blocks").innerHTML = B.map(b=>`
-    <g class="blk ${selected===b.id?"sel":""}" data-id="${b.id}" tabindex="0" role="button" aria-label="${b.n}. ${b.t}">
-      <rect class="box" x="${b.x}" y="${b.y}" width="${W}" height="${H}" rx="10" style="fill:${FILL[b.g]}" ${b.g==="exp"?'stroke-dasharray="5 4"':""}/>
-      <rect x="${b.x}" y="${b.y+12}" width="3.5" height="${H-24}" rx="1.5" style="fill:${ACC[b.g]}"/>
-      <text class="n" x="${b.x+W-10}" y="${b.y+18}" text-anchor="end">${b.n}</text>
-      <text class="t" x="${b.x+14}" y="${b.y+27}">${b.t}</text>
-      <text class="s" x="${b.x+14}" y="${b.y+46}">${b.s}</text>
-    </g>`).join("");
-  document.querySelectorAll(".blk").forEach(g=>{
-    g.onclick = ()=>select(g.dataset.id);
-    g.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); select(g.dataset.id); } };
+/* Narrow editors: the guide becomes a drawer along the bottom, always one click away */
+@media (max-width:900px){
+  body{padding-bottom:72px}
+  .work{grid-template-columns:1fr}
+  .guide{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:78vh;border-radius:16px 16px 0 0;z-index:20;box-shadow:0 -8px 30px rgba(0,0,0,.35)}
+  .guide-bar{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:14px 18px;text-align:left;font-weight:700}
+  .guide-bar span{flex:1;min-width:0;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .guide-bar:after{content:"▴";color:var(--accent)}
+  .guide.open .guide-bar:after{content:"▾"}
+  .guide:not(.open) .guide-body{display:none}
+  .guide .guide-body{padding-top:0;max-height:calc(78vh - 52px)}
+  .guide-body>h2{display:none}
+  .story .line{grid-template-columns:1fr;gap:2px}
+}
+</style></head>
+<body><main>
+<header><div class="eyebrow">ReGain · how this project works</div><h1>radSeq</h1>
+<section class="story" id="story" aria-label="The project in three lines"></section><div class="reading" id="reading"></div></header>
+<section class="glance"><div class="glance-head"><h2>The project at a glance</h2><div class="legend" id="legend"></div></div>
+<input class="search" id="search" type="search" placeholder="Find a subject…" aria-label="Find a subject" hidden>
+<div class="diagram" id="diagram" aria-label="Subjects in reading order"></div></section>
+<div class="extras"><section class="questions" id="questions" hidden></section><details class="terms" id="terms" hidden></details></div>
+<div class="work"><section class="detail" id="detail" aria-live="polite"></section>
+<aside class="guide" id="guide"><button class="guide-bar" id="guideBar" type="button">Your guide <span id="guidePeek"></span></button>
+<div class="guide-body"><h2>Your guide</h2><p class="hint">Ask anything about the project, or say what to merge, split, rename, add or drop on the map.</p>
+<div class="messages" id="messages" aria-live="polite"></div>
+<form class="ask" id="ask"><div class="about" id="about"></div><div class="ask-row"><textarea id="askText" placeholder="Ask, or say what to change…" aria-label="Message to your guide"></textarea><button class="action" type="submit">Send</button></div></form>
+<details class="record" id="record"></details></div></aside></div>
+<div id="status" role="status"></div><section class="uncertain" id="uncertain"></section>
+</main>
+<script>const map={"generatedByReGain":true,"version":1,"projectName":"radSeq","summary":"radSeq learns to generate radar sequences for training detectors with limited measured data. Generation and detector augmentation work on simulated 64×64 maps, although the small-data generator triggers a copying warning. The current study moves to RADIal-sized scenes, with simulator fitting and recipe checks saved but measured-data transfer still unproven.","story":{"asks":"Can a generator adapted to scarce measured radar data provide better detector training examples than a simulator?","done":"Simulated-sequence augmentation raised class detection scores from 0.665 to 0.705 across three seeds, but the generator triggered the copying rule.","next":"Confirm scene pretraining completion, adapt the generator to RADIal recordings, and compare detector gains against simulator augmentation."},"capabilities":[{"id":"research-status","name":"Test measured transfer","purpose":"The current question is whether adapting a pretrained generator to measured radar compensates for simulator mismatch. Saved results establish a synthetic rehearsal, while the RADIal detector comparison remains open.","kind":"status","role":"side","state":"in_progress","runtimeStatus":"research","sources":[{"path":"docs/notes/2026-09-21-radial-sim2real-design.md","reason":"Defines the measured-transfer question and proposed comparison arms."},{"path":"README.md","reason":"Identifies the scene pipeline as current work."},{"path":"experiments/step2_detector/results/detector_class_augmentation.json","reason":"The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain."},{"path":"experiments/step2_detector/results/memorization_n2000.json","reason":"The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain."},{"path":"configs/pretrain_engineer.yaml","reason":"The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps."},{"path":"configs/pretrain_fitted.yaml","reason":"The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps."}],"flow":[{"id":"research-rehearsal","label":"Establish the rehearsal","description":"The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain.","state":"done","sources":["experiments/step2_detector/results/detector_class_augmentation.json","experiments/step2_detector/results/memorization_n2000.json"]},{"id":"research-current","label":"Move to measured radar","description":"The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps.","state":"in_progress","sources":["configs/pretrain_engineer.yaml","configs/pretrain_fitted.yaml"]},{"id":"research-transfer","label":"Compare detector gains","description":"The design proposes comparing real-only training, simulator augmentation and augmentation from a generator adapted to the same real subset. No measured-transfer result is saved.","state":"not_started","sources":["docs/notes/2026-09-21-radial-sim2real-design.md"]}],"related":["real-inputs","scene-sources","sequence-generation","detector-rehearsal"]},{"id":"real-inputs","name":"Read measured radar","purpose":"Turn RADIal recordings into power maps and consecutive labelled sequences. Whole recordings stay in separate splits so neighbouring frames cannot leak between training and evaluation.","kind":"code","role":"flow","state":"done","runtimeStatus":"runtime","sources":[{"path":"src/radial.py","reason":"Implements labels, recording splits, sequence windows and power conversion."},{"path":"data/radial/split.json","reason":"Pins recording assignments."},{"path":"experiments/radial_facts/radial_calibrate.py","reason":"Checks radar grid positions against labels."},{"path":"experiments/radial_facts/radial_stats.py","reason":"Measures target and background properties."},{"path":"tests/test_radial.py","reason":"Checks recording separation and consecutive windows."},{"path":"regain/01_real_data.ipynb","reason":"Explains measured inputs through live source and executable examples."},{"path":"regain/view.py","reason":"Displays the live source used by the teaching notebook."}],"flow":[{"id":"real-labels","label":"Read valid vehicle labels","description":"Discard labels with negative range. Convert range to bins using 0.2 metres per bin and treat radar_D_mps as a Doppler bin index.","state":"done","sources":["src/radial.py","experiments/radial_facts/radial_calibrate.py"]},{"id":"real-power","label":"Build power maps","description":"Sum squared signal magnitudes over receive channels and convert to dB. Each map contains 512 range bins and 256 Doppler bins.","state":"done","sources":["src/radial.py"]},{"id":"real-windows","label":"Keep recordings separate","description":"Use the pinned recording split and extract consecutive labelled frame windows. The default window contains 16 frames with no overlap.","state":"done","sources":["src/radial.py","data/radial/split.json","tests/test_radial.py"]}],"related":["scene-sources"]},{"id":"scene-sources","name":"Build radar scenes","purpose":"Create labelled RADIal-sized training scenes from moving vehicles, roads, receiver effects and noise. Keep the engineer settings separate from settings fitted only to real training recordings.","kind":"code","role":"flow","state":"done","runtimeStatus":"runtime","sources":[{"path":"src/scene_sim.py","reason":"Renders scene sequences and defines engineer and fitted variants."},{"path":"src/radar_physics.py","reason":"Provides radar specifications and signal-strength calculations."},{"path":"scripts/fit_scene_simulator.py","reason":"Fits uncertain scene settings using training recordings."},{"path":"configs/scene_fitted.json","reason":"Stores the selected fitted settings."},{"path":"samples/scene_sim_fit.json","reason":"Records engineer and fitted comparisons with measured statistics."},{"path":"scripts/build_scene_cache.py","reason":"Writes resumable map caches, labels and normalization statistics."},{"path":"src/scene_data.py","reason":"Preserves vehicle identity and loads maps on demand."},{"path":"scripts/run_scene_caches.sh","reason":"Builds both simulator variants."}],"flow":[{"id":"scene-render","label":"Render moving scenes","description":"Generate maps with road structures, moving vehicles, transmitter copies, receiver filtering and noise. Return vehicle positions, ego speed and road type.","state":"done","sources":["src/scene_sim.py","src/radar_physics.py"]},{"id":"scene-fit","label":"Fit uncertain settings","description":"Fit scene and receiver settings against six training-recording statistics. Fitted vehicle prominence is 20.0 dB above background, compared with 24.0 dB measured and 14.8 dB from engineer settings.","state":"done","sources":["scripts/fit_scene_simulator.py","configs/scene_fitted.json","samples/scene_sim_fit.json"]},{"id":"scene-cache","label":"Write labelled caches","description":"The builder defaults to 6,000 training and 300 validation sequences per variant, each eight frames long. It writes resumable float16 maps, vehicle labels and training normalization statistics.","state":"done","sources":["scripts/build_scene_cache.py","scripts/run_scene_caches.sh"]},{"id":"scene-load","label":"Load training batches","description":"Read maps on demand and normalize with training statistics. Labels retain vehicle identity and frame presence in eight fixed vehicle slots.","state":"done","sources":["src/scene_data.py"]}],"related":["sequence-generation"]},{"id":"sequence-generation","name":"Generate requested sequences","purpose":"Train a DiT, a transformer that removes noise from complete radar sequences, and sample maps at requested target positions. The same training loop supports the completed 64×64 study and current scene pretraining.","kind":"code","role":"flow","state":"in_progress","runtimeStatus":"runtime","sources":[{"path":"src/train.py","reason":"Selects datasets, trains models and saves resumable checkpoints."},{"path":"src/dit.py","reason":"Processes map patches with spatial and temporal attention."},{"path":"src/diffusion.py","reason":"Defines prediction targets, noise schedules and sampling."},{"path":"src/trajectory_condition.py","reason":"Renders class-aware target maps and vehicle-presence maps."},{"path":"src/sample.py","reason":"Loads checkpoints and generates label-conditioned sequences."},{"path":"samples/scene_dit_smoke.json","reason":"Records completed scene training comparisons."},{"path":"configs/pretrain_engineer.yaml","reason":"Defines the current scene pretraining recipe."},{"path":"scripts/run_pretrain.sh","reason":"Runs engineer and fitted pretraining sequentially with resume support."},{"path":"configs/pretrain_fitted.yaml","reason":"The wrapper trains engineer then fitted scenes, resumes last.pt and skips variants marked STAGE_DONE. Both configurations request 80 epochs, but completion is not established by available saved results."},{"path":"experiments/dit_64/results/cond_traj_scores.json","reason":"Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules."},{"path":"experiments/dit_64/results/e3_long_scores.json","reason":"Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules."}],"flow":[{"id":"generation-conditions","label":"Draw requested targets","description":"Small-grid conditions contain three target-class channels and a presence channel. Scene conditions contain vehicle-position and presence channels, with Doppler positions wrapping around the grid.","state":"done","sources":["src/trajectory_condition.py"]},{"id":"generation-train","label":"Learn sequence restoration","description":"Add noise to normalized maps and train patch predictions across space and time. The scene recipe uses v prediction, 16×16 non-overlapping patches and zero smoothness or motion penalties.","state":"done","sources":["src/train.py","src/dit.py","src/diffusion.py","configs/pretrain_engineer.yaml"]},{"id":"generation-scene-check","label":"Choose the scene recipe","description":"After 20 epochs, schedule shift 16 generates about 50 dB intensity spread versus 42 dB with shift 4. Simulated reference maps span about 57 dB.","state":"done","sources":["samples/scene_dit_smoke.json"]},{"id":"generation-pretrain","label":"Pretrain both variants","description":"The wrapper trains engineer then fitted scenes, resumes last.pt and skips variants marked STAGE_DONE. Both configurations request 80 epochs, but completion is not established by available saved results.","state":"unknown","sources":["scripts/run_pretrain.sh","configs/pretrain_engineer.yaml","configs/pretrain_fitted.yaml"]},{"id":"generation-sample","label":"Sample labelled maps","description":"Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules.","state":"done","sources":["src/sample.py","experiments/dit_64/results/cond_traj_scores.json","experiments/dit_64/results/e3_long_scores.json"]}],"related":["detector-rehearsal"]},{"id":"detector-rehearsal","name":"Test detector augmentation","purpose":"Measure whether generated sequences help a detector trained on a small simulated dataset. The class-detection experiment reports a gain, alongside evidence that the generator reproduces training examples more closely than held-out examples.","kind":"experiment","role":"flow","state":"done","runtimeStatus":"evaluation","sources":[{"path":"experiments/step2_detector/configs/cond_traj_n2000.yaml","reason":"Restricts generator training to 2,000 sequences."},{"path":"scripts/gen_synthetic.py","reason":"Renders training labels repeatedly into labelled part files."},{"path":"scripts/memorization_check.py","reason":"Defines the training-versus-held-out copying rule."},{"path":"experiments/step2_detector/results/memorization_n2000.json","reason":"Records the positive copying warning."},{"path":"src/detector.py","reason":"Implements position and sequence-class detectors and scoring."},{"path":"experiments/step2_detector/detector_class_augmentation.py","reason":"Runs matched detector comparisons across three seeds."},{"path":"experiments/step2_detector/results/detector_class_augmentation.json","reason":"Stores detector scores and the passing augmentation rule."},{"path":"docs/notes/2026-09-17-step2-synthetic-augmentation.md","reason":"Explains the saturated position task and the class-task replacement."},{"path":"experiments/step2_detector/results/cond_traj_n2000_scores.json","reason":"Train a conditional generator from scratch on the first 2,000 simulated sequences. Its held-out trajectory evaluation passes the saved quality rules."}],"flow":[{"id":"detector-small-generator","label":"Train with scarce examples","description":"Train a conditional generator from scratch on the first 2,000 simulated sequences. Its held-out trajectory evaluation passes the saved quality rules.","state":"done","sources":["experiments/step2_detector/configs/cond_traj_n2000.yaml","experiments/step2_detector/results/cond_traj_n2000_scores.json"]},{"id":"detector-copying","label":"Check training-example copying","description":"Compare 128 training-label requests with 128 held-out requests. Their median map-distance ratio is 0.715, below the 0.8 threshold that flags copying.","state":"done","sources":["scripts/memorization_check.py","experiments/step2_detector/results/memorization_n2000.json"]},{"id":"detector-render","label":"Create extra examples","description":"Render each of 2,000 training-label sequences four times with different sampling seeds. Save 8,000 generated sequences with their requested paths and classes.","state":"done","sources":["scripts/gen_synthetic.py","experiments/step2_detector/results/detector_class_augmentation.json"]},{"id":"detector-compare","label":"Compare class detection","description":"Across three seeds, adding generated sequences raises mean class AP from 0.665 to 0.705. Training on all 20,000 simulated reference sequences scores 0.760, leaving measurable headroom.","state":"done","sources":["src/detector.py","experiments/step2_detector/detector_class_augmentation.py","experiments/step2_detector/results/detector_class_augmentation.json"]}],"related":["research-status"]},{"id":"earlier-work","name":"Earlier generation studies","purpose":"Keep the route to the working generator visible without treating discarded experiments as current pipeline steps. Archive contents are indexed records of failed approaches, exploratory screens and replaced simulators.","kind":"experiment","role":"side","state":"done","runtimeStatus":"research","sources":[{"path":"archive/INDEX.md","reason":"Explains archived approaches and why they stopped."},{"path":"experiments/dit_64/diag_diffusion_sanity.py","reason":"Checks diffusion mathematics independently of learned radar models."},{"path":"experiments/dit_64/evaluate_ablations.py","reason":"Compares checkpoint and sampling variants under shared noise."},{"path":"experiments/dit_64/results/e0_standard_scores.json","reason":"Records the repaired easy-data recipe."},{"path":"experiments/dit_64/results/e3_full_scores.json","reason":"Records the joint-attention comparison."},{"path":"docs/notes/2026-09-14-terminal-step-diagnosis.md","reason":"Explains the sampling diagnosis that preceded recipe changes."}],"flow":[{"id":"earlier-failure","label":"Diagnose weak generation","description":"The original generator compressed bright content. Diagnostics and controlled comparisons separated diffusion formulas, denoising errors, patch joining and sampling choices.","state":"done","sources":["archive/INDEX.md","experiments/dit_64/diag_diffusion_sanity.py","experiments/dit_64/evaluate_ablations.py"]},{"id":"earlier-recipe","label":"Replace the training recipe","description":"The standard recipe succeeded on easy simulated sequences. Joint space-time attention was tested as an alternative, while the working path retained separate spatial and temporal attention.","state":"done","sources":["experiments/dit_64/results/e0_standard_scores.json","experiments/dit_64/results/e3_full_scores.json"]},{"id":"earlier-archive","label":"Retire replaced approaches","description":"The archive groups original ablations, learned-motion generators, detector-error screens, a simulator-to-simulator pilot, the first RADIal simulator and notebook editing tools.","state":"done","sources":["archive/INDEX.md"]}],"related":["sequence-generation","scene-sources"]}],"terms":[{"term":"RADIal","meaning":"Measured driving radar dataset with vehicle labels and recording identities."},{"term":"Range-Doppler map","meaning":"Radar power arranged by target distance and relative radial speed."},{"term":"DiT","meaning":"Diffusion transformer that learns to remove noise from map sequences."},{"term":"Factorized attention","meaning":"Separate attention operations connect spatial patches and corresponding patches across frames."},{"term":"DDIM","meaning":"Sampling method that generates maps through a selected number of denoising steps."},{"term":"EMA","meaning":"A moving average of training weights used for sampling."},{"term":"v prediction","meaning":"Predicting a scheduled mixture of clean signal and noise during diffusion training."},{"term":"Engineer variant","meaning":"Scene simulator using specified radar settings and assumed scenes without fitting recordings."},{"term":"Fitted variant","meaning":"Scene simulator with uncertain settings calibrated against RADIal training recordings."},{"term":"Class AP","meaning":"Average precision for correctly positioned and classified targets. Higher scores mean better detection."}],"openQuestions":["Have engineer and fitted scene pretraining both completed on the cluster?","Which real-data fine-tuning and detector comparison should follow the current scene pretraining?","Is the proposed simulator-fidelity ladder still intended, or are engineer and fitted the final comparison variants?"],"uncertainties":["The transfer design still discusses 16-frame windows and a three-variant fidelity ladder. Current configurations use eight-frame scenes and two variants.","Available scene results measure simulator fitting and short training checks. They do not establish completed pretraining or measured-data detector gains.","The generic generate function and sampling command still assume 64×64 maps. The trajectory-conditioned sampling interface supports configurable scene grids.","The small-data augmentation result uses simulated reference data, not measured RADIal data. Its positive copying rule prevents interpreting the gain as independent novel examples.","Scene label packing retains eight vehicle identities and drops larger identity values. Handling measured scenes with more vehicles remains unresolved.","Earlier notes use different simulator generations and intensity-spread definitions. Their numerical gaps should not be combined with current scene statistics."],"reading":{"read":270,"total":270,"unread":[],"method":"all"},"analysis":{"status":"complete","message":"Initial map ready. Explore children and create notebooks when you choose."}};
+const talk={"conversation":[],"learner":{"knows":[],"cares":[],"open":[],"told":[]},"progress":{"started":[],"covered":[]},"notebooks":[],"estimates":{}};</script>
+<script>// The ReGain overview page. Data comes from two globals set before this script:
+// map (subjects, story, terms, open questions) and talk (conversation, record, path, guides, times).
+window.addEventListener("DOMContentLoaded", () => {
+  const api = window.regainApi;
+  const $ = id => document.getElementById(id);
+  const storyBox = $("story"), readingBox = $("reading"), legendBox = $("legend"), diagram = $("diagram"), search = $("search"),
+    questionsBox = $("questions"), termsBox = $("terms"), detail = $("detail"), status = $("status"), uncertain = $("uncertain"),
+    guide = $("guide"), guideBar = $("guideBar"), guidePeek = $("guidePeek"), messagesBox = $("messages"), ask = $("ask"),
+    askText = $("askText"), aboutBox = $("about"), record = $("record");
+  const saved = (api && api.getState && api.getState()) || {};
+  let selected = null, ancestors = [], aboutOn = true, pending = false, live = "", liveTime = "", query = "";
+
+  const stateNames = {done: "Done", in_progress: "In progress", not_started: "Not started", unknown: "Unknown"};
+  const kindNames = {code: "Code", experiment: "Experiment", status: "Status"};
+  const stepsTitle = {code: "How it works", experiment: "The study", status: "Where it stands"};
+  const stateOf = node => stateNames[node && node.state] ? node.state : "unknown";
+
+  function el(tag, text, cls) {
+    const node = document.createElement(tag);
+    if (text !== undefined && text !== null) node.textContent = text;
+    if (cls) node.className = cls;
+    return node;
+  }
+  function persist() { if (api && api.setState) api.setState({selected: selected && selected.id, guideOpen: guide.classList.contains("open")}); }
+  function find(id, nodes = map.capabilities, trail = []) {
+    for (const node of nodes || []) {
+      if (node.id === id) return {node, trail};
+      const child = find(id, node.children || [], trail.concat(node));
+      if (child) return child;
+    }
+    return null;
+  }
+  function allNodes(nodes = map.capabilities) { return (nodes || []).flatMap(node => [node].concat(allNodes(node.children || []))); }
+  function minutes(ms) {
+    if (!ms) return "";
+    return ms < 60000 ? "under a minute" : "about " + Math.round(ms / 60000) + " min";
+  }
+  const progress = () => talk.progress || {started: [], covered: []};
+  const covered = id => (progress().covered || []).includes(id);
+  const started = id => (progress().started || []).includes(id);
+
+  // ---------- words used here: hover text wherever a term appears ----------
+  const terms = (map.terms || []).filter(t => t.term && t.meaning).sort((a, b) => b.term.length - a.term.length);
+  // Exact case, whole words, and never inside a file path ("radial" in data/radial/split.json is not RADIal).
+  const termPattern = terms.length ? new RegExp("(?<![\\w/.-])(" + terms.map(t => t.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\w/]|\\.\\w)", "g") : null;
+  function wrapTerms(container) {
+    if (!termPattern || !container) return;
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {acceptNode: node =>
+      node.parentElement.closest(".term, button, textarea, input, a, code, summary, dt") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT});
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      const text = node.nodeValue;
+      termPattern.lastIndex = 0;
+      if (!termPattern.test(text)) continue;
+      termPattern.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0, match;
+      while ((match = termPattern.exec(text))) {
+        if (match.index > last) frag.append(text.slice(last, match.index));
+        const entry = terms.find(t => t.term === match[1]);
+        const span = el("span", match[1], "term");
+        span.title = entry ? entry.meaning : "";
+        span.tabIndex = 0;
+        frag.append(span);
+        last = match.index + match[1].length;
+      }
+      if (last < text.length) frag.append(text.slice(last));
+      node.replaceWith(frag);
+    }
+  }
+
+  // ---------- top: the story, and what was read ----------
+  function renderStory() {
+    storyBox.replaceChildren();
+    if (map.story) {
+      [["Asks", map.story.asks], ["Done so far", map.story.done], ["Next", map.story.next]].forEach(([label, text]) => {
+        const line = el("div", undefined, "line");
+        line.append(el("span", label, "label"), el("span", text));
+        storyBox.append(line);
+      });
+    } else storyBox.append(el("p", map.summary || ""));
+    wrapTerms(storyBox);
+  }
+  function renderReading() {
+    readingBox.replaceChildren();
+    const r = map.reading;
+    if (!r || !r.total) return;
+    if (r.method === "all" && !(r.unread || []).length) { readingBox.append(el("span", "Every file was read before this map was built (" + r.total + " files). Docs were checked against the code.", "ok")); return; }
+    const box = el("details");
+    const label = r.method === "all" ? r.read + " of " + r.total + " files were read before this map was built." : "While building this map, the agent read " + r.read + " of " + r.total + " code files.";
+    box.append(el("summary", label + ((r.unread || []).length ? " See which were not." : "")));
+    if ((r.unread || []).length) { const list = el("ul"); r.unread.forEach(file => list.append(el("li", file))); box.append(list); }
+    readingBox.append(box);
+  }
+
+  // ---------- the project at a glance ----------
+  function renderLegend() {
+    legendBox.replaceChildren();
+    for (const key of ["done", "in_progress", "not_started", "unknown"]) {
+      const item = el("span"), dot = el("i");
+      item.dataset.state = key;
+      item.append(dot, stateNames[key]);
+      legendBox.append(item);
+    }
+    legendBox.append(el("span", "A green number means you have been through it."));
+  }
+  function nextToRead() { return (map.capabilities || []).find(node => !covered(node.id)); }
+  function matches(node) {
+    if (!query) return true;
+    return (node.name + " " + node.purpose).toLowerCase().includes(query) || (node.children || []).some(matches);
+  }
+  function box(node, number) {
+    const b = el("button", undefined, "box");
+    b.dataset.id = node.id;
+    b.dataset.state = stateOf(node);
+    b.setAttribute("aria-current", String(!!selected && (selected.id === node.id || ancestors.some(a => a.id === node.id))));
+    if (covered(node.id)) b.classList.add("covered");
+    if (!matches(node)) b.classList.add("dim");
+    const num = el("span", covered(node.id) ? "✓" : String(number), "num");
+    num.title = covered(node.id) ? "You have been through this" : "Read this " + (number === 1 ? "first" : "as number " + number);
+    b.append(num, el("span", node.name, "name"), el("span", stateNames[stateOf(node)], "state"));
+    const next = nextToRead();
+    if (next && next.id === node.id) b.append(el("span", covered(node.id) ? "" : (progress().covered || []).length ? "Next" : "Start here", "start"));
+    b.title = node.purpose || "";
+    b.addEventListener("click", () => { select(node.id); scrollToDetail(); });
+    return b;
+  }
+  function renderDiagram() {
+    diagram.replaceChildren();
+    const list = map.capabilities || [];
+    const firstFlow = list.findIndex(node => node.role !== "side");
+    const rows = {above: [], flow: [], below: []};
+    list.forEach((node, i) => {
+      const where = node.role === "side" ? (firstFlow === -1 || i < firstFlow ? "above" : "below") : "flow";
+      rows[where].push([node, i + 1]);
+    });
+    for (const where of ["above", "flow", "below"]) {
+      if (!rows[where].length) continue;
+      const row = el("div", undefined, "row" + (where === "flow" ? "" : " side"));
+      rows[where].forEach(([node, n], k) => {
+        if (where === "flow" && k > 0) row.append(el("span", "→", "arrow"));
+        row.append(box(node, n));
+      });
+      diagram.append(row);
+    }
+  }
+
+  // ---------- open questions, words, technical notes ----------
+  function renderQuestions() {
+    const list = map.openQuestions || [];
+    questionsBox.hidden = !list.length;
+    questionsBox.replaceChildren();
+    if (!list.length) return;
+    questionsBox.append(el("h2", "Open questions"), el("p", "The files could not settle these. If you know, tell the guide.", "note"));
+    const ul = el("ul");
+    list.forEach(q => {
+      const li = el("li", q);
+      const answer = el("button", "Answer in the chat", "link");
+      answer.addEventListener("click", () => { askText.value = "About \"" + q + "\": "; openGuide(); askText.focus(); });
+      li.append(answer);
+      ul.append(li);
+    });
+    questionsBox.append(ul);
+    wrapTerms(ul);
+  }
+  function renderTerms() {
+    termsBox.hidden = !terms.length;
+    termsBox.replaceChildren();
+    if (!terms.length) return;
+    const summary = el("summary", "Words used here ");
+    summary.append(el("span", (map.terms || []).map(t => t.term).join(", ")));
+    const dl = el("dl");
+    (map.terms || []).forEach(t => { dl.append(el("dt", t.term), el("dd", t.meaning)); });
+    termsBox.append(summary, dl);
+  }
+  function renderUncertain() {
+    uncertain.replaceChildren();
+    const list = map.uncertainties || [];
+    if (!list.length) return;
+    const box = el("details");
+    box.append(el("summary", "Technical notes from the map (" + list.length + ")"));
+    const ul = el("ul");
+    list.forEach(item => ul.append(el("li", item)));
+    box.append(ul);
+    uncertain.append(box);
+  }
+
+  // ---------- the selected subject ----------
+  function select(id) {
+    const found = find(id);
+    if (!found) return;
+    selected = found.node; ancestors = found.trail; aboutOn = true;
+    persist(); renderDiagram(); renderDetail(); renderAbout();
+  }
+  function scrollToDetail() {
+    const top = detail.getBoundingClientRect().top;
+    if (top > window.innerHeight * 0.6 || top < 0) detail.scrollIntoView({behavior: "smooth", block: "start"});
+  }
+  function actionButton(label, time, cls, onClick) {
+    const b = el("button", label, cls);
+    if (time) b.append(el("small", "· " + time));
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function renderDetail() {
+    const node = selected;
+    detail.replaceChildren();
+    if (!node) return;
+    const crumb = el("div", undefined, "crumb");
+    ancestors.forEach(parent => {
+      const back = el("button", parent.name);
+      back.addEventListener("click", () => select(parent.id));
+      crumb.append(back, el("span", "›"));
+    });
+    if (ancestors.length) crumb.append(el("span", node.name));
+    const tags = el("div", undefined, "tags");
+    const statePill = el("span", stateNames[stateOf(node)], "pill state");
+    statePill.dataset.state = stateOf(node);
+    tags.append(statePill, el("span", kindNames[node.kind] || "Code", "pill kind"));
+    detail.append(crumb, tags, el("h2", node.name), el("p", node.purpose, "lead"));
+
+    // the user's own progress on this subject
+    const mine = el("div", undefined, "mine");
+    const topIndex = (map.capabilities || []).findIndex(item => item.id === node.id);
+    if (topIndex >= 0) mine.append(el("span", "Number " + (topIndex + 1) + " of " + map.capabilities.length + " in the reading order."));
+    if (started(node.id)) mine.append(el("span", "You opened its guide."));
+    const done = el("button", covered(node.id) ? "✓ I've got this" : "I've got this", "toggle");
+    done.setAttribute("aria-pressed", String(covered(node.id)));
+    done.title = covered(node.id) ? "Mark as not done yet" : "Mark this subject as understood";
+    done.addEventListener("click", () => {
+      const now = !covered(node.id);
+      const p = progress();
+      p.covered = now ? [...new Set([...(p.covered || []), node.id])] : (p.covered || []).filter(id => id !== node.id);
+      talk.progress = p;
+      api.postMessage({type: "markCovered", id: node.id, covered: now});
+      renderDiagram(); renderDetail();
+    });
+    mine.append(done);
+    detail.append(mine);
+
+    // actions, named by what you get, with the usual time
+    const times = talk.estimates || {};
+    const actions = el("div", undefined, "actions");
+    const hasGuide = (talk.notebooks || []).includes(node.id);
+    const write = () => { status.textContent = "Writing the guide for " + node.name + "…"; api.postMessage({type: "analyzeCapability", id: node.id}); };
+    if (hasGuide) {
+      actions.append(actionButton("Open its guide", "", "action", () => api.postMessage({type: "openGuide", id: node.id})));
+      actions.append(actionButton("Write a fresh guide", minutes(times.guide || times.detail), "action secondary", write));
+    } else actions.append(actionButton("Guide me through this", minutes(times.guide || times.detail), "action", write));
+    if (!node.refined) actions.append(actionButton("Split into parts", minutes(times.branch), "action secondary", () => {
+      status.textContent = "Finding the parts of " + node.name + "…";
+      api.postMessage({type: "expandCapability", id: node.id});
+    }));
+    detail.append(actions);
+
+    // its parts, if it was split
+    if ((node.children || []).length) {
+      detail.append(el("h3", "Its parts"));
+      const parts = el("div", undefined, "parts");
+      node.children.forEach(child => {
+        const b = el("button", undefined, "box");
+        b.dataset.id = child.id;
+        b.dataset.state = stateOf(child);
+        if (!matches(child)) b.classList.add("dim");
+        b.append(el("span", child.name, "name"), el("span", stateNames[stateOf(child)], "state"), el("p", child.purpose));
+        b.addEventListener("click", () => select(child.id));
+        parts.append(b);
+      });
+      detail.append(parts);
+    }
+
+    // its steps, with where each stands
+    if ((node.flow || []).length) {
+      detail.append(el("h3", stepsTitle[node.kind] || stepsTitle.code));
+      const ol = el("ol", undefined, "flow");
+      node.flow.forEach((step, i) => {
+        const li = el("li", undefined, "stage");
+        li.dataset.n = String(i + 1);
+        li.dataset.state = stateOf(step);
+        li.append(el("strong", step.label));
+        if (step.state && step.state !== "unknown" || node.kind === "status") li.append(el("span", stateNames[stateOf(step)], "state"));
+        li.append(el("p", step.description));
+        ol.append(li);
+      });
+      detail.append(ol);
+    }
+
+    // how it connects
+    const related = (node.related || []).map(id => find(id)).filter(Boolean);
+    if (related.length) {
+      const row = el("div", undefined, "related");
+      row.append(el("span", "Connected to"));
+      related.forEach(({node: other}) => {
+        const chip = el("button", other.name, "chip");
+        chip.addEventListener("click", () => select(other.id));
+        row.append(chip);
+      });
+      detail.append(row);
+    }
+
+    // its files, out of the way until wanted
+    if ((node.sources || []).length) {
+      const files = el("details", undefined, "files");
+      files.append(el("summary", "Files behind this (" + node.sources.length + ")"));
+      const list = el("div", undefined, "list");
+      node.sources.forEach(item => { const a = el("a", item.path); a.href = "../" + item.path; a.title = item.reason || item.path; list.append(a); });
+      files.append(list);
+      detail.append(files);
+    }
+    if ((node.refinementNotes || []).length) detail.append(el("p", "Not settled: " + node.refinementNotes.join(" · "), "note"));
+    wrapTerms(detail);
+  }
+
+  // ---------- the guide ----------
+  function openGuide() { guide.classList.add("open"); persist(); }
+  guideBar.addEventListener("click", () => { guide.classList.toggle("open"); persist(); });
+  function paragraphs(text, parent) {
+    const lines = String(text || "").split("\n");
+    let para = [], list = null;
+    const flush = () => { if (para.length) { parent.append(el("p", para.join(" "))); para = []; } };
+    for (const line of lines) {
+      if (/^\s*[-*]\s+/.test(line)) { flush(); if (!list) { list = el("ul"); parent.append(list); } list.append(el("li", line.replace(/^\s*[-*]\s+/, ""))); }
+      else if (!line.trim()) { flush(); list = null; }
+      else { list = null; para.push(line.trim()); flush(); } // agents separate paragraphs with single line breaks
+    }
+    flush();
+  }
+  function describeChange(op) {
+    const name = id => { const found = find(id); return found ? found.node.name : id; };
+    switch (op.op) {
+      case "rename": return "Rename " + name(op.id) + " to " + op.name;
+      case "describe": return "Reword " + name(op.id);
+      case "merge": return "Merge " + (op.ids || []).map(name).join(" and ") + " into " + op.name;
+      case "split": return "Split " + name(op.id) + " into " + (op.into || []).map(x => x.name).join(", ");
+      case "add": return "Add " + op.name;
+      case "remove": return "Remove " + name(op.id);
+      case "move": return "Move " + name(op.id);
+      case "mark": return "Mark " + name(op.id) + " as " + (stateNames[op.state] || op.state).toLowerCase();
+      default: return op.op;
+    }
+  }
+  function renderMessages() {
+    messagesBox.replaceChildren();
+    const list = talk.conversation || [];
+    const lastAgent = [...list].reverse().find(m => m.role === "agent");
+    guidePeek.textContent = pending ? (live || "Working…") : lastAgent ? lastAgent.text.split("\n")[0] : "Ask anything about the project";
+    if (!list.length && !pending) {
+      const start = el("div", undefined, "start-chat");
+      start.append(el("p", "Your guide can explain this project in simple terms, answer questions, and reshape the subjects with you."));
+      const go = el("button", "Start", "action");
+      go.addEventListener("click", () => { pending = true; live = "Starting…"; renderMessages(); api.postMessage({type: "chatStart"}); });
+      start.append(go);
+      messagesBox.append(start);
+      return;
+    }
+    list.forEach((m, mi) => {
+      const bubble = el("div", undefined, "msg " + (m.role === "user" ? "user" : "agent") + (m.status === "error" ? " error" : ""));
+      paragraphs(m.text, bubble);
+      if ((m.applied || []).length) bubble.append(el("div", "Changed the map: " + m.applied.map(a => a.reason || a.op).join(" · "), "changed"));
+      (m.suggested || []).forEach((op, oi) => {
+        const card = el("div", undefined, "suggest");
+        const refs = [op.id].concat(op.ids || [], op.op === "move" && op.after ? [op.after] : []).filter(Boolean);
+        const outdated = op.op !== "add" && refs.some(id => !find(id));
+        card.append(el("strong", outdated ? "An earlier suggestion" : describeChange(op)));
+        if (op.reason) card.append(el("p", op.reason, "why"));
+        if (op.status === "pending" && outdated) card.append(el("div", "Outdated: the subject it refers to has changed since.", "done"));
+        else if (op.status === "pending") {
+          const yes = el("button", "Apply", "action"), no = el("button", "Skip", "action secondary");
+          yes.addEventListener("click", () => { yes.disabled = no.disabled = true; api.postMessage({type: "decideSuggestion", message: mi, index: oi, apply: true}); });
+          no.addEventListener("click", () => { yes.disabled = no.disabled = true; api.postMessage({type: "decideSuggestion", message: mi, index: oi, apply: false}); });
+          card.append(yes, no);
+        } else card.append(el("div", op.status === "applied" ? "Applied." : op.status === "skipped" ? "Skipped." : "Not applied: " + String(op.status).replace(/^not applied: /, ""), "done"));
+        bubble.append(card);
+      });
+      if (m.status === "error" && mi === list.length - 1) {
+        const retry = el("button", "Try again", "action secondary");
+        retry.style.marginTop = "10px";
+        retry.addEventListener("click", () => send(""));
+        bubble.append(retry);
+      }
+      messagesBox.append(bubble);
+      if (m.role !== "user") wrapTerms(bubble);
+    });
+    if (pending) {
+      const bubble = el("div", undefined, "msg agent pending"), row = el("div", undefined, "live"), dots = el("span", undefined, "dots");
+      dots.append(el("i"), el("i"), el("i"));
+      row.append(dots, el("b", live || "Thinking…"));
+      if (liveTime) row.append(document.createTextNode(" · " + liveTime));
+      bubble.append(row);
+      messagesBox.append(bubble);
+    }
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+  function renderAbout() {
+    aboutBox.replaceChildren();
+    if (!selected || !aboutOn) return;
+    aboutBox.append(el("span", "About:"));
+    const chip = el("button", selected.name + " ✕");
+    chip.title = "Ask about the whole project instead";
+    chip.addEventListener("click", () => { aboutOn = false; renderAbout(); });
+    aboutBox.append(chip);
+  }
+  function renderRecord() {
+    const l = talk.learner || {};
+    const count = ["knows", "cares", "open", "told"].reduce((n, key) => n + (l[key] || []).length, 0);
+    const wasOpen = record.open;
+    record.replaceChildren();
+    const summary = el("summary", "What ReGain thinks you know ");
+    summary.append(el("span", count ? "(" + count + ")" : "(nothing yet)"));
+    record.append(summary);
+    [["You know", l.knows], ["You care about", l.cares], ["Still open for you", l.open], ["You told ReGain", l.told]].forEach(([label, items]) => {
+      if (!(items || []).length && label === "You told ReGain") return;
+      record.append(el("h3", label));
+      if ((items || []).length) { const ul = el("ul"); items.forEach(item => ul.append(el("li", item))); record.append(ul); }
+      else record.append(el("p", "Nothing yet.", "none"));
+    });
+    record.append(el("p", "Wrong? Say so in the chat and it will be corrected.", "note"));
+    record.open = wasOpen;
+  }
+  function send(text) {
+    if (pending) return;
+    pending = true; live = "Reading your message…"; liveTime = "";
+    if (text) talk.conversation = (talk.conversation || []).concat([{role: "user", text}]);
+    renderMessages();
+    api.postMessage({type: "chat", text, selectedId: selected && aboutOn ? selected.id : ""});
+  }
+  ask.addEventListener("submit", e => { e.preventDefault(); const text = askText.value.trim(); if (!text) return; askText.value = ""; send(text); });
+  askText.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask.requestSubmit(); } });
+
+  // ---------- updates from the extension ----------
+  window.addEventListener("message", event => {
+    const m = event.data || {};
+    if (m.type === "chatProgress") { live = m.text; liveTime = m.time || ""; if (pending) renderMessages(); return; }
+    if (m.type !== "state") return;
+    for (const key of ["conversation", "learner", "progress", "notebooks", "estimates"]) if (m[key]) talk[key] = m[key];
+    pending = !!m.pending;
+    if (!pending) { live = ""; liveTime = ""; status.textContent = ""; }
+    if (m.map) {
+      for (const key of ["capabilities", "summary", "story", "reading", "openQuestions", "terms"]) if (m.map[key] !== undefined) map[key] = m.map[key];
+      const keep = selected && find(selected.id);
+      const pick = keep || {node: map.capabilities[0], trail: []};
+      if (pick && pick.node) { selected = pick.node; ancestors = pick.trail; }
+      renderStory(); renderQuestions();
+    }
+    renderDiagram(); renderDetail(); renderAbout(); renderMessages(); renderRecord();
+    (m.glow || []).forEach(id => {
+      const node = diagram.querySelector('.box[data-id="' + id + '"]');
+      if (node) { node.classList.add("glow"); setTimeout(() => node.classList.remove("glow"), 2700); }
+    });
   });
-}
-function drawFocus(){
-  const f = document.getElementById("focus");
-  const b = B.find(x=>x.id===selected);
-  if(!b){ f.innerHTML = `<div class="hint">Click one of the 7 blocks. You'll see what it does and the files where it lives; click a file to open it.</div>`; return; }
-  const files = b.files.length
-    ? b.files.map(([label,p,l])=>`<a href="../${p}#L${l}" title="${p}:${l}">${label}</a>`).join("")
-    : `<span>no code yet</span>`;
-  f.innerHTML = `<div class="nm">${b.n} · ${b.t}</div><div class="d">${b.d}</div><div class="files">${files}</div>`;
-}
-function select(id){ selected = selected===id ? null : id; drawBlocks(); drawFocus(); }
-drawBlocks(); drawFocus();
-</script>
-</body>
-</html>
+
+  // ---------- an unfinished analysis, file coverage ----------
+  if (map.analysis && map.analysis.status !== "complete") {
+    const alert = el("aside");
+    alert.style.cssText = "margin:20px 0;padding:13px 16px;border:1px solid #e6aa65;border-radius:10px;background:var(--panel)";
+    alert.append(el("strong", "Analysis " + map.analysis.status.replace("_", " ")), el("p", map.analysis.message || "The map is still being checked."));
+    if (map.analysis.status !== "in_progress") {
+      const retry = el("button", "Resume analysis", "action");
+      retry.addEventListener("click", () => { retry.disabled = true; retry.textContent = "Resuming…"; api.postMessage({type: "retryAnalysis"}); });
+      alert.append(retry);
+    }
+    if ((map.analysis.unplaced || []).length) {
+      const list = el("ul");
+      map.analysis.unplaced.forEach(item => list.append(el("li", item.name + ": " + (item.evidencePaths || []).join(", "))));
+      alert.append(list);
+    }
+    document.querySelector(".glance").before(alert);
+  }
+  if (map.coverage) {
+    const box = el("aside", undefined, "note");
+    box.style.cssText = "margin:16px 0";
+    box.textContent = (map.analysis && map.analysis.status === "complete" ? "File coverage complete" : "File coverage in progress") + " · " + map.coverage.mapped + " mapped · " + map.coverage.supporting + " supporting · " + map.coverage.excluded + " excluded";
+    document.querySelector(".glance").before(box);
+  }
+
+  // ---------- first draw ----------
+  // Search only helps when there are many subjects.
+  search.hidden = allNodes().length <= 12;
+  search.addEventListener("input", () => { query = search.value.trim().toLowerCase(); renderDiagram(); renderDetail(); });
+  if (saved.guideOpen) guide.classList.add("open");
+  renderStory(); renderReading(); renderLegend(); renderQuestions(); renderTerms(); renderUncertain();
+  const initial = find(saved.selected) || (nextToRead() ? find(nextToRead().id) : null) || (map.capabilities[0] ? {node: map.capabilities[0], trail: []} : null);
+  if (initial) { selected = initial.node; ancestors = initial.trail; }
+  renderDiagram(); renderDetail(); renderAbout(); renderMessages(); renderRecord();
+});
+</script></body></html>

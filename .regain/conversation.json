@@ -1,0 +1,21 @@
+[
+  {
+    "role": "agent",
+    "text": "radSeq exists to give radar detectors more training examples when measured recordings are scarce. It turns recordings into labelled sequences and builds simulated scenes, then trains a generator to produce sequences with targets at requested positions. The simulated detector experiment shows a benefit, but its copying warning makes the measured-data comparison the next decisive test. The six subjects separate the research question, measured inputs, simulation, generation, detector evidence and earlier work, so start with Test measured transfer to reconnect the working pieces to the remaining question. Ask anything, or tell me what you would merge, split, add or drop.",
+    "at": "2026-10-03T07:40:43.061Z",
+    "applied": [],
+    "suggested": []
+  },
+  {
+    "role": "user",
+    "text": "im looking at the roadmap you gave here, where will the model be explained?",
+    "at": "2026-10-03T08:05:10.515Z"
+  },
+  {
+    "role": "agent",
+    "text": "The main model is explained in Generate requested sequences: how radar maps and requested target positions enter the model, how its transformer learns to remove noise, and how sampling produces a complete sequence. That subject also covers the move from the completed 64×64 experiments to the current RADIal-sized scenes. The detector model is covered separately in Test detector augmentation, where we explain how generated sequences affect detector training.",
+    "at": "2026-10-03T08:05:26.305Z",
+    "applied": [],
+    "suggested": []
+  }
+]

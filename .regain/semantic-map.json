@@ -1,0 +1,588 @@
+{
+  "generatedByReGain": true,
+  "version": 1,
+  "projectName": "radSeq",
+  "summary": "radSeq learns to generate radar sequences for training detectors with limited measured data. Generation and detector augmentation work on simulated 64×64 maps, although the small-data generator triggers a copying warning. The current study moves to RADIal-sized scenes, with simulator fitting and recipe checks saved but measured-data transfer still unproven.",
+  "story": {
+    "asks": "Can a generator adapted to scarce measured radar data provide better detector training examples than a simulator?",
+    "done": "Simulated-sequence augmentation raised class detection scores from 0.665 to 0.705 across three seeds, but the generator triggered the copying rule.",
+    "next": "Confirm scene pretraining completion, adapt the generator to RADIal recordings, and compare detector gains against simulator augmentation."
+  },
+  "capabilities": [
+    {
+      "id": "research-status",
+      "name": "Test measured transfer",
+      "purpose": "The current question is whether adapting a pretrained generator to measured radar compensates for simulator mismatch. Saved results establish a synthetic rehearsal, while the RADIal detector comparison remains open.",
+      "kind": "status",
+      "role": "side",
+      "state": "in_progress",
+      "runtimeStatus": "research",
+      "sources": [
+        {
+          "path": "docs/notes/2026-09-21-radial-sim2real-design.md",
+          "reason": "Defines the measured-transfer question and proposed comparison arms."
+        },
+        {
+          "path": "README.md",
+          "reason": "Identifies the scene pipeline as current work."
+        },
+        {
+          "path": "experiments/step2_detector/results/detector_class_augmentation.json",
+          "reason": "The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain."
+        },
+        {
+          "path": "experiments/step2_detector/results/memorization_n2000.json",
+          "reason": "The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain."
+        },
+        {
+          "path": "configs/pretrain_engineer.yaml",
+          "reason": "The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps."
+        },
+        {
+          "path": "configs/pretrain_fitted.yaml",
+          "reason": "The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps."
+        }
+      ],
+      "flow": [
+        {
+          "id": "research-rehearsal",
+          "label": "Establish the rehearsal",
+          "description": "The simulated-data study supports generation and class-detector augmentation. Its copying warning limits the interpretation of the gain.",
+          "state": "done",
+          "sources": [
+            "experiments/step2_detector/results/detector_class_augmentation.json",
+            "experiments/step2_detector/results/memorization_n2000.json"
+          ]
+        },
+        {
+          "id": "research-current",
+          "label": "Move to measured radar",
+          "description": "The current implementation builds two scene-simulator variants and configures conditional generator pretraining on eight-frame, 512×256 maps.",
+          "state": "in_progress",
+          "sources": [
+            "configs/pretrain_engineer.yaml",
+            "configs/pretrain_fitted.yaml"
+          ]
+        },
+        {
+          "id": "research-transfer",
+          "label": "Compare detector gains",
+          "description": "The design proposes comparing real-only training, simulator augmentation and augmentation from a generator adapted to the same real subset. No measured-transfer result is saved.",
+          "state": "not_started",
+          "sources": [
+            "docs/notes/2026-09-21-radial-sim2real-design.md"
+          ]
+        }
+      ],
+      "related": [
+        "real-inputs",
+        "scene-sources",
+        "sequence-generation",
+        "detector-rehearsal"
+      ]
+    },
+    {
+      "id": "real-inputs",
+      "name": "Read measured radar",
+      "purpose": "Turn RADIal recordings into power maps and consecutive labelled sequences. Whole recordings stay in separate splits so neighbouring frames cannot leak between training and evaluation.",
+      "kind": "code",
+      "role": "flow",
+      "state": "done",
+      "runtimeStatus": "runtime",
+      "sources": [
+        {
+          "path": "src/radial.py",
+          "reason": "Implements labels, recording splits, sequence windows and power conversion."
+        },
+        {
+          "path": "data/radial/split.json",
+          "reason": "Pins recording assignments."
+        },
+        {
+          "path": "experiments/radial_facts/radial_calibrate.py",
+          "reason": "Checks radar grid positions against labels."
+        },
+        {
+          "path": "experiments/radial_facts/radial_stats.py",
+          "reason": "Measures target and background properties."
+        },
+        {
+          "path": "tests/test_radial.py",
+          "reason": "Checks recording separation and consecutive windows."
+        },
+        {
+          "path": "regain/01_real_data.ipynb",
+          "reason": "Explains measured inputs through live source and executable examples."
+        },
+        {
+          "path": "regain/view.py",
+          "reason": "Displays the live source used by the teaching notebook."
+        }
+      ],
+      "flow": [
+        {
+          "id": "real-labels",
+          "label": "Read valid vehicle labels",
+          "description": "Discard labels with negative range. Convert range to bins using 0.2 metres per bin and treat radar_D_mps as a Doppler bin index.",
+          "state": "done",
+          "sources": [
+            "src/radial.py",
+            "experiments/radial_facts/radial_calibrate.py"
+          ]
+        },
+        {
+          "id": "real-power",
+          "label": "Build power maps",
+          "description": "Sum squared signal magnitudes over receive channels and convert to dB. Each map contains 512 range bins and 256 Doppler bins.",
+          "state": "done",
+          "sources": [
+            "src/radial.py"
+          ]
+        },
+        {
+          "id": "real-windows",
+          "label": "Keep recordings separate",
+          "description": "Use the pinned recording split and extract consecutive labelled frame windows. The default window contains 16 frames with no overlap.",
+          "state": "done",
+          "sources": [
+            "src/radial.py",
+            "data/radial/split.json",
+            "tests/test_radial.py"
+          ]
+        }
+      ],
+      "related": [
+        "scene-sources"
+      ]
+    },
+    {
+      "id": "scene-sources",
+      "name": "Build radar scenes",
+      "purpose": "Create labelled RADIal-sized training scenes from moving vehicles, roads, receiver effects and noise. Keep the engineer settings separate from settings fitted only to real training recordings.",
+      "kind": "code",
+      "role": "flow",
+      "state": "done",
+      "runtimeStatus": "runtime",
+      "sources": [
+        {
+          "path": "src/scene_sim.py",
+          "reason": "Renders scene sequences and defines engineer and fitted variants."
+        },
+        {
+          "path": "src/radar_physics.py",
+          "reason": "Provides radar specifications and signal-strength calculations."
+        },
+        {
+          "path": "scripts/fit_scene_simulator.py",
+          "reason": "Fits uncertain scene settings using training recordings."
+        },
+        {
+          "path": "configs/scene_fitted.json",
+          "reason": "Stores the selected fitted settings."
+        },
+        {
+          "path": "samples/scene_sim_fit.json",
+          "reason": "Records engineer and fitted comparisons with measured statistics."
+        },
+        {
+          "path": "scripts/build_scene_cache.py",
+          "reason": "Writes resumable map caches, labels and normalization statistics."
+        },
+        {
+          "path": "src/scene_data.py",
+          "reason": "Preserves vehicle identity and loads maps on demand."
+        },
+        {
+          "path": "scripts/run_scene_caches.sh",
+          "reason": "Builds both simulator variants."
+        }
+      ],
+      "flow": [
+        {
+          "id": "scene-render",
+          "label": "Render moving scenes",
+          "description": "Generate maps with road structures, moving vehicles, transmitter copies, receiver filtering and noise. Return vehicle positions, ego speed and road type.",
+          "state": "done",
+          "sources": [
+            "src/scene_sim.py",
+            "src/radar_physics.py"
+          ]
+        },
+        {
+          "id": "scene-fit",
+          "label": "Fit uncertain settings",
+          "description": "Fit scene and receiver settings against six training-recording statistics. Fitted vehicle prominence is 20.0 dB above background, compared with 24.0 dB measured and 14.8 dB from engineer settings.",
+          "state": "done",
+          "sources": [
+            "scripts/fit_scene_simulator.py",
+            "configs/scene_fitted.json",
+            "samples/scene_sim_fit.json"
+          ]
+        },
+        {
+          "id": "scene-cache",
+          "label": "Write labelled caches",
+          "description": "The builder defaults to 6,000 training and 300 validation sequences per variant, each eight frames long. It writes resumable float16 maps, vehicle labels and training normalization statistics.",
+          "state": "done",
+          "sources": [
+            "scripts/build_scene_cache.py",
+            "scripts/run_scene_caches.sh"
+          ]
+        },
+        {
+          "id": "scene-load",
+          "label": "Load training batches",
+          "description": "Read maps on demand and normalize with training statistics. Labels retain vehicle identity and frame presence in eight fixed vehicle slots.",
+          "state": "done",
+          "sources": [
+            "src/scene_data.py"
+          ]
+        }
+      ],
+      "related": [
+        "sequence-generation"
+      ]
+    },
+    {
+      "id": "sequence-generation",
+      "name": "Generate requested sequences",
+      "purpose": "Train a DiT, a transformer that removes noise from complete radar sequences, and sample maps at requested target positions. The same training loop supports the completed 64×64 study and current scene pretraining.",
+      "kind": "code",
+      "role": "flow",
+      "state": "in_progress",
+      "runtimeStatus": "runtime",
+      "sources": [
+        {
+          "path": "src/train.py",
+          "reason": "Selects datasets, trains models and saves resumable checkpoints."
+        },
+        {
+          "path": "src/dit.py",
+          "reason": "Processes map patches with spatial and temporal attention."
+        },
+        {
+          "path": "src/diffusion.py",
+          "reason": "Defines prediction targets, noise schedules and sampling."
+        },
+        {
+          "path": "src/trajectory_condition.py",
+          "reason": "Renders class-aware target maps and vehicle-presence maps."
+        },
+        {
+          "path": "src/sample.py",
+          "reason": "Loads checkpoints and generates label-conditioned sequences."
+        },
+        {
+          "path": "samples/scene_dit_smoke.json",
+          "reason": "Records completed scene training comparisons."
+        },
+        {
+          "path": "configs/pretrain_engineer.yaml",
+          "reason": "Defines the current scene pretraining recipe."
+        },
+        {
+          "path": "scripts/run_pretrain.sh",
+          "reason": "Runs engineer and fitted pretraining sequentially with resume support."
+        },
+        {
+          "path": "configs/pretrain_fitted.yaml",
+          "reason": "The wrapper trains engineer then fitted scenes, resumes last.pt and skips variants marked STAGE_DONE. Both configurations request 80 epochs, but completion is not established by available saved results."
+        },
+        {
+          "path": "experiments/dit_64/results/cond_traj_scores.json",
+          "reason": "Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules."
+        },
+        {
+          "path": "experiments/dit_64/results/e3_long_scores.json",
+          "reason": "Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules."
+        }
+      ],
+      "flow": [
+        {
+          "id": "generation-conditions",
+          "label": "Draw requested targets",
+          "description": "Small-grid conditions contain three target-class channels and a presence channel. Scene conditions contain vehicle-position and presence channels, with Doppler positions wrapping around the grid.",
+          "state": "done",
+          "sources": [
+            "src/trajectory_condition.py"
+          ]
+        },
+        {
+          "id": "generation-train",
+          "label": "Learn sequence restoration",
+          "description": "Add noise to normalized maps and train patch predictions across space and time. The scene recipe uses v prediction, 16×16 non-overlapping patches and zero smoothness or motion penalties.",
+          "state": "done",
+          "sources": [
+            "src/train.py",
+            "src/dit.py",
+            "src/diffusion.py",
+            "configs/pretrain_engineer.yaml"
+          ]
+        },
+        {
+          "id": "generation-scene-check",
+          "label": "Choose the scene recipe",
+          "description": "After 20 epochs, schedule shift 16 generates about 50 dB intensity spread versus 42 dB with shift 4. Simulated reference maps span about 57 dB.",
+          "state": "done",
+          "sources": [
+            "samples/scene_dit_smoke.json"
+          ]
+        },
+        {
+          "id": "generation-pretrain",
+          "label": "Pretrain both variants",
+          "description": "The wrapper trains engineer then fitted scenes, resumes last.pt and skips variants marked STAGE_DONE. Both configurations request 80 epochs, but completion is not established by available saved results.",
+          "state": "unknown",
+          "sources": [
+            "scripts/run_pretrain.sh",
+            "configs/pretrain_engineer.yaml",
+            "configs/pretrain_fitted.yaml"
+          ]
+        },
+        {
+          "id": "generation-sample",
+          "label": "Sample labelled maps",
+          "description": "Conditional sampling reads grid size and diffusion settings from the checkpoint, uses requested labels and returns dB maps. The completed 64×64 model hits 97.3% of requested target positions and passes its saved quality rules.",
+          "state": "done",
+          "sources": [
+            "src/sample.py",
+            "experiments/dit_64/results/cond_traj_scores.json",
+            "experiments/dit_64/results/e3_long_scores.json"
+          ]
+        }
+      ],
+      "related": [
+        "detector-rehearsal"
+      ]
+    },
+    {
+      "id": "detector-rehearsal",
+      "name": "Test detector augmentation",
+      "purpose": "Measure whether generated sequences help a detector trained on a small simulated dataset. The class-detection experiment reports a gain, alongside evidence that the generator reproduces training examples more closely than held-out examples.",
+      "kind": "experiment",
+      "role": "flow",
+      "state": "done",
+      "runtimeStatus": "evaluation",
+      "sources": [
+        {
+          "path": "experiments/step2_detector/configs/cond_traj_n2000.yaml",
+          "reason": "Restricts generator training to 2,000 sequences."
+        },
+        {
+          "path": "scripts/gen_synthetic.py",
+          "reason": "Renders training labels repeatedly into labelled part files."
+        },
+        {
+          "path": "scripts/memorization_check.py",
+          "reason": "Defines the training-versus-held-out copying rule."
+        },
+        {
+          "path": "experiments/step2_detector/results/memorization_n2000.json",
+          "reason": "Records the positive copying warning."
+        },
+        {
+          "path": "src/detector.py",
+          "reason": "Implements position and sequence-class detectors and scoring."
+        },
+        {
+          "path": "experiments/step2_detector/detector_class_augmentation.py",
+          "reason": "Runs matched detector comparisons across three seeds."
+        },
+        {
+          "path": "experiments/step2_detector/results/detector_class_augmentation.json",
+          "reason": "Stores detector scores and the passing augmentation rule."
+        },
+        {
+          "path": "docs/notes/2026-09-17-step2-synthetic-augmentation.md",
+          "reason": "Explains the saturated position task and the class-task replacement."
+        },
+        {
+          "path": "experiments/step2_detector/results/cond_traj_n2000_scores.json",
+          "reason": "Train a conditional generator from scratch on the first 2,000 simulated sequences. Its held-out trajectory evaluation passes the saved quality rules."
+        }
+      ],
+      "flow": [
+        {
+          "id": "detector-small-generator",
+          "label": "Train with scarce examples",
+          "description": "Train a conditional generator from scratch on the first 2,000 simulated sequences. Its held-out trajectory evaluation passes the saved quality rules.",
+          "state": "done",
+          "sources": [
+            "experiments/step2_detector/configs/cond_traj_n2000.yaml",
+            "experiments/step2_detector/results/cond_traj_n2000_scores.json"
+          ]
+        },
+        {
+          "id": "detector-copying",
+          "label": "Check training-example copying",
+          "description": "Compare 128 training-label requests with 128 held-out requests. Their median map-distance ratio is 0.715, below the 0.8 threshold that flags copying.",
+          "state": "done",
+          "sources": [
+            "scripts/memorization_check.py",
+            "experiments/step2_detector/results/memorization_n2000.json"
+          ]
+        },
+        {
+          "id": "detector-render",
+          "label": "Create extra examples",
+          "description": "Render each of 2,000 training-label sequences four times with different sampling seeds. Save 8,000 generated sequences with their requested paths and classes.",
+          "state": "done",
+          "sources": [
+            "scripts/gen_synthetic.py",
+            "experiments/step2_detector/results/detector_class_augmentation.json"
+          ]
+        },
+        {
+          "id": "detector-compare",
+          "label": "Compare class detection",
+          "description": "Across three seeds, adding generated sequences raises mean class AP from 0.665 to 0.705. Training on all 20,000 simulated reference sequences scores 0.760, leaving measurable headroom.",
+          "state": "done",
+          "sources": [
+            "src/detector.py",
+            "experiments/step2_detector/detector_class_augmentation.py",
+            "experiments/step2_detector/results/detector_class_augmentation.json"
+          ]
+        }
+      ],
+      "related": [
+        "research-status"
+      ]
+    },
+    {
+      "id": "earlier-work",
+      "name": "Earlier generation studies",
+      "purpose": "Keep the route to the working generator visible without treating discarded experiments as current pipeline steps. Archive contents are indexed records of failed approaches, exploratory screens and replaced simulators.",
+      "kind": "experiment",
+      "role": "side",
+      "state": "done",
+      "runtimeStatus": "research",
+      "sources": [
+        {
+          "path": "archive/INDEX.md",
+          "reason": "Explains archived approaches and why they stopped."
+        },
+        {
+          "path": "experiments/dit_64/diag_diffusion_sanity.py",
+          "reason": "Checks diffusion mathematics independently of learned radar models."
+        },
+        {
+          "path": "experiments/dit_64/evaluate_ablations.py",
+          "reason": "Compares checkpoint and sampling variants under shared noise."
+        },
+        {
+          "path": "experiments/dit_64/results/e0_standard_scores.json",
+          "reason": "Records the repaired easy-data recipe."
+        },
+        {
+          "path": "experiments/dit_64/results/e3_full_scores.json",
+          "reason": "Records the joint-attention comparison."
+        },
+        {
+          "path": "docs/notes/2026-09-14-terminal-step-diagnosis.md",
+          "reason": "Explains the sampling diagnosis that preceded recipe changes."
+        }
+      ],
+      "flow": [
+        {
+          "id": "earlier-failure",
+          "label": "Diagnose weak generation",
+          "description": "The original generator compressed bright content. Diagnostics and controlled comparisons separated diffusion formulas, denoising errors, patch joining and sampling choices.",
+          "state": "done",
+          "sources": [
+            "archive/INDEX.md",
+            "experiments/dit_64/diag_diffusion_sanity.py",
+            "experiments/dit_64/evaluate_ablations.py"
+          ]
+        },
+        {
+          "id": "earlier-recipe",
+          "label": "Replace the training recipe",
+          "description": "The standard recipe succeeded on easy simulated sequences. Joint space-time attention was tested as an alternative, while the working path retained separate spatial and temporal attention.",
+          "state": "done",
+          "sources": [
+            "experiments/dit_64/results/e0_standard_scores.json",
+            "experiments/dit_64/results/e3_full_scores.json"
+          ]
+        },
+        {
+          "id": "earlier-archive",
+          "label": "Retire replaced approaches",
+          "description": "The archive groups original ablations, learned-motion generators, detector-error screens, a simulator-to-simulator pilot, the first RADIal simulator and notebook editing tools.",
+          "state": "done",
+          "sources": [
+            "archive/INDEX.md"
+          ]
+        }
+      ],
+      "related": [
+        "sequence-generation",
+        "scene-sources"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "term": "RADIal",
+      "meaning": "Measured driving radar dataset with vehicle labels and recording identities."
+    },
+    {
+      "term": "Range-Doppler map",
+      "meaning": "Radar power arranged by target distance and relative radial speed."
+    },
+    {
+      "term": "DiT",
+      "meaning": "Diffusion transformer that learns to remove noise from map sequences."
+    },
+    {
+      "term": "Factorized attention",
+      "meaning": "Separate attention operations connect spatial patches and corresponding patches across frames."
+    },
+    {
+      "term": "DDIM",
+      "meaning": "Sampling method that generates maps through a selected number of denoising steps."
+    },
+    {
+      "term": "EMA",
+      "meaning": "A moving average of training weights used for sampling."
+    },
+    {
+      "term": "v prediction",
+      "meaning": "Predicting a scheduled mixture of clean signal and noise during diffusion training."
+    },
+    {
+      "term": "Engineer variant",
+      "meaning": "Scene simulator using specified radar settings and assumed scenes without fitting recordings."
+    },
+    {
+      "term": "Fitted variant",
+      "meaning": "Scene simulator with uncertain settings calibrated against RADIal training recordings."
+    },
+    {
+      "term": "Class AP",
+      "meaning": "Average precision for correctly positioned and classified targets. Higher scores mean better detection."
+    }
+  ],
+  "openQuestions": [
+    "Have engineer and fitted scene pretraining both completed on the cluster?",
+    "Which real-data fine-tuning and detector comparison should follow the current scene pretraining?",
+    "Is the proposed simulator-fidelity ladder still intended, or are engineer and fitted the final comparison variants?"
+  ],
+  "uncertainties": [
+    "The transfer design still discusses 16-frame windows and a three-variant fidelity ladder. Current configurations use eight-frame scenes and two variants.",
+    "Available scene results measure simulator fitting and short training checks. They do not establish completed pretraining or measured-data detector gains.",
+    "The generic generate function and sampling command still assume 64×64 maps. The trajectory-conditioned sampling interface supports configurable scene grids.",
+    "The small-data augmentation result uses simulated reference data, not measured RADIal data. Its positive copying rule prevents interpreting the gain as independent novel examples.",
+    "Scene label packing retains eight vehicle identities and drops larger identity values. Handling measured scenes with more vehicles remains unresolved.",
+    "Earlier notes use different simulator generations and intensity-spread definitions. Their numerical gaps should not be combined with current scene statistics."
+  ],
+  "reading": {
+    "read": 270,
+    "total": 270,
+    "unread": [],
+    "method": "all"
+  },
+  "analysis": {
+    "status": "complete",
+    "message": "Initial map ready. Explore children and create notebooks when you choose."
+  }
+}

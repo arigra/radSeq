@@ -1,0 +1,640 @@
+{
+  "at": "2026-10-03T07:49:15.769Z",
+  "subject": "Test measured transfer",
+  "draft": {
+    "title": "Does measured adaptation close the gap?",
+    "verdict": "Adapting a pretrained generator to measured radar has not yet been shown to compensate for simulator mismatch. The synthetic rehearsal raised detector mean AP from 66.46% to 70.46%, but triggered a copying warning. The corrected transfer pilot completed only zero mismatch, where generated augmentation scored 48.51% against raw simulation’s 60.55%. RADIal-sized pretraining is configured and recipe checks are saved, but the measured detector comparison remains open.",
+    "terms": [
+      {
+        "term": "mean AP",
+        "meaning": "Detection precision across score thresholds, averaged over target classes. Higher is better."
+      },
+      {
+        "term": "fine-tuning",
+        "meaning": "Continuing a pretrained generator’s learning on the measured training examples."
+      },
+      {
+        "term": "seed spread",
+        "meaning": "Highest minus lowest score across runs with different random starting points."
+      },
+      {
+        "term": "EMA",
+        "meaning": "A moving average of model weights used to generate samples."
+      },
+      {
+        "term": "dynamic range",
+        "meaning": "Difference between bright and faint map values, measured here between specified percentiles."
+      },
+      {
+        "term": "schedule shift",
+        "meaning": "A setting that changes the noise levels used during diffusion training and sampling."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Define the comparison",
+        "takeaway": "The intended test asks whether fine-tuned generation stays useful when raw simulator augmentation becomes worse as simulator mismatch grows.",
+        "body": "The design compares measured training data alone, measured data plus raw simulated scenes, and measured data plus generated scenes after adaptation. Each comparison should use the same measured subset, held-out recordings and added-data budget, with three random seeds. The key evidence would be different responses to simulator quality, rather than a gain against measured data alone. The design originally listed three simulator levels, while the current scene pipeline implements engineer and fitted variants.",
+        "excerpts": [
+          {
+            "path": "docs/notes/2026-09-21-radial-sim2real-design.md",
+            "startLine": 138,
+            "endLine": 146,
+            "heading": "Specify the success pattern",
+            "notice": "Lines 142-146 define the proposed mechanism and its failure pattern. These are experimental intentions, not saved measured results."
+          },
+          {
+            "path": "src/scene_sim.py",
+            "startLine": 383,
+            "endLine": 397,
+            "heading": "Keep variants separate",
+            "notice": "Line 397 exposes two variants. Lines 391-394 load fitted settings separately, so the engineer variant does not inherit calibration from measured data."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Limit the rehearsal",
+        "takeaway": "The earlier augmentation gain establishes a working synthetic experiment, but its copying check limits what that gain proves.",
+        "body": "In the saved 64×64 experiment, the examples called real are simulator-generated reference sequences. Adding 8,000 generated sequences to 2,000 reference sequences improved mean AP by 4.00 percentage points, exceeding the 1.82-point comparison spread across three seeds. Detectors trained for 3,000 steps and were evaluated on 512 held-out sequences. A separate check made 128 requests from training labels and 128 from held-out labels. Generated maps were substantially closer to their matching training examples, so the gain cannot establish that the generator learned transferable variation.",
+        "excerpts": [
+          {
+            "path": "experiments/step2_detector/results/detector_class_augmentation.json",
+            "startLine": 118,
+            "endLine": 125,
+            "heading": "Pass the gain rule",
+            "notice": "The gain at line 122 exceeds the comparison bar at line 123. The saved helps value concerns the synthetic target-class experiment."
+          },
+          {
+            "path": "experiments/step2_detector/results/memorization_n2000.json",
+            "startLine": 2,
+            "endLine": 9,
+            "heading": "Trigger the copying warning",
+            "notice": "Line 8 gives a training-to-held-out distance ratio of 0.715. The check flags ratios below 0.8, explaining the true value at line 9."
+          },
+          {
+            "path": "scripts/memorization_check.py",
+            "startLine": 47,
+            "endLine": 60,
+            "heading": "Compare matching examples",
+            "notice": "Lines 50-51 compare generated sequences with examples carrying the same labels. Line 60 applies a distance threshold, so this is a copying warning rather than proof of exact duplication."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Read the pilot",
+        "takeaway": "The corrected simulator-to-simulator pilot saved only the zero-offset point, where raw simulation outperformed generated augmentation.",
+        "body": "The pilot planned target-brightness offsets of 0, 4, 8 and 16 dB, but the supplied result contains only 0 dB. Its reference pool has 200 simulated sequences, with 6,000 sequences allocated to generator pretraining. Both augmentation arms add 800 sequences and are tested on 400 reference sequences. Across three detector seeds, reference-only mean AP is 46.20%, raw simulation reaches 60.55%, and generated augmentation reaches 48.51%, with a 12.47-point spread for the generated arm. The archive index identifies this as the corrected point after an invalid EMA run, so the design note’s running curve is not a completed mismatch study.",
+        "excerpts": [
+          {
+            "path": "archive/fidelity_pilot_64/results/fidelity_pilot.json",
+            "startLine": 2,
+            "endLine": 16,
+            "heading": "Finish only zero mismatch",
+            "notice": "Lines 6-8 mark the 0 dB point complete. Lines 13-14 give equal augmentation counts, making pool size an unlikely explanation for the difference."
+          },
+          {
+            "path": "archive/fidelity_pilot_64/results/fidelity_pilot.json",
+            "startLine": 69,
+            "endLine": 98,
+            "heading": "Lose to raw simulation",
+            "notice": "Line 69 records raw simulation’s mean of 0.6055. Line 96 records generated augmentation’s 0.4851, and line 97 shows its larger run-to-run spread."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Prepare larger scenes",
+        "takeaway": "The current pipeline prepares eight-frame 512×256 generator pretraining, but its saved checks measure simulator resemblance rather than measured transfer.",
+        "body": "Simulator fitting uses training recordings only, and its saved statistics retain differences from measured radar. For example, fitted vehicle prominence is 20.03 dB above the surrounding range background, compared with 23.98 dB in measured maps. The generator recipe check then compares generated scenes with engineer-simulator scenes. After 20 epochs, shift 16 produces a 50.00 dB dynamic range, closer to the simulator’s 57.20 dB than shift 4’s 42.06 dB. Both pretraining configurations select shift 16 and 80 epochs, but these configuration values do not establish completed pretraining or adaptation.",
+        "excerpts": [
+          {
+            "path": "samples/scene_sim_fit.json",
+            "startLine": 2,
+            "endLine": 20,
+            "heading": "Record measured calibration",
+            "notice": "Line 2 restricts the fit to training recordings. Line 9 gives measured vehicle prominence, while line 18 shows that the current engineer simulator’s vehicles are fainter, unlike the older brightness-gap account."
+          },
+          {
+            "path": "samples/scene_dit_smoke.json",
+            "startLine": 88,
+            "endLine": 109,
+            "heading": "Recover more brightness spread",
+            "notice": "Line 97 gives the shift-16 generated dynamic range after 20 epochs. Line 104 gives its simulator reference, leaving about 7.20 dB of missing spread."
+          },
+          {
+            "path": "configs/pretrain_engineer.yaml",
+            "startLine": 5,
+            "endLine": 32,
+            "heading": "Select the pretraining recipe",
+            "notice": "Lines 8-10 choose eight frames at 512×256. Lines 24 and 32 select shift 16 and 80 epochs, which define the next training budget rather than a result."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Complete measured adaptation",
+        "takeaway": "The current launcher ends at simulator pretraining, leaving measured adaptation, sample checks and detector evaluation to be made concrete.",
+        "body": "The launcher trains engineer then fitted variants, resumes each from last.pt, and writes STAGE_DONE after training returns successfully. No measured-adaptation configuration or RADIal detector result appears among the current scripts and supplied results, and local pretraining logs are absent. The training loop already supports starting a new run from train.init_from, while resume also restores optimizer state and training counters. Scene conditioning accepts per-frame vehicle positions and presence rather than the rehearsal’s target classes, so the measured detector task still needs an explicit definition. Short adaptation runs also need deliberate weight selection because slowly updated EMA weights can retain much of their starting state.",
+        "excerpts": [
+          {
+            "path": "scripts/run_pretrain.sh",
+            "startLine": 12,
+            "endLine": 24,
+            "heading": "Stop after simulator training",
+            "notice": "Line 18 resumes existing checkpoints, and line 22 marks each stage done. There is no measured fine-tuning or detector invocation after either variant."
+          },
+          {
+            "path": "src/train.py",
+            "startLine": 245,
+            "endLine": 261,
+            "heading": "Start from pretrained weights",
+            "notice": "Line 245 enables a new run from init_from only when no resume state is loaded. Lines 250-254 choose averaged or raw starting weights before creating the new EMA."
+          },
+          {
+            "path": "src/train.py",
+            "startLine": 306,
+            "endLine": 311,
+            "heading": "Check averaging carryover",
+            "notice": "Line 307 warns when over 10% of initial weights remain in the estimated EMA. Lines 309-310 explain why raw sampling or faster averaging can matter for short runs."
+          }
+        ],
+        "demonstrations": []
+      }
+    ],
+    "unresolved": [
+      "Have both pretraining variants completed on the cluster, and which checkpoints and completion markers establish that?",
+      "Which measured vehicle detection task, label matching rule and score will replace the synthetic target-class task?",
+      "Which measured training budgets and eight-frame windows will be fixed before adaptation, with whole recordings kept separate?",
+      "Will the measured comparison include a pretrained generator without adaptation to isolate the contribution of fine-tuning?",
+      "Will matched augmentation runs show that adaptation preserves detector performance as simulator quality falls, with uncertainty measured across held-out recordings?"
+    ],
+    "evidence": [
+      "archive/INDEX.md",
+      "configs/pretrain_fitted.yaml",
+      "experiments/step2_detector/detector_class_augmentation.py",
+      "scripts/fit_scene_simulator.py",
+      "src/train.py"
+    ],
+    "decisions": [
+      {
+        "path": "src/scene_sim.py",
+        "line": 397,
+        "match": "VARIANTS = {\"engineer\": Scenario, \"fitted\": fitted_scenario}",
+        "importance": "critical",
+        "why": "The runnable simulator comparison has two variants, while the design proposes three fidelity levels."
+      },
+      {
+        "path": "scripts/fit_scene_simulator.py",
+        "line": 62,
+        "match": "    train = sorted(s for name in split[\"train\"] for s in recs[name])",
+        "importance": "critical",
+        "why": "Calibration selects training recordings, protecting the measured test set from simulator fitting."
+      },
+      {
+        "path": "scripts/memorization_check.py",
+        "line": 60,
+        "match": "              \"ratio_training_over_heldout\": ratio, \"memorising\": ratio < 0.8}",
+        "importance": "important",
+        "why": "This rule turns the saved distance ratio into the copying warning that limits the rehearsal claim."
+      },
+      {
+        "path": "configs/pretrain_engineer.yaml",
+        "line": 24,
+        "match": "  schedule_shift: 16.0",
+        "importance": "important",
+        "why": "This selects the recipe with the better saved brightness spread for larger scenes."
+      },
+      {
+        "path": "src/train.py",
+        "line": 250,
+        "match": "        init_weights = tr.get(\"init_weights\", \"ema\")",
+        "importance": "important",
+        "why": "Adaptation defaults to averaged starting weights, which need checking when pretraining was short."
+      },
+      {
+        "path": "scripts/run_pretrain.sh",
+        "line": 22,
+        "match": "  touch \"$ckpt/STAGE_DONE\"",
+        "importance": "supporting",
+        "why": "This is the launcher’s completion evidence to inspect before treating a variant as ready for adaptation."
+      }
+    ]
+  },
+  "checks": {
+    "draft": {
+      "errors": [],
+      "warnings": []
+    },
+    "final": {
+      "errors": [],
+      "warnings": []
+    }
+  },
+  "review": {
+    "scores": [
+      {
+        "criterion": "Verdict first",
+        "score": 4,
+        "note": "The answer and caveat are clear, but the verdict does not identify the rehearsal as training from scratch or explain its score."
+      },
+      {
+        "criterion": "One story",
+        "score": 4,
+        "note": "The evidence follows a useful progression, but the connection between the rehearsal and adaptation needs a sharper boundary."
+      },
+      {
+        "criterion": "Headings name ideas",
+        "score": 4,
+        "note": "Headings describe actions, although Read the pilot says little about its finding."
+      },
+      {
+        "criterion": "Nothing twice",
+        "score": 4,
+        "note": "The missing measured comparison appears repeatedly, and one open question repeats a control already proposed in the design."
+      },
+      {
+        "criterion": "Numbers mean something",
+        "score": 4,
+        "note": "The saved numbers match, but the score matching rule and exact brightness spread definition are missing."
+      },
+      {
+        "criterion": "Terms explained",
+        "score": 3,
+        "note": "Mean AP is defined imprecisely, and terms such as conditioning and augmentation arms require decoding."
+      },
+      {
+        "criterion": "Excerpts earn their place",
+        "score": 4,
+        "note": "Most excerpts support specific claims, but the calibration excerpt omits the fitted value discussed in its section."
+      },
+      {
+        "criterion": "Readable",
+        "score": 4,
+        "note": "The draft respects field lengths but contains avoidable technical shorthand and several abstract explanations."
+      },
+      {
+        "criterion": "Accurate",
+        "score": 4,
+        "note": "The principal claims check out, but the EMA warning estimates the configured budget rather than actual completed updates."
+      },
+      {
+        "criterion": "Open questions are real",
+        "score": 3,
+        "note": "Most questions concern missing evidence, but the adaptation control is already proposed and the design discrepancies need explicit resolution."
+      }
+    ],
+    "problems": [
+      {
+        "where": "verdict",
+        "problem": "The synthetic gain can be mistaken for evidence about adapting pretrained weights.",
+        "fix": "Identified the rehearsal as training from scratch and retained the copying caveat."
+      },
+      {
+        "where": "verdict",
+        "problem": "The score and zero mismatch comparison lack their task context.",
+        "fix": "Named target-class mean AP and described the pilot as a separate simulator comparison."
+      },
+      {
+        "where": "terms: mean AP",
+        "problem": "Precision across score thresholds omits recall and does not fully describe average precision.",
+        "fix": "Defined it as area under the precision-recall curve, averaged over classes."
+      },
+      {
+        "where": "terms and prose",
+        "problem": "Terms including augmentation arms, conditioning and reference pool add decoding work.",
+        "fix": "Used comparisons, added sequences, requested positions and training sequences in their place."
+      },
+      {
+        "where": "Define the comparison",
+        "problem": "The draft omits the proposed generator without adaptation, then asks whether to include it.",
+        "fix": "Included this control in the planned comparison and asked which concrete settings will implement it."
+      },
+      {
+        "where": "Define the comparison",
+        "problem": "Engineer and fitted are named without explaining their experimental roles.",
+        "fix": "Explained that engineer uses settings without measured fitting and fitted uses measured training recordings."
+      },
+      {
+        "where": "Limit the rehearsal",
+        "problem": "The detector score lacks its correct-class and two-bin matching rule.",
+        "fix": "Added the matching rule and explained that higher mean AP is better."
+      },
+      {
+        "where": "Limit the rehearsal",
+        "problem": "The 1.82-point comparison bar is not explicitly the larger spread of the two compared runs.",
+        "fix": "Explained the implemented gain rule and its separate full-data headroom check."
+      },
+      {
+        "where": "Limit the rehearsal",
+        "problem": "The copying explanation omits what distance is measured and its saved magnitudes.",
+        "fix": "Added normalized map distance values of 0.795 and 1.112 and kept the warning distinct from exact duplication."
+      },
+      {
+        "where": "Read the pilot",
+        "problem": "The heading does not name the finding, and zero offset is insufficient to establish a mismatch trend.",
+        "fix": "Renamed the section and explicitly stated that the nonzero-offset results are missing."
+      },
+      {
+        "where": "Read the pilot",
+        "problem": "Equal pool counts are described as making size an unlikely explanation.",
+        "fix": "Stated the exact equality of added sequences and included the shared detector training budget."
+      },
+      {
+        "where": "Prepare larger scenes",
+        "problem": "The calibration excerpt shows measured and engineer values but omits the fitted 20.03 dB value.",
+        "fix": "Expanded the checked excerpt through line 40 and pointed to all three values."
+      },
+      {
+        "where": "Prepare larger scenes",
+        "problem": "Dynamic range does not specify the percentiles used for the quoted result.",
+        "fix": "Defined it as the difference between the 99.9th and 0.1st percentile map values."
+      },
+      {
+        "where": "Prepare larger scenes",
+        "problem": "The recipe comparison does not state how many generated and reference sequences were evaluated.",
+        "fix": "Added eight generated and eight separate simulator sequences, each containing eight frames."
+      },
+      {
+        "where": "Prepare larger scenes",
+        "problem": "The older brightness-gap account is contradicted without an explicit question about updating it.",
+        "fix": "Separated the current values from the older simulator account and added a specific documentation question."
+      },
+      {
+        "where": "Complete measured adaptation",
+        "problem": "The EMA notice implies that the warning checks actual retained starting weights.",
+        "fix": "Explained that it estimates retention from configured epochs and loader length, not completed updates."
+      },
+      {
+        "where": "Complete measured adaptation",
+        "problem": "The missing artifacts are described broadly despite the available evidence being local.",
+        "fix": "Bounded the claim to this checkout and noted that local checkpoint and log directories are absent."
+      },
+      {
+        "where": "unresolved",
+        "problem": "The no-adaptation question is already answered as an intention in the design.",
+        "fix": "Replaced it with an implementation question covering measured budgets, windows and control settings."
+      },
+      {
+        "where": "unresolved",
+        "problem": "The three-level design and two-variant implementation differ without a resolution question.",
+        "fix": "Asked which comparison will be retained."
+      },
+      {
+        "where": "evidence",
+        "problem": "The list repeats src/train.py, which is already excerpted, and omits numerical definitions used by the revision.",
+        "fix": "Removed the duplicate and added the score, recipe evaluation and brightness-statistics implementations."
+      }
+    ]
+  },
+  "problems": [],
+  "repairs": [],
+  "notebook": {
+    "title": "Does measured adaptation close the gap?",
+    "verdict": "Measured adaptation has not been shown to compensate for simulator mismatch. A generator trained from scratch raised synthetic target-class mean AP from 66.46% to 70.46%, with a copying warning. A separate simulator pilot saved only zero brightness offset, where generated additions scored 48.51% against raw simulation’s 60.55%. Larger-scene recipe checks are saved, but the measured RADIal detector comparison is still missing.",
+    "terms": [
+      {
+        "term": "mean AP",
+        "meaning": "Area under the precision-recall curve, averaged over target classes. Higher is better."
+      },
+      {
+        "term": "fine-tuning",
+        "meaning": "Continuing a pretrained generator’s learning on measured training examples."
+      },
+      {
+        "term": "seed spread",
+        "meaning": "Highest minus lowest score across runs with different random starting points."
+      },
+      {
+        "term": "EMA",
+        "meaning": "An exponential moving average of model weights, used for generation."
+      },
+      {
+        "term": "dynamic range",
+        "meaning": "Here, the difference between the 99.9th and 0.1st percentile map values."
+      },
+      {
+        "term": "schedule shift",
+        "meaning": "A setting that changes how much noise the generator learns to remove."
+      },
+      {
+        "term": "dB",
+        "meaning": "Decibels, a logarithmic scale for comparing radar power."
+      },
+      {
+        "term": "checkpoint",
+        "meaning": "Saved model weights and training state that can start or continue a run."
+      }
+    ],
+    "sections": [
+      {
+        "heading": "Compare added data",
+        "takeaway": "The test needs to show that adaptation protects detector performance when extra raw simulator data becomes less useful.",
+        "body": "For each simulator variant, compare measured training sequences alone, those sequences plus raw simulation, and those sequences plus generation after fine-tuning. The design also proposes generation without fine-tuning to isolate what adaptation contributes. Keep the measured subset, held-out recordings, added sequence count and detector training budget fixed, with three random seeds. The current code exposes engineer settings without measured fitting and fitted settings calibrated on measured training recordings, while the design describes three simulator levels. Success requires a difference in how raw simulation and adapted generation respond to mismatch, which the saved zero-offset pilot cannot establish.",
+        "excerpts": [
+          {
+            "path": "docs/notes/2026-09-21-radial-sim2real-design.md",
+            "startLine": 138,
+            "endLine": 146,
+            "heading": "Define the success pattern",
+            "notice": "Lines 142-146 propose raw simulation worsening while adapted generation stays useful. This is the intended test, not a saved measured result."
+          },
+          {
+            "path": "src/scene_sim.py",
+            "startLine": 383,
+            "endLine": 397,
+            "heading": "Separate simulator settings",
+            "notice": "Line 397 exposes engineer and fitted variants. Lines 391-394 load fitted settings separately, keeping measured calibration out of the engineer variant."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Bound the rehearsal",
+        "takeaway": "The synthetic gain passes its saved comparison rule, but neither pretrained adaptation nor transferable variation is established.",
+        "body": "The 64×64 rehearsal trained the generator from scratch on 2,000 simulator sequences, rather than adapting pretrained weights to recordings. Adding 8,000 generated sequences raised mean AP from 66.46% to 70.46%, with detectors trained for 3,000 steps and evaluated on 512 held-out simulator sequences. A detection must have the correct target class and lie within two map bins of its labelled position, and the 4.00-point gain exceeds the larger seed spread of the compared runs, 1.82 points. The rule also checks that using all 20,000 simulator training sequences improves the baseline beyond run variation before calling the augmentation test informative. Separately, 128 requests from training labels and 128 from held-out labels produced median normalized map distances of 0.795 and 1.112 to their matching examples, triggering the copying warning.",
+        "excerpts": [
+          {
+            "path": "experiments/step2_detector/results/detector_class_augmentation.json",
+            "startLine": 118,
+            "endLine": 125,
+            "heading": "Pass the gain rule",
+            "notice": "Line 122 saves a gain of 0.0400, or 4.00 percentage points, against line 123’s 1.82-point bar. Line 121 records that the full-data comparison leaves enough room for improvement."
+          },
+          {
+            "path": "experiments/step2_detector/results/memorization_n2000.json",
+            "startLine": 2,
+            "endLine": 9,
+            "heading": "Flag closer training matches",
+            "notice": "Line 8’s distance ratio is 0.715, below the check’s 0.8 threshold. Generated sequences match training examples more closely than held-out examples."
+          },
+          {
+            "path": "scripts/memorization_check.py",
+            "startLine": 47,
+            "endLine": 60,
+            "heading": "Compare matching examples",
+            "notice": "Lines 50-51 compare generation with examples carrying the requested labels. Line 60 applies the ratio threshold, which flags a copying concern without proving exact duplication."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Zero offset loses",
+        "takeaway": "At the pilot’s only saved brightness offset, adding raw simulation beats adding generated sequences.",
+        "body": "The design planned offsets of 0, 4, 8 and 16 dB between simulator target brightness and a simulated reference world, but the result contains only 0 dB. It records 200 reference training sequences and 6,000 simulator sequences for generator pretraining, with 800 added sequences in each detector comparison. After 2,500 detector training steps, mean AP across three seeds on 400 reference test sequences is 46.20% with reference data alone, 60.55% with raw simulation and 48.51% with generation. The generated comparison’s 12.47-point seed spread is also larger than raw simulation’s 3.46-point spread. The archive index identifies this as the corrected completed point after an invalid EMA run, and the missing nonzero offsets leave the proposed mismatch trend untested.",
+        "excerpts": [
+          {
+            "path": "archive/fidelity_pilot_64/results/fidelity_pilot.json",
+            "startLine": 2,
+            "endLine": 16,
+            "heading": "Save zero offset",
+            "notice": "Lines 6-8 mark only the 0 dB point complete. Lines 13-14 record equal additions of 800 sequences, and lines 15-16 fix the detector budget and test count."
+          },
+          {
+            "path": "archive/fidelity_pilot_64/results/fidelity_pilot.json",
+            "startLine": 69,
+            "endLine": 98,
+            "heading": "Favor raw simulation",
+            "notice": "Lines 69 and 96 give mean AP of 60.55% with raw simulation and 48.51% with generation. Lines 70 and 97 give their respective seed spreads."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Check scene readiness",
+        "takeaway": "The saved larger-scene checks justify a training recipe, but they compare generation with simulation rather than measured detector performance.",
+        "body": "Calibration uses measured training recordings only, and the fitted simulator’s vehicles remain 20.03 dB above surrounding range background against measured vehicles’ 23.98 dB. The current engineer value is 14.84 dB, so the older design note’s account of overly bright targets belongs to an earlier simulator. The recipe evaluation uses eight generated sequences and eight separate held-out engineer-simulator sequences, each containing eight 512×256 frames. After 20 epochs, schedule shift 16 produces a 50.00 dB dynamic range against the simulator’s 57.20 dB, closer than shift 4’s 42.06 dB but still short by 7.20 dB. Both pretraining configurations select shift 16 and 80 epochs, which specify a budget rather than prove that training finished.",
+        "excerpts": [
+          {
+            "path": "samples/scene_sim_fit.json",
+            "startLine": 2,
+            "endLine": 40,
+            "heading": "Retain a contrast gap",
+            "notice": "Line 9 gives measured vehicle prominence of 23.98 dB. Lines 18 and 40 give engineer and fitted values of 14.84 and 20.03 dB, leaving fitted vehicles 3.95 dB below the measured value."
+          },
+          {
+            "path": "samples/scene_dit_smoke.json",
+            "startLine": 88,
+            "endLine": 109,
+            "heading": "Recover brightness spread",
+            "notice": "Lines 91-95 identify shift 16 after 20 epochs. Lines 97 and 104 give generated and simulator dynamic ranges of 50.00 and 57.20 dB, measured between the same percentiles."
+          },
+          {
+            "path": "configs/pretrain_engineer.yaml",
+            "startLine": 5,
+            "endLine": 32,
+            "heading": "Choose the training budget",
+            "notice": "Lines 8-10 set eight frames at 512×256. Lines 24 and 32 select schedule shift 16 and 80 epochs, not a completed training result."
+          }
+        ],
+        "demonstrations": []
+      },
+      {
+        "heading": "Finish measured adaptation",
+        "takeaway": "The launcher stops at simulator pretraining, while measured fine-tuning and detector evaluation still need concrete configurations and saved outputs.",
+        "body": "The launcher trains engineer then fitted variants, continues from last.pt when present, and writes STAGE_DONE after each training command succeeds. This checkout has neither local checkpoint nor log directories, and its current configurations and scripts provide no measured adaptation run or measured detector result. The training loop can start from pretrained weights through train.init_from with a fresh optimizer, whereas resume restores optimizer state and training counters. Scene inputs request per-frame vehicle positions and presence rather than the rehearsal’s target classes, so the measured detector task and matching rule need to be specified. Short adaptation runs also need an explicit raw or EMA weight choice because the averaging estimate can retain substantial starting weights, and its warning uses the configured full budget rather than actual completed updates.",
+        "excerpts": [
+          {
+            "path": "scripts/run_pretrain.sh",
+            "startLine": 12,
+            "endLine": 24,
+            "heading": "End at simulator training",
+            "notice": "Line 18 continues an existing checkpoint, and line 22 writes the completion marker after success. The launcher invokes no measured adaptation or detector evaluation."
+          },
+          {
+            "path": "src/train.py",
+            "startLine": 245,
+            "endLine": 261,
+            "heading": "Load pretrained weights",
+            "notice": "Line 245 starts from init_from only without a resume state. Lines 250-254 select EMA weights by default or raw weights explicitly before line 261 creates the new average."
+          },
+          {
+            "path": "src/train.py",
+            "startLine": 306,
+            "endLine": 311,
+            "heading": "Estimate averaging carryover",
+            "notice": "Line 306 estimates starting-weight retention using configured epochs times loader length. Line 307 warns above 10%, so this warning does not verify the checkpoint’s actual completed updates."
+          }
+        ],
+        "demonstrations": []
+      }
+    ],
+    "unresolved": [
+      "Which cluster checkpoints, completed epoch counts and STAGE_DONE markers establish that both simulator pretraining runs finished?",
+      "Which measured vehicle detection task, position matching rule and score will replace the synthetic target-class task?",
+      "Which measured budgets, eight-frame windows and weight choices will configure adaptation and the proposed generator control without adaptation?",
+      "Will the study retain engineer and fitted variants, or implement the design note’s third simulator level?",
+      "Will the design note be updated to distinguish the older overly bright simulator from the current engineer simulator’s fainter vehicles?",
+      "Does adapted generation beat matched raw simulation as mismatch increases, with uncertainty estimated across held-out recordings?"
+    ],
+    "evidence": [
+      "archive/INDEX.md",
+      "configs/pretrain_fitted.yaml",
+      "experiments/step2_detector/configs/cond_traj_n2000.yaml",
+      "experiments/step2_detector/detector_class_augmentation.py",
+      "scripts/fit_scene_simulator.py",
+      "scripts/scene_dit_smoke.py",
+      "src/detector.py",
+      "src/radial.py"
+    ],
+    "decisions": [
+      {
+        "path": "src/scene_sim.py",
+        "line": 397,
+        "match": "VARIANTS = {\"engineer\": Scenario, \"fitted\": fitted_scenario}",
+        "importance": "critical",
+        "why": "The runnable comparison exposes two simulator variants rather than the design note’s three levels."
+      },
+      {
+        "path": "scripts/fit_scene_simulator.py",
+        "line": 62,
+        "match": "    train = sorted(s for name in split[\"train\"] for s in recs[name])",
+        "importance": "critical",
+        "why": "Measured calibration selects training recordings and excludes validation and test recordings from its fitting reference."
+      },
+      {
+        "path": "experiments/step2_detector/detector_class_augmentation.py",
+        "line": 131,
+        "match": "    gain, gain_bar = B[\"mean\"] - A[\"mean\"], max(A[\"range\"], B[\"range\"])",
+        "importance": "important",
+        "why": "The synthetic gain is compared with the larger seed spread of the baseline and augmented runs."
+      },
+      {
+        "path": "scripts/memorization_check.py",
+        "line": 60,
+        "match": "              \"ratio_training_over_heldout\": ratio, \"memorising\": ratio < 0.8}",
+        "importance": "important",
+        "why": "This threshold turns the saved distance ratio of 0.715 into the copying warning."
+      },
+      {
+        "path": "configs/pretrain_engineer.yaml",
+        "line": 24,
+        "match": "  schedule_shift: 16.0",
+        "importance": "important",
+        "why": "Pretraining selects the setting whose saved 20-epoch samples come closer to simulator brightness spread."
+      },
+      {
+        "path": "src/train.py",
+        "line": 250,
+        "match": "        init_weights = tr.get(\"init_weights\", \"ema\")",
+        "importance": "important",
+        "why": "A new adaptation run defaults to averaged starting weights unless raw weights are explicitly selected."
+      },
+      {
+        "path": "src/train.py",
+        "line": 306,
+        "match": "    residual = ema_residual(ema_decay, tr[\"epochs\"] * len(loader))",
+        "importance": "important",
+        "why": "The averaging warning estimates the configured full budget and cannot establish actual checkpoint readiness."
+      },
+      {
+        "path": "scripts/run_pretrain.sh",
+        "line": 22,
+        "match": "  touch \"$ckpt/STAGE_DONE\"",
+        "importance": "supporting",
+        "why": "The marker records successful return from simulator training and provides no evidence of measured transfer."
+      }
+    ]
+  }
+}

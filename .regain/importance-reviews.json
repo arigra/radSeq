@@ -1,0 +1,66 @@
+[
+  {
+    "file": "src/scene_sim.py",
+    "sha256": "c9bc7d3202f2beb303234d8928f4a4512e44a92f82216ef034425948f21d6fb0",
+    "match": "VARIANTS = {\"engineer\": Scenario, \"fitted\": fitted_scenario}",
+    "line": 397,
+    "importance": "critical",
+    "why": "The runnable comparison exposes two simulator variants rather than the design note’s three levels."
+  },
+  {
+    "file": "scripts/fit_scene_simulator.py",
+    "sha256": "a1469b992784dab04aad2ade59f1e92d9899c24fa77115cdac426e4356bef834",
+    "match": "train = sorted(s for name in split[\"train\"] for s in recs[name])",
+    "line": 62,
+    "importance": "critical",
+    "why": "Measured calibration selects training recordings and excludes validation and test recordings from its fitting reference."
+  },
+  {
+    "file": "experiments/step2_detector/detector_class_augmentation.py",
+    "sha256": "0bf9cb0762114b74aff57537c00f3cbc17ed2903d605e9e4975223d417293b6b",
+    "match": "gain, gain_bar = B[\"mean\"] - A[\"mean\"], max(A[\"range\"], B[\"range\"])",
+    "line": 131,
+    "importance": "important",
+    "why": "The synthetic gain is compared with the larger seed spread of the baseline and augmented runs."
+  },
+  {
+    "file": "scripts/memorization_check.py",
+    "sha256": "b993f5b07eab1e6e10675ec4b4c2fc7dfd990c54b34490db483733be06ff1e9e",
+    "match": "\"ratio_training_over_heldout\": ratio, \"memorising\": ratio < 0.8}",
+    "line": 60,
+    "importance": "important",
+    "why": "This threshold turns the saved distance ratio of 0.715 into the copying warning."
+  },
+  {
+    "file": "configs/pretrain_engineer.yaml",
+    "sha256": "253304573239c573cc357bd73e85ef7fbf752df90d88bcd32bf80cfad3fd9673",
+    "match": "schedule_shift: 16.0",
+    "line": 24,
+    "importance": "important",
+    "why": "Pretraining selects the setting whose saved 20-epoch samples come closer to simulator brightness spread."
+  },
+  {
+    "file": "src/train.py",
+    "sha256": "ee608ce603e22f8dc85af215cf30765b334a04a0643046a093b0487fddf8373c",
+    "match": "init_weights = tr.get(\"init_weights\", \"ema\")",
+    "line": 250,
+    "importance": "important",
+    "why": "A new adaptation run defaults to averaged starting weights unless raw weights are explicitly selected."
+  },
+  {
+    "file": "src/train.py",
+    "sha256": "ee608ce603e22f8dc85af215cf30765b334a04a0643046a093b0487fddf8373c",
+    "match": "residual = ema_residual(ema_decay, tr[\"epochs\"] * len(loader))",
+    "line": 306,
+    "importance": "important",
+    "why": "The averaging warning estimates the configured full budget and cannot establish actual checkpoint readiness."
+  },
+  {
+    "file": "scripts/run_pretrain.sh",
+    "sha256": "33ef634328197395615ebf5ba830df91d11deaf643ea4016327ec45d0d942286",
+    "match": "touch \"$ckpt/STAGE_DONE\"",
+    "line": 22,
+    "importance": "supporting",
+    "why": "The marker records successful return from simulator training and provides no evidence of measured transfer."
+  }
+]
