@@ -26,7 +26,7 @@ Lines 142-146 propose raw simulation worsening while adapted generation stays us
 
 Source: [docs/notes/2026-09-21-radial-sim2real-design.md lines 138-146](../docs/notes/2026-09-21-radial-sim2real-design.md)
 
-```file docs/notes/2026-09-21-radial-sim2real-design.md 138-146
+```file docs/notes/2026-09-21-radial-sim2real-design.md 138-146 visual=visuals/2026-09-21-radial-sim2real-design-138-146.svg
 ```
 
 ### Separate simulator settings
@@ -35,7 +35,7 @@ Line 397 exposes engineer and fitted variants. Lines 391-394 load fitted setting
 
 Source: [src/scene_sim.py lines 383-397](../src/scene_sim.py)
 
-```file src/scene_sim.py 383-397
+```file src/scene_sim.py 383-397 visual=visuals/scene_sim-383-397.svg
 ```
 
 ## Bound the rehearsal
@@ -43,6 +43,8 @@ Source: [src/scene_sim.py lines 383-397](../src/scene_sim.py)
 The synthetic gain passes its saved comparison rule, but neither pretrained adaptation nor transferable variation is established.
 
 The 64×64 rehearsal trained the generator from scratch on 2,000 simulator sequences, rather than adapting pretrained weights to recordings. Adding 8,000 generated sequences raised mean AP from 66.46% to 70.46%, with detectors trained for 3,000 steps and evaluated on 512 held-out simulator sequences. A detection must have the correct target class and lie within two map bins of its labelled position, and the 4.00-point gain exceeds the larger seed spread of the compared runs, 1.82 points. The rule also checks that using all 20,000 simulator training sequences improves the baseline beyond run variation before calling the augmentation test informative. Separately, 128 requests from training labels and 128 from held-out labels produced median normalized map distances of 0.795 and 1.112 to their matching examples, triggering the copying warning.
+
+> **Experimental-design limitation:** The equal-size simulator-only control was not tested: 10,000 simulator sequences versus 2,000 simulator sequences plus 8,000 generated sequences. The observed gain shows that generated augmentation helped relative to using only 2,000 simulator sequences; it does not show that generated data is better than additional simulator data. The 20,000-sequence simulator arm does not answer that question because its dataset is larger. To assess this, compare the two 10,000-sequence datasets with the same detector, training steps, seeds, and evaluation set. The copying warning also limits conclusions about new variation.
 
 ### Pass the gain rule
 
@@ -107,7 +109,7 @@ Line 9 gives measured vehicle prominence of 23.98 dB. Lines 18 and 40 give engin
 
 Source: [samples/scene_sim_fit.json lines 2-40](../samples/scene_sim_fit.json)
 
-```file samples/scene_sim_fit.json 2-40
+```file samples/scene_sim_fit.json 2-40 visual=visuals/scene_sim_fit-2-40.svg
 ```
 
 ### Recover brightness spread
@@ -116,7 +118,7 @@ Lines 91-95 identify shift 16 after 20 epochs. Lines 97 and 104 give generated a
 
 Source: [samples/scene_dit_smoke.json lines 88-109](../samples/scene_dit_smoke.json)
 
-```file samples/scene_dit_smoke.json 88-109
+```file samples/scene_dit_smoke.json 88-109 visual=visuals/scene_dit_smoke-88-109.svg
 ```
 
 ### Choose the training budget
@@ -125,7 +127,7 @@ Lines 8-10 set eight frames at 512×256. Lines 24 and 32 select schedule shift 1
 
 Source: [configs/pretrain_engineer.yaml lines 5-32](../configs/pretrain_engineer.yaml)
 
-```file configs/pretrain_engineer.yaml 5-32
+```file configs/pretrain_engineer.yaml 5-32 visual=visuals/pretrain_engineer-5-32.svg
 ```
 
 ## Finish measured adaptation
