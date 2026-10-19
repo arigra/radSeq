@@ -13,6 +13,12 @@ LOG=logs/step4.log
 export PYTHONPATH=.
 say() { echo "$(date '+%F %T') | $*" >> "$LOG"; }
 
+# Refuse to run twice (e.g. an interactive copy and a batch job): two copies
+# would train into the same checkpoints.
+if pgrep -f "^bash scripts/run_step4.sh" | grep -vx "$$" >/dev/null; then
+  say "REFUSED: another run_step4.sh is already running"; exit 1
+fi
+
 if [ ! -f data/radial_seq/DONE ]; then say "REFUSED: real RADIal cache not built"; exit 1; fi
 say "start"
 for variant in engineer fitted; do

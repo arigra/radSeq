@@ -78,3 +78,18 @@ def test_training_batches_are_frames_not_whole_sequences():
                          torch.Generator().manual_seed(0))
     assert x.shape == (4, 1, 512, 256)
     assert heat.shape == (4, 1, 512, 256)
+
+
+def test_every_vehicle_gets_exactly_one_positive_cell_even_off_grid():
+    """The focal loss counts a cell as a vehicle only if its target is exactly
+    1.0. RADIal ranges are fractional (e.g. 157.69 bins), so an unrounded
+    Gaussian never reaches 1.0 -- 596 vehicles produced 1 positive cell, the
+    detector learned to predict nothing, and every arm scored AP 0."""
+    traj = torch.zeros(1, 2, 1, 2)
+    traj[0, 0, 0] = torch.tensor([157.69, 40.0])
+    traj[0, 1, 0] = torch.tensor([300.31, 254.6])
+    h = scene_heatmap_targets(traj, torch.ones(1, 2, 1, dtype=torch.bool),
+                              n_range=512, n_doppler=256)
+    assert int(h.eq(1).sum()) == 2
+    assert float(h[0, 0, 158, 40]) == 1.0
+    assert float(h[0, 0, 300, 255]) == 1.0

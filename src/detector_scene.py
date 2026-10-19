@@ -23,8 +23,11 @@ def scene_heatmap_targets(traj, present, n_range=512, n_doppler=256, sigma=2.0):
     device = traj.device
     r = torch.arange(n_range, device=device, dtype=torch.float).view(1, 1, 1, n_range, 1)
     d = torch.arange(n_doppler, device=device, dtype=torch.float).view(1, 1, 1, 1, n_doppler)
-    tr = traj[..., 0].float().view(B, M, L, 1, 1)
-    td = traj[..., 1].float().view(B, M, L, 1, 1)
+    # Centres are rounded to a cell: the CenterNet focal loss counts a cell as
+    # a vehicle only if its target is exactly 1.0, and RADIal ranges are
+    # fractional. Unrounded, 596 vehicles produced a single positive cell.
+    tr = torch.round(traj[..., 0].float()).view(B, M, L, 1, 1)
+    td = torch.remainder(torch.round(traj[..., 1].float()), n_doppler).view(B, M, L, 1, 1)
     dd = torch.remainder(d - td + n_doppler / 2, n_doppler) - n_doppler / 2
     blobs = torch.exp(-((r - tr) ** 2 + dd ** 2) / (2 * sigma ** 2))
     blobs = blobs * present.to(device).view(B, M, L, 1, 1).float()

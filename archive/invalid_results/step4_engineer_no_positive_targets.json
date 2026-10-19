@@ -1,0 +1,48 @@
+{
+  "variant": "engineer",
+  "n_real": 387,
+  "n_sim": 1548,
+  "n_synthetic": 1548,
+  "n_test": 121,
+  "generated_hit_rate": 1.0,
+  "steps": 3000,
+  "arms": {
+    "real": {
+      "pool": 387,
+      "ap": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean": 0.0,
+      "range": 0.0
+    },
+    "real_sim": {
+      "pool": 1935,
+      "ap": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean": 0.0,
+      "range": 0.0
+    },
+    "real_dit": {
+      "pool": 1935,
+      "ap": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mean": 0.0,
+      "range": 0.0
+    }
+  },
+  "rule": {
+    "bar (largest seed range)": 0.0,
+    "sim helps (B - A)": 0.0,
+    "dit helps (D - A)": 0.0,
+    "dit beats sim (D - B)": 0.0,
+    "verdict": "D = B within the seed spread"
+  }
+}
