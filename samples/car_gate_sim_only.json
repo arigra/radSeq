@@ -1,0 +1,36 @@
+{
+  "variant": "engineer",
+  "n_real": 387,
+  "n_sim": 300,
+  "n_synthetic": 0,
+  "n_test": 74,
+  "steps": 3000,
+  "batch": 8,
+  "width": 32,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "normalisation": "per source",
+  "real_cache": "data/radial_seq",
+  "arm_names": [
+    "sim"
+  ],
+  "sim_cache": "data/scene_engineer_cargate",
+  "eval_split": "val",
+  "arms": {
+    "sim": {
+      "pool": 300,
+      "ap": [
+        0.2766133275513429,
+        0.39324910285224324,
+        0.3774681935864929
+      ],
+      "mean": 0.349110207996693,
+      "range": 0.11663577530090036
+    }
+  },
+  "generated_hit_rate": null,
+  "complete": true
+}

@@ -15,7 +15,8 @@ that, because they are shaped by mechanisms it does not have:
    so summing their power averages the speckle.
 4. The receiver's filters: an IF high-pass that darkens near range and an
    anti-alias low-pass that rolls off the far range.
-5. Vehicles as extended objects with several scatterers.
+5. Vehicles as extended objects: scatterers along the body outline, of which
+   only the faces turned toward the radar reflect (self-shadowing).
 
 Every parameter is published (rpl.py, Rebut et al. CVPR 2022 Table 5) or is a
 statement about the driving scenario. Nothing is fitted to the recordings.
@@ -106,6 +107,9 @@ class Scenario:
     # backscatter from a rough surface ~cos^n(incidence); n=2 for the
     # engineer's variant, an uncertain physical law the fitted variant tunes
     surface_incidence_power: float = 2.0
+    # vehicle bodies are smooth metal, not rough surfaces: the same cos^2 law,
+    # kept out of the fitted knobs (the fit drives the rough-surface law to 0)
+    vehicle_incidence_power: float = 2.0
     # scene-density multipliers (1.0 = the road-type description as written)
     structure_coverage_scale: float = 1.0
     tree_density_scale: float = 1.0
@@ -260,13 +264,46 @@ class SceneSimulator:
                 parked)
 
     def _car(self, x, y, rcs_dbsm, vy, kind=0):
-        """A vehicle as several body scatterers; total RCS preserved."""
+        """A vehicle as scatterers along the outline of its footprint.
+
+        Each scatterer carries its face's outward normal; which ones the radar
+        sees, and how strongly, is decided per frame by `_car_returns`. The
+        footprint was once five equally bright points (corners and centre),
+        which rendered as three range spikes 2.25 m apart -- nothing like a
+        real car (docs/design/2026-10-22-vehicle-scattering-design.md).
+        """
         length, width = [(4.5, 1.8), (10.0, 2.5), (2.0, 0.8)][kind]
-        ox = torch.tensor([-0.5, 0.5, -0.5, 0.5, 0.0]) * width
-        oy = torch.tensor([-0.5, -0.5, 0.5, 0.5, 0.0]) * length
-        share = rcs_dbsm - 10 * math.log10(len(ox)) + self._n(0, 3.0, ox.shape)
-        return {"x": x + ox, "y": y + oy, "rcs": share, "vy": vy, "kind": kind,
-                "cx": x, "cy": y, "moving": vy != 0.0}
+        hl, hw = length / 2, width / 2
+        faces = ((-hw, -hl, hw, -hl, 0.0, -1.0),     # rear
+                 (-hw, hl, hw, hl, 0.0, 1.0),        # front
+                 (-hw, -hl, -hw, hl, -1.0, 0.0),     # left side
+                 (hw, -hl, hw, hl, 1.0, 0.0))        # right side
+        ox, oy, nx, ny = [], [], [], []
+        for x0, y0, x1, y1, fx, fy in faces:
+            n = max(round(math.hypot(x1 - x0, y1 - y0) * self.sc.scatterers_per_m), 1)
+            s = (torch.arange(n, dtype=torch.float) + 0.5) / n
+            ox.append(x0 + (x1 - x0) * s)
+            oy.append(y0 + (y1 - y0) * s)
+            nx.append(torch.full((n,), fx))
+            ny.append(torch.full((n,), fy))
+        ox, oy = torch.cat(ox), torch.cat(oy)
+        return {"x": x + ox, "y": y + oy, "nx": torch.cat(nx), "ny": torch.cat(ny),
+                "rcs_total": rcs_dbsm, "scint": self._n(0, 3.0, ox.shape),
+                "vy": vy, "kind": kind, "cx": x, "cy": y, "moving": vy != 0.0}
+
+    def _car_returns(self, v, px, py):
+        """Which of a vehicle's scatterers the radar sees, and their RCS (dBsm).
+
+        Self-shadowing: a scatterer reflects only if its face is turned toward
+        the radar. Visible ones go as cos^n of their incidence angle, scaled so
+        the vehicle keeps its published total RCS, with +/-3 dB scintillation.
+        """
+        r = torch.sqrt(px ** 2 + py ** 2).clamp(min=1e-3)
+        cos = -(v["nx"] * px + v["ny"] * py) / r
+        visible = cos > 0
+        w = cos[visible] ** self.sc.vehicle_incidence_power
+        share_db = 10 * torch.log10(w / w.sum())
+        return visible, v["rcs_total"] + share_db + v["scint"][visible]
 
     def _vehicles(self, road, half_width, v_ego):
         n = int(torch.poisson(torch.tensor(self.sc.vehicles_per_frame),
@@ -339,14 +376,21 @@ class SceneSimulator:
             frame_labels = []
             for vid, v in enumerate(vehicles):
                 dy = v["vy"] * t
-                xs.append(v["x"]); ys.append(v["y"] + dy - ego_y)
-                rcs.append(v["rcs"]); vys.append(torch.full_like(v["x"], v["vy"]))
-                surfs.append(torch.zeros_like(v["x"]))
+                px, py = v["x"], v["y"] + dy - ego_y
+                visible, car_rcs = self._car_returns(v, px, py)
+                if not bool(visible.any()):
+                    # the radar is inside this footprint (traffic is not kept
+                    # from driving through the ego car): no face to see
+                    continue
+                xs.append(px[visible]); ys.append(py[visible])
+                rcs.append(car_rcs); vys.append(torch.full_like(car_rcs, v["vy"]))
+                surfs.append(torch.zeros_like(car_rcs))
                 cy = v["cy"] + dy - ego_y
                 if (not v["moving"] or cy <= 0
                         or not 0 < math.hypot(v["cx"], cy) < spec.max_range_m):
                     continue
-                r_c = math.hypot(float(v["cx"]), float(cy))
+                # the radar sees a vehicle at its nearest visible point
+                r_c = float(torch.sqrt(px[visible] ** 2 + py[visible] ** 2).min())
                 az_c = math.atan2(float(v["cx"]), float(cy))
                 vr_c = (v["vy"] - v_ego) * math.cos(az_c)
                 frame_labels.append({

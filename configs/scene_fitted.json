@@ -1,14 +1,14 @@
 {
-  "note": "Scene-simulator knobs fitted to RADIal TRAINING recordings by scripts/fit_scene_simulator.py. The 'fitted' variant: an upper bound on calibration, not the baseline.",
+  "note": "Scene-simulator knobs fitted to RADIal TRAINING recordings by scripts/fit_scene_simulator.py, with the 2026-10-22 vehicle model. The 'fitted' variant: an upper bound on calibration, not the baseline.",
   "knobs": {
-    "surface_incidence_power": 0.0,
-    "structure_coverage_scale": 1.2882202707525476,
-    "tree_density_scale": 5.0554310214111435,
-    "ground_rcs_mean": -21.039021892868593,
-    "highpass_corner_m": 2.565207458590355,
-    "lowpass_edge": 0.8536913057524048,
-    "lowpass_order": 8.93028429018195,
-    "thermal_over_adc_db": 10.279476576993293,
-    "snr_offset_db": 4.606973909519105
+    "surface_incidence_power": 2.1378685783711315,
+    "structure_coverage_scale": 1.0845866268289706,
+    "tree_density_scale": 1.2559989657522799,
+    "ground_rcs_mean": -21.607907227635845,
+    "highpass_corner_m": 2.590966420744225,
+    "lowpass_edge": 0.8592241847902563,
+    "lowpass_order": 14.983568087896067,
+    "thermal_over_adc_db": 21.900576703349653,
+    "snr_offset_db": -2.801284023957953
   }
 }

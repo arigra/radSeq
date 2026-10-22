@@ -66,3 +66,40 @@ def test_engineer_variant_inherits_nothing_fitted():
     from src.scene_sim import VARIANTS, Scenario
     assert VARIANTS["engineer"]() == Scenario()
     assert VARIANTS["fitted"]() != Scenario()
+
+
+def test_a_car_ahead_shows_only_its_near_face():
+    """The car was once five equally bright points (corners and centre), which
+    rendered as three range spikes 2.25 m apart. The body shadows its far side:
+    straight ahead, only the rear face reflects, so the whole return sits in
+    one or two range bins, and the label is at that face."""
+    sim = SceneSimulator(seq_len=1, generator=torch.Generator().manual_seed(0))
+    car = sim._car(0.0, 30.0, 10.0, vy=5.0)
+    visible, rcs = sim._car_returns(car, car["x"], car["y"])
+    rng = torch.sqrt(car["x"][visible] ** 2 + car["y"][visible] ** 2)
+    assert bool((car["ny"][visible] == -1).all())          # rear face only
+    assert float(rng.max() - rng.min()) < 2 * 0.2           # within ~2 range bins
+    assert abs(float(rng.min()) - (30.0 - 4.5 / 2)) < 0.05
+
+
+def test_an_oblique_car_shows_its_near_end_and_one_side_weakly():
+    sim = SceneSimulator(seq_len=1, generator=torch.Generator().manual_seed(0))
+    car = sim._car(8.0, 20.0, 10.0, vy=5.0)
+    car["scint"] = torch.zeros_like(car["scint"])
+    visible, rcs = sim._car_returns(car, car["x"], car["y"])
+    nx, ny = car["nx"][visible], car["ny"][visible]
+    assert set(zip(nx.tolist(), ny.tolist())) == {(0.0, -1.0), (-1.0, 0.0)}
+    side, rear = rcs[nx == -1.0], rcs[ny == -1.0]
+    assert float(side.max()) < float(rear.min())            # grazing side is weaker
+    total = 10 * torch.log10((10 ** (rcs / 10)).sum())
+    assert abs(float(total) - 10.0) < 1e-3                  # published RCS kept
+
+
+def test_a_car_over_the_radar_has_no_visible_face():
+    """Traffic is not kept from driving through the ego car's position; with the
+    radar inside a footprint no face points at it, and the frame must still
+    render (the cache build crashed on exactly this)."""
+    sim = SceneSimulator(seq_len=1, generator=torch.Generator().manual_seed(0))
+    car = sim._car(0.0, 0.5, 10.0, vy=5.0)
+    visible, rcs = sim._car_returns(car, car["x"], car["y"])
+    assert not bool(visible.any()) and rcs.numel() == 0
