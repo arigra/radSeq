@@ -176,3 +176,36 @@ def test_diffusion_from_config_honours_every_sampling_setting():
     plain = diffusion_from_config({"timesteps": 1000})
     assert (plain.parameterization, plain.schedule_shift, plain.x0_clamp, plain.terminal_x0) == \
         ("eps", 1.0, (-4.0, 4.0), "model")
+
+
+@pytest.mark.parametrize("eta", [0.0, 1.0])
+def test_ddim_keeps_the_forward_marginals_for_any_eta(eta):
+    """With a perfect denoiser for data that is a single point c, every DDIM
+    state must be distributed like the forward process, x_t ~ N(sqrt(ab_t) c,
+    1 - ab_t), whether eta re-injects noise (stochastic, eta=1) or not; a wrong
+    sigma would inflate or shrink that variance. The output is c."""
+    torch.manual_seed(0)
+    d = GaussianDiffusion(timesteps=1000)
+    c = 0.7
+    seen = []
+
+    def oracle(xt, t, cond=None):
+        ab = d.alphas_bar[t].view(-1, 1, 1, 1)
+        seen.append((xt.clone(), ab))
+        return (xt - ab.sqrt() * c) / (1 - ab).sqrt()    # eps for x0 = c
+
+    out = d.ddim_sample(oracle, (1, 8, 128, 128), torch.device("cpu"), steps=10, eta=eta)
+    assert torch.allclose(out, torch.full_like(out, c), atol=1e-3)
+    for xt, ab in seen[1:-1]:
+        z = (xt - ab.sqrt() * c) / (1 - ab).sqrt()
+        assert abs(float(z.std()) - 1.0) < 0.02 and abs(float(z.mean())) < 0.02
+
+
+def test_stochastic_ddim_draws_differ_from_deterministic_ones():
+    d = GaussianDiffusion(timesteps=1000)
+    model = lambda xt, t, cond=None: 0.5 * xt
+    torch.manual_seed(1)
+    a = d.ddim_sample(model, (1, 4, 32, 32), torch.device("cpu"), steps=10, eta=0.0)
+    torch.manual_seed(1)
+    b = d.ddim_sample(model, (1, 4, 32, 32), torch.device("cpu"), steps=10, eta=1.0)
+    assert not torch.allclose(a, b)

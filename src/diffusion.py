@@ -157,7 +157,11 @@ class GaussianDiffusion:
         raise ValueError(f"unknown smoothness weight mode {mode!r}")
 
     @torch.no_grad()
-    def ddim_sample(self, model, shape, device, steps=50, cond=None):
+    def ddim_sample(self, model, shape, device, steps=50, cond=None, eta=0.0):
+        """DDIM; eta=0 is deterministic, eta=1 re-injects the DDPM amount of
+        fresh noise at every step (Song et al. 2021, eq. 16). Deterministic
+        sampling with few steps gave RADIal maps with ~40% less speckle than
+        real ones."""
         x = torch.randn(shape, device=device)
         ts = torch.linspace(self.T - 1, 0, steps, device=device).long()
         for i in range(steps):
@@ -168,7 +172,13 @@ class GaussianDiffusion:
                 x = x0
             else:
                 ab_next = self._ab(ts[i + 1].repeat(shape[0]), x)
-                x = ab_next.sqrt() * x0 + (1 - ab_next).sqrt() * eps
+                if eta:
+                    ab_t = self._ab(t, x)
+                    sigma = eta * ((1 - ab_next) / (1 - ab_t) * (1 - ab_t / ab_next)).clamp(min=0).sqrt()
+                    x = (ab_next.sqrt() * x0 + (1 - ab_next - sigma ** 2).clamp(min=0).sqrt() * eps
+                         + sigma * torch.randn_like(x))
+                else:
+                    x = ab_next.sqrt() * x0 + (1 - ab_next).sqrt() * eps
         return x
 
     @torch.no_grad()

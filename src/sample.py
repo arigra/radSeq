@@ -95,12 +95,14 @@ def load_trajectory_conditioned(ckpt_path, device, weights="ema"):
 
 
 @torch.no_grad()
-def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance=2.0, seed=None):
+def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance=2.0, seed=None,
+                                  eta=0.0):
     """Guided sampling with an already loaded model; returns dB maps (B, L, N, K).
 
     Classifier-free guidance on the network output:
     uncond + guidance * (cond - uncond), where uncond sees an all-zero
-    condition map.
+    condition map. At guidance 1 that is the conditional output alone, so the
+    unconditional pass is skipped. eta: see GaussianDiffusion.ddim_sample.
     """
     from src.trajectory_condition import render_condition, render_vehicle_condition
 
@@ -117,6 +119,8 @@ def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance
     null = torch.zeros_like(cond_map)
 
     def guided(xt, t, _cond=None):
+        if guidance == 1.0:
+            return model(xt, t, None, cond_map=cond_map)
         out = model(torch.cat([xt, xt]), torch.cat([t, t]), None,
                     cond_map=torch.cat([cond_map, null]))
         with_cond, without = out.chunk(2)
@@ -125,7 +129,7 @@ def sample_trajectory_conditioned(model, cfg, labels, device, steps=30, guidance
     B, L = labels["traj"].shape[0], cfg["data"]["seq_len"]
     if seed is not None:
         torch.manual_seed(seed)
-    x = diff.ddim_sample(guided, (B, L, N, K), device, steps=steps)
+    x = diff.ddim_sample(guided, (B, L, N, K), device, steps=steps, eta=eta)
     stats = torch.load(resolve_cache_dir(cfg["data"]["cache_dir"]) / "stats.pt",
                        map_location="cpu")
     return denormalize(x.float().cpu(), stats)
