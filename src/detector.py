@@ -102,9 +102,20 @@ def focal_loss(logits, target, alpha=2, beta=4):
     return (pos_loss + neg_loss) / pos.sum().clamp_min(1)
 
 
-def detect(prob, threshold=0.05, top_k=10):
-    """prob (F, H, W) in [0, 1] -> per frame list of (score, range, doppler)."""
-    peaks = (prob == F.max_pool2d(prob[:, None], 3, 1, 1)[:, 0]) & (prob > threshold)
+def detect(prob, threshold=0.05, top_k=10, circular_doppler=False):
+    """prob (F, H, W) in [0, 1] -> per frame list of (score, range, doppler).
+
+    circular_doppler: the last axis wraps (RADIal's unshifted Doppler), so a
+    peak straddling bins W-1 and 0 is one peak, not two -- with plain padding
+    both edge cells were local maxima and the second counted as a false alarm.
+    """
+    p = prob[:, None]
+    if circular_doppler:
+        p = torch.cat([p[..., -1:], p, p[..., :1]], dim=-1)
+        local_max = F.max_pool2d(p, 3, 1, padding=(1, 0))[:, 0]
+    else:
+        local_max = F.max_pool2d(p, 3, 1, 1)[:, 0]
+    peaks = (prob == local_max) & (prob > threshold)
     out = []
     for f in range(prob.shape[0]):
         rs, ds = torch.nonzero(peaks[f], as_tuple=True)

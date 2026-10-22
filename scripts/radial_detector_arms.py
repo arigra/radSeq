@@ -56,8 +56,8 @@ def dataset_pool(cache, split, limit=None):
     ds = SceneSequenceDataset(cache, split, normalise=False)
     n = len(ds) if limit is None else min(limit, len(ds))
     return [{"x": torch.from_numpy(np.array(ds.x[i], dtype=np.float16)),
-             "traj": ds.traj[i], "present": ds.present[i], "stats": ds.stats}
-            for i in range(n)]
+             "traj": ds.traj[i], "present": ds.present[i], "stats": ds.stats,
+             "recording": ds.meta[i].get("recording")} for i in range(n)]
 
 
 def normalised(item, t):
@@ -126,7 +126,7 @@ def evaluate(model, test_pool, device):
         for t in range(item["x"].shape[0]):  # frame by frame: the whole sequence
             frame = normalised(item, t)[None, None].to(device)  # does not fit at once
             probs.append(torch.sigmoid(model(frame).float())[0, 0].cpu())
-        dets += detect(torch.stack(probs), threshold=0.05, top_k=10)
+        dets += detect(torch.stack(probs), threshold=0.05, top_k=10, circular_doppler=True)
         for t in range(item["traj"].shape[1]):
             keep = item["present"][:, t]
             tgts.append(item["traj"][keep, t].float())

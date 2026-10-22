@@ -117,3 +117,13 @@ def test_real_subsets_are_nested():
     sets = [set(subset_indices(387, n)) for n in sizes]
     assert [len(s) for s in sets] == sizes
     assert all(a <= b for a, b in zip(sets, sets[1:]))
+
+
+def test_a_peak_across_the_doppler_seam_is_detected_once():
+    """RADIal's Doppler axis wraps. With plain max-pool padding, a vehicle
+    straddling bins 255 and 0 gave two local maxima, one of them a false alarm."""
+    from src.detector import detect
+    prob = torch.zeros(1, 32, 256)
+    prob[0, 10, 255], prob[0, 10, 0], prob[0, 10, 1] = 0.8, 0.9, 0.3
+    assert len(detect(prob, circular_doppler=True)[0]) == 1
+    assert len(detect(prob)[0]) == 2          # the old behaviour, still the default
