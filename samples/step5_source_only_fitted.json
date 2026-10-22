@@ -1,0 +1,50 @@
+{
+  "variant": "fitted",
+  "n_real": 387,
+  "n_sim": 1548,
+  "n_synthetic": 1548,
+  "n_test": 121,
+  "steps": 3000,
+  "batch": 8,
+  "width": 32,
+  "seeds": [
+    1,
+    2,
+    3
+  ],
+  "normalisation": "per source",
+  "real_cache": "data/radial_seq",
+  "arm_names": [
+    "sim",
+    "dit"
+  ],
+  "arms": {
+    "sim": {
+      "pool": 1548,
+      "ap": [
+        0.0001403880727439422,
+        7.639972079519308e-05,
+        3.1356165069732205e-05
+      ],
+      "mean": 8.271465286962248e-05,
+      "range": 0.00010903190767420998
+    },
+    "dit": {
+      "pool": 1548,
+      "ap": [
+        0.39591495934199183,
+        0.2359689559320504,
+        0.18581375155665675
+      ],
+      "mean": 0.2725658889435663,
+      "range": 0.2101012077853351
+    }
+  },
+  "generated_hit_rate": 0.9949664429530202,
+  "rule_source_only": {
+    "bar (largest seed range)": 0.2101012077853351,
+    "dit-only minus sim-only": 0.2724831742906967,
+    "verdict": "DiT-only > sim-only: fine-tuning taught the generator real vehicles"
+  },
+  "complete": true
+}

@@ -107,3 +107,13 @@ def test_every_vehicle_gets_exactly_one_positive_cell_even_off_grid():
     assert int(h.eq(1).sum()) == 2
     assert float(h[0, 0, 158, 40]) == 1.0
     assert float(h[0, 0, 300, 255]) == 1.0
+
+
+def test_real_subsets_are_nested():
+    """Step 5's learning curve compares sizes; each smaller subset must sit
+    inside every larger one, so a size difference is only more data."""
+    from scripts.make_radial_subset import subset_indices
+    sizes = [25, 50, 100, 200, 387]
+    sets = [set(subset_indices(387, n)) for n in sizes]
+    assert [len(s) for s in sets] == sizes
+    assert all(a <= b for a, b in zip(sets, sets[1:]))

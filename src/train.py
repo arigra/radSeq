@@ -202,6 +202,11 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
             ds.items = ds.items[:subset]
         else:
             ds = torch.utils.data.Subset(ds, range(min(subset, len(ds))))
+    repeat = cfg["data"].get("train_repeat", 1)
+    if repeat > 1:
+        # tiny training sets: longer epochs, so per-epoch checkpointing and
+        # validation keep their usual cadence in optimizer steps
+        ds = torch.utils.data.ConcatDataset([ds] * repeat)
     loader = DataLoader(ds, batch_size=tr["batch_size"], shuffle=True,
                         num_workers=cfg["data"].get("num_workers", 0), drop_last=True)
     val_loader = None
