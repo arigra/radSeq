@@ -68,22 +68,25 @@ def main():
     ap.add_argument("--stride", type=int, default=None,
                     help="window stride for TRAIN only (default: non-overlapping)")
     ap.add_argument("--out", default="data/radial_seq")
+    ap.add_argument("--split-json", default="data/radial/split.json",
+                    help="{split name: [recordings]}; every split in it is built")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
 
     recs = radial.recordings()
-    split = json.loads(Path("data/radial/split.json").read_text())
+    split = json.loads(Path(a.split_json).read_text())
     by_frame = radial.read_labels()
     counts = {}
-    for name in ("train", "val", "test"):
+    for name in split:
         sub = {k: recs[k] for k in split[name]}
         stride = a.stride if name == "train" else None
         seqs = radial.sequences(sub, seq_len=a.seq_len, stride=stride)
         counts[name] = len(seqs)
         print(f"{name}: {len(seqs)} sequences from {len(sub)} recordings", flush=True)
         arr = build_split(out, name, seqs, by_frame, a.seq_len)
-        if name == "train" and not (out / "stats.pt").exists():
+        if name == ("train" if "train" in split else next(iter(split))) \
+                and not (out / "stats.pt").exists():
             sample = np.asarray(arr[:: max(1, len(seqs) // 200)], dtype=np.float32)
             torch.save({"mean": float(sample.mean()), "std": float(sample.std())},
                        out / "stats.pt")

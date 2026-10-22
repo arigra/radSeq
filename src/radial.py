@@ -19,7 +19,9 @@ N_RANGE, N_DOPPLER = 512, 256
 
 
 def read_labels(root=DEFAULT_ROOT):
-    """Valid label rows grouped by frame. Rows with radar_R_m < 0 are dropped."""
+    """Vehicle label rows grouped by frame. A row with radar_R_m < 0 is not a
+    vehicle: it is how labels.csv marks a labelled frame with no vehicle in it,
+    so those frames have no entry here (see `recordings`)."""
     by_frame = collections.defaultdict(list)
     for r in csv.DictReader(open(os.path.join(root, "labels.csv"))):
         if float(r["radar_R_m"]) < 0:
@@ -28,11 +30,18 @@ def read_labels(root=DEFAULT_ROOT):
     return by_frame
 
 
-def recordings(root=DEFAULT_ROOT):
-    by_frame = read_labels(root)
+def recordings(root=DEFAULT_ROOT, include_empty=True):
+    """Labelled frames per recording, vehicle-free frames included.
+
+    Until 2026-10-22 this was built from read_labels, which drops the -1 rows,
+    so the 1,065 vehicle-free frames (12.9% of 8,252) never entered a real
+    cache: real data had no empty scenes and runs broke at every one of them.
+    include_empty=False reproduces that.
+    """
     recs = collections.defaultdict(set)
-    for sample, labs in by_frame.items():
-        recs[labs[0]["dataset"]].add(sample)
+    for r in csv.DictReader(open(os.path.join(root, "labels.csv"))):
+        if include_empty or float(r["radar_R_m"]) >= 0:
+            recs[r["dataset"]].add(int(r["numSample"]))
     return {k: sorted(v) for k, v in sorted(recs.items())}
 
 
