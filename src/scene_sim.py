@@ -102,6 +102,9 @@ class Scenario:
     # labels cover traffic, not every parked car, so moving vehicles are drawn
     # with this mean and parked cars are scene, not labels.
     vehicles_per_frame: float = 9550 / 8252
+    # same-direction traffic speed: ego speed +/- (this + frac * ego speed), 1 sigma
+    traffic_speed_spread_mps: float = 1.0
+    traffic_speed_spread_frac: float = 0.15
     # antenna and surface scattering
     azimuth_pattern_power: float = 2.0          # two-way cos^2 element pattern
     # backscatter from a rough surface ~cos^n(incidence); n=2 for the
@@ -316,7 +319,17 @@ class SceneSimulator:
             oncoming = bool(torch.rand((), generator=self.g) < road.p_oncoming)
             lane = float(self._u(0.3, 0.9)) * half_width
             x = -lane if oncoming else lane * float(self._u(-1.0, 1.0))
-            speed = float(self._u(*road.vehicle_speed_mps))
+            if oncoming:
+                speed = float(self._u(*road.vehicle_speed_mps))
+            else:
+                # Traffic in the ego car's direction moves with it: a traffic
+                # stream's speeds spread ~15% around its mean (road knowledge,
+                # stated 2026-10-22 before re-reading RADIal's Doppler labels).
+                # Drawing it independently of the ego speed, as before, gave
+                # relative speeds of +/-16 m/s on highways, past the +/-12.8 m/s
+                # the Doppler axis holds.
+                spread = self.sc.traffic_speed_spread_mps + self.sc.traffic_speed_spread_frac * v_ego
+                speed = max(v_ego + float(self._n(0.0, spread)), 0.0)
             out.append(self._car(x, float(self._u(8.0, self.spec.max_range_m - 10)),
                                  rcs, vy=-speed if oncoming else speed, kind=kind))
         return out

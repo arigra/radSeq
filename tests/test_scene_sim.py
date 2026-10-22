@@ -103,3 +103,20 @@ def test_a_car_over_the_radar_has_no_visible_face():
     car = sim._car(0.0, 0.5, 10.0, vy=5.0)
     visible, rcs = sim._car_returns(car, car["x"], car["y"])
     assert not bool(visible.any()) and rcs.numel() == 0
+
+
+def test_same_direction_traffic_moves_with_the_ego_car():
+    """Speeds were drawn independently of the ego speed, so highway traffic
+    closed at up to +/-16 m/s, past the +/-12.8 m/s the Doppler axis holds. A
+    traffic stream's speeds spread ~15% around its mean."""
+    from src.scene_sim import ROAD_TYPES
+    sim = SceneSimulator(seq_len=1, generator=torch.Generator().manual_seed(0))
+    road = ROAD_TYPES["highway"]
+    rel = []
+    for _ in range(200):
+        for v in sim._vehicles(road, 7.0, v_ego=30.0):
+            if v["vy"] > 0:
+                rel.append(v["vy"] - 30.0)
+    rel = torch.tensor(rel)
+    assert len(rel) > 50
+    assert abs(float(rel.mean())) < 1.0 and 3.5 < float(rel.std()) < 7.0
