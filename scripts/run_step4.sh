@@ -5,7 +5,8 @@
 # RADIal test recordings.
 #
 # Every stage is resumable: a finished one is skipped, an interrupted training
-# continues from its checkpoint.
+# continues from its checkpoint, an interrupted rendering redoes only its
+# unfinished part, and interrupted detector arms keep the seeds already scored.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY="${PY:-$(command -v python3)}"
@@ -34,7 +35,8 @@ for variant in engineer fitted; do
   "$PY" scripts/gen_scene_synthetic.py --ckpt "$ckpt/last.pt" \
       --out "data/radial_synth_${variant}" --repeats 4 --guidance 1 >> "$LOG" 2>&1
   out=samples/step4_${variant}.json
-  if [ ! -f "$out" ]; then
+  # The report is written after every detector, so only a verdict means done.
+  if ! grep -q '"verdict"' "$out" 2>/dev/null; then
     say "$variant: detector arms"
     "$PY" scripts/radial_detector_arms.py --variant "$variant" \
         --synthetic "data/radial_synth_${variant}" --out "$out" >> "$LOG" 2>&1

@@ -1,0 +1,11 @@
+{
+  "checkpoint": "checkpoints/finetune_fitted/last.pt",
+  "n_train_labels": 32,
+  "n_heldout_labels": 32,
+  "guidance": 1.0,
+  "median_rms_training_labels": 4.244949817657471,
+  "median_rms_heldout_labels": 4.1437296867370605,
+  "median_rms_unrelated_real_pairs": 4.828209161758423,
+  "ratio_training_over_heldout": 1.0244273006621034,
+  "memorising": false
+}

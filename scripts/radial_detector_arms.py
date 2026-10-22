@@ -13,6 +13,14 @@ extra data came from, not how much of it there is.
 
 Claim under test: D > B. If a generator only reproduces its simulator, D = B.
 A gate refuses to score a generator whose vehicles do not land on their labels.
+
+Every source is normalised by its own statistics, as in DiT training: real maps
+sit near 97 dB and simulated ones near 12 dB, so normalising simulated frames
+by the real statistics put them ~15 std off the real data. Generated maps come
+out in real dB and use the real statistics.
+
+Resumable: the report is rewritten after every detector, and a rerun skips the
+seeds it already holds.
 """
 import argparse
 import json
@@ -29,13 +37,14 @@ from src.scene_data import SceneSequenceDataset
 MIN_HIT_RATE = 0.5
 
 
-def synthetic_pool(folder):
+def synthetic_pool(folder, stats):
+    """Generated sequences, in the dB of the real data they were fine-tuned on."""
     pool = []
     for path in sorted(Path(folder).glob("part_*.pt")):
         part = torch.load(path, map_location="cpu")
         for i in range(len(part["x"])):
             pool.append({"x": part["x"][i], "traj": part["traj"][i],
-                         "present": part["present"][i]})
+                         "present": part["present"][i], "stats": stats})
     return pool
 
 
@@ -43,7 +52,12 @@ def dataset_pool(cache, split, limit=None):
     ds = SceneSequenceDataset(cache, split, normalise=False)
     n = len(ds) if limit is None else min(limit, len(ds))
     return [{"x": torch.from_numpy(np.array(ds.x[i], dtype=np.float16)),
-             "traj": ds.traj[i], "present": ds.present[i]} for i in range(n)]
+             "traj": ds.traj[i], "present": ds.present[i], "stats": ds.stats}
+            for i in range(n)]
+
+
+def normalised(item, t):
+    return (item["x"][t].float() - item["stats"]["mean"]) / item["stats"]["std"]
 
 
 def hit_rate(pool, radius=2.0, n=64):
@@ -65,8 +79,8 @@ def hit_rate(pool, radius=2.0, n=64):
     return hits / max(total, 1)
 
 
-def batch_from(pool, batch, stats, device, generator):
-    """One random frame per batch element.
+def batch_from(pool, batch, device, generator):
+    """One random frame per batch element, normalised by its own source.
 
     The detector is per-frame, and a batch of whole 8-frame 512x256 sequences
     does not fit in GPU memory.
@@ -74,21 +88,20 @@ def batch_from(pool, batch, stats, device, generator):
     idx = torch.randint(len(pool), (batch,), generator=generator).tolist()
     n_frames = pool[0]["x"].shape[0]
     frames = torch.randint(n_frames, (batch,), generator=generator).tolist()
-    x = torch.stack([pool[i]["x"][t].float() for i, t in zip(idx, frames)])[:, None]
+    x = torch.stack([normalised(pool[i], t) for i, t in zip(idx, frames)])[:, None]
     traj = torch.stack([pool[i]["traj"][:, t] for i, t in zip(idx, frames)])[:, :, None]
     present = torch.stack([pool[i]["present"][:, t] for i, t in zip(idx, frames)])[:, :, None]
-    x = ((x - stats["mean"]) / stats["std"]).to(device)
-    return x, scene_heatmap_targets(traj.to(device), present.to(device))
+    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device))
 
 
-def train_detector(pool, stats, device, seed, steps, batch, width):
+def train_detector(pool, device, seed, steps, batch, width):
     torch.manual_seed(seed)
     gen = torch.Generator().manual_seed(seed)
     model = RadialVehicleDetector(width=width).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
     model.train()
     for step in range(steps):
-        x, heat = batch_from(pool, batch, stats, device, gen)
+        x, heat = batch_from(pool, batch, device, gen)
         with torch.autocast(device.type, dtype=torch.bfloat16, enabled=device.type == "cuda"):
             logits = model(x)
         loss = focal_loss(logits, heat)
@@ -101,14 +114,13 @@ def train_detector(pool, stats, device, seed, steps, batch, width):
 
 
 @torch.no_grad()
-def evaluate(model, test_pool, stats, device):
+def evaluate(model, test_pool, device):
     model.eval()
     dets, tgts = [], []
     for item in test_pool:
-        x = ((item["x"].float() - stats["mean"]) / stats["std"])
         probs = []
-        for t in range(x.shape[0]):          # frame by frame: the whole sequence
-            frame = x[t][None, None].to(device)   # does not fit in memory at once
+        for t in range(item["x"].shape[0]):  # frame by frame: the whole sequence
+            frame = normalised(item, t)[None, None].to(device)  # does not fit at once
             probs.append(torch.sigmoid(model(frame).float())[0, 0].cpu())
         dets += detect(torch.stack(probs), threshold=0.05, top_k=10)
         for t in range(item["traj"].shape[1]):
@@ -136,7 +148,7 @@ def main():
     test = dataset_pool(a.real, "test")
     n_extra = len(real) * a.repeats
     sim = dataset_pool(f"data/scene_{a.variant}", "train", limit=n_extra)
-    synth = synthetic_pool(a.synthetic)
+    synth = synthetic_pool(a.synthetic, stats)
     print(f"real {len(real)}  sim {len(sim)}  synthetic {len(synth)}  test {len(test)}",
           flush=True)
 
@@ -147,23 +159,35 @@ def main():
                          f"labels (< {MIN_HIT_RATE:.0%}); refusing to score it")
 
     arms = {"real": real, "real_sim": real + sim, "real_dit": real + synth}
-    report = {"variant": a.variant, "n_real": len(real), "n_sim": len(sim),
-              "n_synthetic": len(synth), "n_test": len(test),
-              "generated_hit_rate": rate, "steps": a.steps, "arms": {}}
     seeds = [int(s) for s in a.seeds.split(",")]
+    settings = {"variant": a.variant, "n_real": len(real), "n_sim": len(sim),
+                "n_synthetic": len(synth), "n_test": len(test), "steps": a.steps,
+                "batch": a.batch, "width": a.width, "seeds": seeds,
+                "normalisation": "per source"}
+    out = Path(a.out)
+    report = json.loads(out.read_text()) if out.exists() else {**settings, "arms": {}}
+    stale = {k: (report.get(k), v) for k, v in settings.items() if report.get(k) != v}
+    if stale:
+        raise SystemExit(f"{out} holds a different experiment {stale}; move it away first")
+    report["generated_hit_rate"] = rate
+
+    def save():
+        tmp = out.with_suffix(".tmp")
+        tmp.write_text(json.dumps(report, indent=2))
+        tmp.replace(out)
+
     for name, pool in arms.items():
-        aps = []
-        for seed in seeds:
-            model = train_detector(pool, stats, device, seed, a.steps, a.batch, a.width)
-            ap_value = evaluate(model, test, stats, device)
-            aps.append(ap_value)
+        arm = report["arms"].setdefault(name, {"pool": len(pool), "ap": []})
+        for seed in seeds[len(arm["ap"]):]:
+            model = train_detector(pool, device, seed, a.steps, a.batch, a.width)
+            ap_value = evaluate(model, test, device)
+            arm["ap"].append(ap_value)
+            arm["mean"] = sum(arm["ap"]) / len(arm["ap"])
+            arm["range"] = max(arm["ap"]) - min(arm["ap"])
             print(f"{name} seed {seed}: AP {ap_value:.4f}", flush=True)
+            save()
             del model
             torch.cuda.empty_cache()
-        report["arms"][name] = {"pool": len(pool), "ap": aps,
-                                "mean": sum(aps) / len(aps),
-                                "range": max(aps) - min(aps)}
-        Path(a.out).write_text(json.dumps(report, indent=2))
     A, B, D = (report["arms"][k] for k in ("real", "real_sim", "real_dit"))
     bar = max(A["range"], B["range"], D["range"])
     report["rule"] = {
@@ -175,7 +199,7 @@ def main():
                     if D["mean"] - B["mean"] > bar else
                     "D = B within the seed spread" if abs(D["mean"] - B["mean"]) <= bar
                     else "B > D: raw simulator data is better")}
-    Path(a.out).write_text(json.dumps(report, indent=2))
+    save()
     print(json.dumps(report["rule"], indent=2), flush=True)
 
 

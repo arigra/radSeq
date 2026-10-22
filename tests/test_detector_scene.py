@@ -70,14 +70,28 @@ def test_training_batches_are_frames_not_whole_sequences():
     time, and the target must be that frame's vehicles."""
     from scripts.radial_detector_arms import batch_from
     pool = [{"x": torch.zeros(8, 512, 256, dtype=torch.float16),
-             "traj": torch.zeros(8, 8, 2), "present": torch.zeros(8, 8, dtype=torch.bool)}
+             "traj": torch.zeros(8, 8, 2), "present": torch.zeros(8, 8, dtype=torch.bool),
+             "stats": {"mean": 0.0, "std": 1.0}}
             for _ in range(3)]
     pool[0]["traj"][0, 5] = torch.tensor([100.0, 40.0])
     pool[0]["present"][0, 5] = True
-    x, heat = batch_from(pool, 4, {"mean": 0.0, "std": 1.0}, torch.device("cpu"),
-                         torch.Generator().manual_seed(0))
+    x, heat = batch_from(pool, 4, torch.device("cpu"), torch.Generator().manual_seed(0))
     assert x.shape == (4, 1, 512, 256)
     assert heat.shape == (4, 1, 512, 256)
+
+
+def test_each_source_is_normalised_by_its_own_statistics():
+    """Real maps sit near 97 dB and simulated ones near 12 dB. Normalising the
+    simulated frames by the real statistics put them ~15 std off the real data,
+    which made the real+sim arm meaningless."""
+    from scripts.radial_detector_arms import batch_from
+    def item(level, mean, std):
+        return {"x": torch.full((8, 512, 256), level, dtype=torch.float16),
+                "traj": torch.zeros(8, 8, 2), "present": torch.zeros(8, 8, dtype=torch.bool),
+                "stats": {"mean": mean, "std": std}}
+    pool = [item(97.0, 97.0, 5.6), item(12.5, 12.5, 5.5)]
+    x, _ = batch_from(pool, 16, torch.device("cpu"), torch.Generator().manual_seed(0))
+    assert float(x.abs().max()) < 0.05
 
 
 def test_every_vehicle_gets_exactly_one_positive_cell_even_off_grid():
