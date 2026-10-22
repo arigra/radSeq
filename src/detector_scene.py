@@ -115,3 +115,32 @@ def average_precision_wrapped(detections, targets, n_doppler, radius=2.0):
         ap += (recall - prev_recall) * precision
         prev_recall = recall
     return ap
+
+
+class RadialSequenceDetector(RadialVehicleDetector):
+    """The same U-Net, reading all L frames of a sequence at once as channels
+    and predicting every frame's heatmap.
+
+    The per-frame detector cannot tell a generator that models time from one
+    that does not; this one can use persistence (a vehicle stays, clutter
+    flickers), so it gains from training data only if the data's temporal
+    behaviour is real.
+    """
+
+    def __init__(self, width=32, seq_len=8):
+        super().__init__(width)
+        self.enc1 = _conv(seq_len, width)
+        self.head = nn.Conv2d(width, seq_len, 1)
+        self.head.bias.data.fill_(-4.0)
+
+    def forward(self, x):
+        h = x
+        e1 = self.enc1(h)
+        e2 = self.enc2(F.avg_pool2d(e1, 2))
+        e3 = self.enc3(F.avg_pool2d(e2, 2))
+        m = self.mid(F.avg_pool2d(e3, 2))
+        up = lambda t, ref: F.interpolate(t, size=ref.shape[-2:], mode="nearest")
+        d3 = self.dec3(torch.cat([up(m, e3), e3], 1))
+        d2 = self.dec2(torch.cat([up(d3, e2), e2], 1))
+        d1 = self.dec1(torch.cat([up(d2, e1), e1], 1))
+        return self.head(d1)

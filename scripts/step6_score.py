@@ -79,7 +79,8 @@ def main():
     per_arm = {}
     recs = None
     for name, arm in report["arms"].items():
-        tag = "" if name == "real" else f"{variant}_"
+        tag = ("seq_" if report.get("detector") == "sequence" else "") + \
+              ("" if name == "real" else f"{variant}_")
         runs = []
         for seed in sorted(arm["runs"], key=int):
             d = torch.load(Path(a.dets_dir) / f"{tag}{cache}_{name}_s{seed}.pt")

@@ -86,3 +86,40 @@ def with_median(stats, items):
     stats["_median"] = float(np.median(np.stack([np.asarray(it["x"], np.float32)
                                                  for it in items])))
     return stats
+
+
+def vehicle_persistence(x, traj, present, win_r=4, win_d=2):
+    """Temporal fidelity of the vehicles themselves: Pearson correlation of each
+    vehicle's window (around its label) between consecutive frames, averaged.
+    Real vehicles change slowly; a generator that renders each frame on its
+    own, or smooths them in time, sits below or above real."""
+    vals = []
+    for m in range(traj.shape[0]):
+        for t in range(x.shape[0] - 1):
+            if not (present[m, t] and present[m, t + 1]):
+                continue
+            wins = []
+            for f in (t, t + 1):
+                r, d = int(round(float(traj[m, f, 0]))), int(round(float(traj[m, f, 1])))
+                if not win_r <= r < x.shape[1] - win_r:
+                    break
+                cols = [(d + k) % x.shape[2] for k in range(-win_d, win_d + 1)]
+                wins.append(x[f, r - win_r:r + win_r + 1][:, cols].ravel())
+            if len(wins) == 2 and wins[0].std() > 0 and wins[1].std() > 0:
+                vals.append(float(np.corrcoef(wins[0], wins[1])[0, 1]))
+    return float(np.mean(vals)) if vals else float("nan")
+
+
+def temporal(items):
+    """Temporal statistics over items: frame-to-frame change of the whole map
+    and of the vehicles."""
+    fc, vp = [], []
+    for it in items:
+        x = np.asarray(it["x"], dtype=np.float32)
+        fc.append(frame_change_db(x))
+        v = vehicle_persistence(x, np.asarray(it["traj"]), np.asarray(it["present"]))
+        if v == v:
+            vp.append(v)
+    return {"frame_change_db": float(np.mean(fc)),
+            "vehicle_persistence": float(np.mean(vp)) if vp else float("nan"),
+            "n_vehicle_pairs_seqs": len(vp)}

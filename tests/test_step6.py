@@ -40,3 +40,17 @@ def test_speckle_and_frame_change_are_zero_on_a_flat_map():
     from src.eval.scene_realism import frame_change_db, speckle_db
     x = np.full((3, 16, 16), 97.0, np.float32)
     assert speckle_db(x) == 0.0 and frame_change_db(x) == 0.0
+
+
+def test_vehicle_persistence_is_one_for_a_static_vehicle_and_lower_when_it_flickers():
+    from src.eval.scene_realism import vehicle_persistence
+    rng = np.random.default_rng(0)
+    blob = rng.normal(size=(9, 5)).astype(np.float32)
+    x = np.zeros((3, 64, 32), np.float32)
+    for t in range(3):
+        x[t, 26:35, 8:13] = blob
+    traj = torch.tensor([[[30.0, 10.0]] * 3])
+    present = torch.ones(1, 3, dtype=torch.bool)
+    assert abs(vehicle_persistence(x, traj, present) - 1.0) < 1e-6
+    x[1, 26:35, 8:13] = rng.normal(size=(9, 5))
+    assert vehicle_persistence(x, traj, present) < 0.5

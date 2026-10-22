@@ -15,6 +15,12 @@ which was biased against any extra data:
 - test detections are saved per arm and seed, for bootstrap confidence
   intervals over test recordings (scripts/step6_score.py)
 
+--detector sequence (step 7) swaps the per-frame detector for one that reads
+all 8 frames at once (src.detector_scene.RadialSequenceDetector), so the study
+also tests whether the generated sequences behave like real ones over time.
+Batches are then whole sequences: --batch / 4 of them (8 -> 2 sequences, 16
+frames).
+
 Resumable per (arm, seed). Real-only detections do not depend on the
 simulator variant and are shared between the variants' reports.
 """
@@ -27,7 +33,8 @@ import torch
 
 from scripts.radial_detector_arms import batch_from, dataset_pool, normalised, synthetic_pool
 from src.detector import detect, focal_loss
-from src.detector_scene import RadialVehicleDetector, average_precision_wrapped
+from src.detector_scene import (RadialSequenceDetector, RadialVehicleDetector,
+                                average_precision_wrapped, scene_heatmap_targets)
 
 # arm -> stages; a stage is (kind, source): "real" = real batches, "mix" =
 # half real + half source, "only" = source alone, "ft" = real batches at the
@@ -48,13 +55,35 @@ VAL_EVERY, PATIENCE, MAX_STEPS = 250, 4, 6000
 N_VAL = 32
 
 
+SEQUENCE = False      # set by --detector sequence
+
+
+def seq_batch_from(pool, n, device, generator):
+    """n whole sequences, each normalised by its own source."""
+    idx = torch.randint(len(pool), (n,), generator=generator).tolist()
+    x = torch.stack([torch.stack([normalised(pool[i], t) for t in range(pool[i]["x"].shape[0])])
+                     for i in idx])
+    traj = torch.stack([pool[i]["traj"] for i in idx])
+    present = torch.stack([pool[i]["present"] for i in idx])
+    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device))
+
+
+def draw_from(pool, n, device, generator):
+    return (seq_batch_from(pool, max(n // 4, 1), device, generator) if SEQUENCE
+            else batch_from(pool, n, device, generator))
+
+
 @torch.no_grad()
 def detections(model, pool, device):
     model.eval()
     dets, tgts, recs = [], [], []
     for item in pool:
-        probs = [torch.sigmoid(model(normalised(item, t)[None, None].to(device)).float())[0, 0].cpu()
-                 for t in range(item["x"].shape[0])]
+        if SEQUENCE:
+            x = torch.stack([normalised(item, t) for t in range(item["x"].shape[0])])
+            probs = list(torch.sigmoid(model(x[None].to(device)).float())[0].cpu())
+        else:
+            probs = [torch.sigmoid(model(normalised(item, t)[None, None].to(device)).float())[0, 0].cpu()
+                     for t in range(item["x"].shape[0])]
         dets += detect(torch.stack(probs), threshold=0.05, top_k=10, circular_doppler=True)
         for t in range(item["traj"].shape[1]):
             tgts.append(item["traj"][item["present"][:, t], t].float())
@@ -109,7 +138,10 @@ def main():
     ap_.add_argument("--width", type=int, default=32)
     ap_.add_argument("--out", required=True)
     ap_.add_argument("--dets-dir", default="samples/step6_dets")
+    ap_.add_argument("--detector", default="frame", choices=("frame", "sequence"))
     a = ap_.parse_args()
+    global SEQUENCE
+    SEQUENCE = a.detector == "sequence"
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     stats = torch.load(Path(a.real) / "stats.pt")
     names = a.arms.split(",")
@@ -133,7 +165,8 @@ def main():
     settings = {"variant": a.variant, "real_cache": a.real, "n_real": len(real),
                 "n_extra": n_extra, "batch": a.batch, "width": a.width, "lr": LR,
                 "lr_ft": LR_FT, "val_every": VAL_EVERY, "patience": PATIENCE,
-                "max_steps": MAX_STEPS, "n_val": len(val), "n_test": len(test)}
+                "max_steps": MAX_STEPS, "n_val": len(val), "n_test": len(test),
+                "detector": a.detector}
     report = json.loads(out.read_text()) if out.exists() else {**settings, "arms": {}}
     stale = {k: (report.get(k), v) for k, v in settings.items() if report.get(k) != v}
     if stale:
@@ -149,7 +182,7 @@ def main():
         arm = report["arms"].setdefault(name, {"stages": ARMS[name], "runs": {}})
         for seed in seeds:
             # real-only does not depend on the variant: one set of detections for both
-            tag = "" if name == "real" else f"{a.variant}_"
+            tag = ("seq_" if SEQUENCE else "") + ("" if name == "real" else f"{a.variant}_")
             det_path = dets_dir / f"{tag}{Path(a.real).name}_{name}_s{seed}.pt"
             if str(seed) in arm["runs"] and det_path.exists():
                 continue
@@ -160,18 +193,19 @@ def main():
                 continue
             torch.manual_seed(seed)
             gen = torch.Generator().manual_seed(seed)
-            model = RadialVehicleDetector(width=a.width).to(device)
+            model = (RadialSequenceDetector(width=a.width) if SEQUENCE
+                     else RadialVehicleDetector(width=a.width)).to(device)
             run = {"stages": []}
             for kind, src in ARMS[name]:
                 half = a.batch // 2
                 if kind in ("real", "ft"):
-                    draw = lambda g: batch_from(real, a.batch, device, g)
+                    draw = lambda g: draw_from(real, a.batch, device, g)
                 elif kind == "only":
-                    draw = lambda g, s=sources[src]: batch_from(s, a.batch, device, g)
+                    draw = lambda g, s=sources[src]: draw_from(s, a.batch, device, g)
                 else:
                     def draw(g, s=sources[src]):
-                        x1, h1 = batch_from(real, half, device, g)
-                        x2, h2 = batch_from(s, a.batch - half, device, g)
+                        x1, h1 = draw_from(real, half, device, g)
+                        x2, h2 = draw_from(s, a.batch - half, device, g)
                         return torch.cat([x1, x2]), torch.cat([h1, h2])
                 lr = LR_FT if kind == "ft" else LR
                 run["stages"].append(run_stage(

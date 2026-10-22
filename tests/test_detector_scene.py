@@ -127,3 +127,13 @@ def test_a_peak_across_the_doppler_seam_is_detected_once():
     prob[0, 10, 255], prob[0, 10, 0], prob[0, 10, 1] = 0.8, 0.9, 0.3
     assert len(detect(prob, circular_doppler=True)[0]) == 1
     assert len(detect(prob)[0]) == 2          # the old behaviour, still the default
+
+
+def test_sequence_detector_reads_all_frames_and_predicts_each():
+    from src.detector_scene import RadialSequenceDetector
+    det = RadialSequenceDetector(width=4, seq_len=8)
+    x = torch.zeros(2, 8, 64, 32)
+    assert det(x).shape == (2, 8, 64, 32)
+    x2 = x.clone()
+    x2[:, 0, 30, 10] = 5.0                     # a change in frame 0 reaches frame 7's output
+    assert not torch.allclose(det(x)[:, 7], det(x2)[:, 7])
