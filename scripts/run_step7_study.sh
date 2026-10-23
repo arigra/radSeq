@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Step 7 detector study for one fold, called by run_step7.sh once the fold's
-# generator has passed the realism gate. Args: fold tag cache finetune-dir sampler-json.
+# generator has passed the realism gate. Args: fold tag cache checkpoint sampler-json.
 # Resumable: generation skips finished parts, the study keeps scored seeds.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-k=$1 tag=$2 cache=$3 ft=$4 sel=$5
+k=$1 tag=$2 cache=$3 gen_ckpt=$4 sel=$5
 PY="${PY:-$(command -v python3)}"
 LOG=logs/step7.log
 N=50
@@ -20,14 +20,14 @@ say "$tag: sampler ddim${steps} eta${eta} ${weights}"
 simlab="data/step7_synth_${tag}_simlabels"
 reallab="data/step7_synth_${tag}_reallabels"
 say "$tag: rendering the simulator's scenes"
-"$PY" scripts/gen_scene_synthetic.py --ckpt "$ft/last.pt" --cache data/scene_engineer \
+"$PY" scripts/gen_scene_synthetic.py --ckpt "$gen_ckpt" --cache data/scene_engineer \
     --split train --limit $((4 * N)) --repeats 1 "${sampler[@]}" --out "$simlab"
 say "$tag: rendering the real labels"
-"$PY" scripts/gen_scene_synthetic.py --ckpt "$ft/last.pt" --cache "$cache" \
+"$PY" scripts/gen_scene_synthetic.py --ckpt "$gen_ckpt" --cache "$cache" \
     --repeats 4 "${sampler[@]}" --out "$reallab"
 
 mem="samples/step7_memorization_${tag}.json"
-[ -f "$mem" ] || "$PY" scripts/memorization_check_scene.py --ckpt "$ft/last.pt" --cache "$cache" \
+[ -f "$mem" ] || "$PY" scripts/memorization_check_scene.py --ckpt "$gen_ckpt" --cache "$cache" \
     --n 32 --steps "$steps" --eta "$eta" --weights "$weights" --out "$mem"
 tf="samples/step7_temporal_${tag}.json"
 [ -f "$tf" ] || "$PY" scripts/temporal_fidelity.py --real "$cache" --generated "$reallab" --out "$tf"

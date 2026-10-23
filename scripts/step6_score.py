@@ -69,25 +69,30 @@ def ap_from(frames):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--report", required=True, help="radial_detector_study.py output")
+    ap.add_argument("--report", required=True, nargs="+",
+                    help="radial_detector_study.py output(s); several (one per "
+                         "cross-validation fold, disjoint test recordings) are pooled")
     ap.add_argument("--dets-dir", default="samples/step6_dets")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
-    report = json.loads(Path(a.report).read_text())
-    variant, cache = report["variant"], Path(report["real_cache"]).name
 
-    per_arm = {}
-    recs = None
-    for name, arm in report["arms"].items():
-        tag = ("seq_" if report.get("detector") == "sequence" else "") + \
-              ("" if name == "real" else f"{variant}_")
-        runs = []
-        for seed in sorted(arm["runs"], key=int):
-            d = torch.load(Path(a.dets_dir) / f"{tag}{cache}_{name}_s{seed}.pt")
-            if recs is None:
-                recs = d["recs"]
-            runs.append(frame_scores(d["dets"], d["tgts"]))
-        per_arm[name] = runs
+    per_arm, recs = {}, []
+    for rpath in a.report:
+        report = json.loads(Path(rpath).read_text())
+        variant, cache = report["variant"], Path(report["real_cache"]).name
+        fold_recs = None
+        for name, arm in report["arms"].items():
+            tag = ("seq_" if report.get("detector") == "sequence" else "") + \
+                  ("" if name == "real" else f"{variant}_")
+            for j, seed in enumerate(sorted(arm["runs"], key=int)):
+                d = torch.load(Path(a.dets_dir) / f"{tag}{cache}_{name}_s{seed}.pt")
+                fold_recs = fold_recs or d["recs"]
+                runs = per_arm.setdefault(name, {})
+                runs.setdefault(j, []).extend(frame_scores(d["dets"], d["tgts"]))
+        recs += fold_recs
+    # an arm counts only seeds present in every report, so frames line up with recs
+    per_arm = {n: [r for r in runs.values() if len(r) == len(recs)] for n, runs in per_arm.items()}
+    per_arm = {n: r for n, r in per_arm.items() if r}
     recs = np.array(recs)
     recordings = sorted(set(recs))
     frames_of = {r: np.nonzero(recs == r)[0] for r in recordings}
@@ -117,7 +122,7 @@ def main():
         verdicts.append({"comparison": f"{x} - {y}", "role": role,
                          "difference": point[x] - point[y], "ci95": [float(lo), float(hi)],
                          "verdict": verdict})
-    result = {"report": a.report, "n_recordings": len(recordings), "n_boot": N_BOOT,
+    result = {"reports": a.report, "n_recordings": len(recordings), "n_boot": N_BOOT,
               "test_ap": point,
               "test_ap_ci95": {n: [float(v) for v in np.percentile(boot[n], [2.5, 97.5])]
                                for n in per_arm},

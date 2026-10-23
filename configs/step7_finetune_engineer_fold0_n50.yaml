@@ -1,0 +1,51 @@
+# Step 7: fine-tune on data/radial_fold0_n50 (written by run_step7.sh)
+data:
+  kind: scene
+  cache_dir: data/radial_fold0_n50
+  seq_len: 8
+  n_range: 512
+  n_doppler: 256
+  num_workers: 4
+  seed: 1234
+  train_repeat: 8
+model:
+  patch: 16
+  stride: 16
+  dim: 384
+  depth: 12
+  heads: 6
+  attn_mode: factorized
+  cond_channels: 2
+diffusion:
+  timesteps: 1000
+  parameterization: v
+  schedule_shift: 16.0
+  x0_clamp: 'off'
+  terminal_x0: mean
+train:
+  seed: 2026
+  batch_size: 8
+  lr: 5.0e-05
+  weight_decay: 0.0
+  epochs: 192
+  lambda_smooth: 0.0
+  lambda_traj: 0.0
+  lambda_doppler: 0.0
+  amp: bf16
+  ema_decay: 0.999
+  phase: 1
+  cond_dropout: 0.1
+  init_from: checkpoints/pretrain_engineer/last.pt
+  init_weights: ema
+  ckpt_dir: checkpoints/step7_finetune_engineer_fold0_n50
+  log_file: logs/step7_finetune_engineer_fold0_n50.log
+  log_every_steps: 100
+  save_every_steps: 500
+  val_every_epochs: 10
+  val_batch_size: 8
+  val_seed: 4321
+  wandb: false
+  snapshot_every_epochs: 0
+sample:
+  ddim_steps: 30
+  weights: ema

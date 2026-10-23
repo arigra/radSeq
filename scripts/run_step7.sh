@@ -9,10 +9,14 @@
 #  2  move the old-traffic engineer cache and pretrained DiT aside
 #  3  real caches: all recordings, folds 0/1, 50-sequence subsets
 #  4  engineer scene cache with the new traffic; 5  re-pretrain (60k steps)
-#  6  per fold: fine-tune on its 50 real sequences; 7  realism gate on its val.
+#  6  per fold: fine-tune on its 50 real sequences, early-stopped on val loss
+#     (2026-10-23: 9,600 fixed steps overfit 50 sequences from the first
+#     validation and failed the gate; the val-best checkpoint passed it);
+#     7  realism gate on its val, with the val-best checkpoint.
 #     A failed gate stops the study (protocol: no detector study on a generator
 #     whose maps do not look real)
-#  8  if scripts/run_step7_study.sh exists, the detector study per fold
+#  8  if scripts/run_step7_study.sh exists, the detector study per fold, then
+#     verdicts pooled over the folds
 # Every stage is resumable; a heartbeat file keeps two copies from running at once.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -84,7 +88,7 @@ fi
 
 # 6-8. per fold
 for k in $FOLDS; do
-  tag="engineer_fold${k}_n${N}"
+  tag="engineer_fold${k}_n${N}_es"
   cache="data/radial_fold${k}_n${N}"
   cfg="configs/step7_finetune_${tag}.yaml"
   ft="checkpoints/step7_finetune_${tag}"
@@ -95,7 +99,11 @@ cfg = yaml.safe_load(open("configs/finetune_engineer.yaml"))
 rep = math.ceil(400 / n)
 per_epoch = n * rep // cfg["train"]["batch_size"]
 cfg["data"].update(cache_dir=cache, train_repeat=rep)
+# at most the old 9,600 steps; validate every ~200 and stop after 4 without
+# improvement; downstream stages use best.pt
 cfg["train"].update(epochs=math.ceil(9600 / per_epoch), snapshot_every_epochs=0,
+                    val_every_epochs=max(1, round(200 / per_epoch)),
+                    early_stopping_patience=4,
                     init_from="checkpoints/pretrain_engineer/last.pt",
                     ckpt_dir=ft, log_file=f"logs/step7_finetune_{tag}.log")
 open(out, "w").write(f"# Step 7: fine-tune on {cache} (written by run_step7.sh)\n"
@@ -111,7 +119,7 @@ PYEOF
   sel="samples/step7_sampler_${tag}.json"
   if ! grep -q '"chosen"' "$sel" 2>/dev/null; then
     say "$tag: realism gate"
-    "$PY" scripts/select_sampler.py --ckpt "$ft/last.pt" --cache "$cache" --out "$sel" >> "$LOG" 2>&1
+    "$PY" scripts/select_sampler.py --ckpt "$ft/best.pt" --cache "$cache" --out "$sel" >> "$LOG" 2>&1
   fi
   if ! "$PY" -c "import json,sys; sys.exit(not json.load(open('$sel'))['chosen']['accepted'])"; then
     say "$tag: REALISM GATE FAILED ($sel) -- no detector study, per protocol"
@@ -120,10 +128,17 @@ PYEOF
   fi
   say "$tag: realism gate passed"
   if [ -f scripts/run_step7_study.sh ]; then
-    bash scripts/run_step7_study.sh "$k" "$tag" "$cache" "$ft" "$sel" >> "$LOG" 2>&1
+    bash scripts/run_step7_study.sh "$k" "$tag" "$cache" "$ft/best.pt" "$sel" >> "$LOG" 2>&1
   else
     say "$tag: detector study not implemented yet (scripts/run_step7_study.sh missing); stopping"
     exit 0
   fi
+done
+for det in frame sequence; do
+  reports=()
+  for k in $FOLDS; do reports+=("samples/step7_study_engineer_fold${k}_n${N}_es_${det}.json"); done
+  "$PY" scripts/step6_score.py --report "${reports[@]}" --dets-dir samples/step7_dets \
+      --out "samples/step7_verdict_pooled_${det}.json" >> "$LOG" 2>&1
+  say "pooled verdicts ($det) -> samples/step7_verdict_pooled_${det}.json"
 done
 say "DONE"
