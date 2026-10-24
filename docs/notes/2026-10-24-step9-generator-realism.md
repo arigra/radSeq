@@ -57,3 +57,24 @@ answer. Fail at either gate: report; the generator needs a further change.
   already passes the simulator gate, so the screen is moot (shift4 not run).
   Part 3b runs directly: fine-tune from the 30k snapshot's **raw** weights on
   fold 0's 427 real training sequences (scripts/run_step9_fullreal.sh).
+- **Part 3b (samples/step9_realgate_fullreal_fold0*.json): full real data FAILS.**
+  Fine-tuned from the 30k raw weights on fold 0's 427 real sequences. With
+  16+16 val sequences the chosen snapshot (ep180 raw) scored 1% clutter error on
+  the selection half and 52% on the held-out half: 16 sequences are too few
+  (real clutter counts vary 170-363 per frame between subsets of recordings).
+  Re-scored with 32+32: chosen ep180 raw, held-out errors speckle 13%, frame
+  change 11%, bright tail 5%, **clutter peaks 41%** -> fail.
+- **In-sample (samples/step9_insample_realism_fold0.json), against 32 of the
+  real sequences it trained on:** clutter peaks 38% (raw) / 48% (EMA) short. Not
+  a generalisation failure: after fine-tuning it cannot reproduce real clutter
+  even on its own training data. The simulator-only model (30k EMA, never shown
+  real data) is closest: 24% short. Fine-tuning on real data removes clutter.
+
+## Part 4 (added 2026-10-24, before running): from scratch on real data only
+Same architecture and recipe as pretrain_engineer, trained on fold 0's 427 real
+training sequences only, no simulator, 60k steps, snapshots every ~5.3k. Question:
+can this generator represent real clutter at all? Measured in-sample (real
+train 0-31) and held-out (real val, 32+32). If even in-sample clutter stays
+>25% short, the architecture or objective has to change (candidates: patch 8 at
+batch 4, a lower schedule shift); if not, the problem is combining the
+simulator prior with real data. Script: scripts/run_step9_scratch.sh.

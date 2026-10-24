@@ -1,0 +1,59 @@
+{
+  "real_train": {
+    "speckle_db": 1.51615359634161,
+    "frame_change_db": 2.4851260036230087,
+    "brightest_db": 120.6097412109375,
+    "off_label_peaks": 169.6015625,
+    "_median": 97.0625
+  },
+  "models": {
+    "pre30k_ema": {
+      "stats": {
+        "speckle_db": 1.5815547928214073,
+        "frame_change_db": 2.1918164864182472,
+        "brightest_db": 37.798763275146484,
+        "off_label_peaks": 128.30078125,
+        "_median": 12.225525856018066
+      },
+      "relative_error": {
+        "speckle_db": 0.043136260493400296,
+        "frame_change_db": 0.11802601428545363,
+        "brightest_db": 0.08603964218321505,
+        "off_label_peaks": 0.2435165138882491
+      },
+      "score": 0.12267960771257952
+    },
+    "full_ep200_raw": {
+      "stats": {
+        "speckle_db": 1.2284358069300652,
+        "frame_change_db": 2.0228992700576782,
+        "brightest_db": 118.21068739891052,
+        "off_label_peaks": 104.73046875,
+        "_median": 97.00760650634766
+      },
+      "relative_error": {
+        "speckle_db": 0.1897682333147453,
+        "frame_change_db": 0.18599730270878043,
+        "brightest_db": 0.09955137832816656,
+        "off_label_peaks": 0.38249113270993595
+      },
+      "score": 0.21445201176540707
+    },
+    "full_ep200_ema": {
+      "stats": {
+        "speckle_db": 1.2295970730483532,
+        "frame_change_db": 2.0227296836674213,
+        "brightest_db": 117.20316624641418,
+        "off_label_peaks": 87.71875,
+        "_median": 97.08911895751953
+      },
+      "relative_error": {
+        "speckle_db": 0.1890023042419323,
+        "frame_change_db": 0.1860655432688203,
+        "brightest_db": 0.1458002613252272,
+        "off_label_peaks": 0.48279515408355983
+      },
+      "score": 0.2509158157298849
+    }
+  }
+}
