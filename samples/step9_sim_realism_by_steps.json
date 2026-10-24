@@ -1,0 +1,196 @@
+{
+  "candidates": {
+    "base_s7500_ema": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0010.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 4.664989799261093,
+        "frame_change_db": 5.3316331803798676,
+        "brightest_db": 28.40326988697052,
+        "off_label_peaks": 162.4296875,
+        "_median": 12.211956024169922
+      },
+      "relative_error": {
+        "speckle_db": 1.4994252343741836,
+        "frame_change_db": 1.2220753217407154,
+        "brightest_db": 0.5203406412223627,
+        "off_label_peaks": 0.6995910936438903
+      },
+      "score": 0.985358072745288
+    },
+    "base_s7500_raw": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0010.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 2.031071648001671,
+        "frame_change_db": 2.3495996594429016,
+        "brightest_db": 44.3459312915802,
+        "off_label_peaks": 308.421875,
+        "_median": 12.414514541625977
+      },
+      "relative_error": {
+        "speckle_db": 0.08821496901052706,
+        "frame_change_db": 0.02075269573469105,
+        "brightest_db": 0.054048175896744634,
+        "off_label_peaks": 0.42958285772081667
+      },
+      "score": 0.14814967459069484
+    },
+    "base_s15000_ema": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0020.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 3.122043251991272,
+        "frame_change_db": 3.5621088594198227,
+        "brightest_db": 31.062482357025146,
+        "off_label_peaks": 14.5078125,
+        "_median": 12.884546279907227
+      },
+      "relative_error": {
+        "speckle_db": 0.6727397106142916,
+        "frame_change_db": 0.4845871653358585,
+        "brightest_db": 0.46148797827435195,
+        "off_label_peaks": 0.973168229565519
+      },
+      "score": 0.6479957709475053
+    },
+    "base_s15000_raw": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0020.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.7594171464443207,
+        "frame_change_db": 2.1323606073856354,
+        "brightest_db": 50.252281188964844,
+        "off_label_peaks": 365.46875,
+        "_median": 12.163707733154297
+      },
+      "relative_error": {
+        "speckle_db": 0.057333069772179036,
+        "frame_change_db": 0.11129184577809388,
+        "brightest_db": 0.1283544297503327,
+        "off_label_peaks": 0.32407634845179095
+      },
+      "score": 0.15526392343809914
+    },
+    "base_s30000_ema": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0040.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.5938865542411804,
+        "frame_change_db": 2.207868754863739,
+        "brightest_db": 38.76796913146973,
+        "off_label_peaks": 131.609375,
+        "_median": 12.220643043518066
+      },
+      "relative_error": {
+        "speckle_db": 0.14602165367411252,
+        "frame_change_db": 0.07982216558349764,
+        "brightest_db": 0.21354909697209687,
+        "off_label_peaks": 0.7565923507058331
+      },
+      "score": 0.29899631673388505
+    },
+    "base_s30000_raw": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0040.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.752450354397297,
+        "frame_change_db": 1.7441628575325012,
+        "brightest_db": 51.217122077941895,
+        "off_label_peaks": 512.359375,
+        "_median": 11.648482322692871
+      },
+      "relative_error": {
+        "speckle_db": 0.061065763002875216,
+        "frame_change_db": 0.27308179094503915,
+        "brightest_db": 0.17220063384178094,
+        "off_label_peaks": 0.052406478926151225
+      },
+      "score": 0.13968866667896163
+    },
+    "base_s60000_ema": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0080.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.5451811328530312,
+        "frame_change_db": 2.1993529871106148,
+        "brightest_db": 45.76683568954468,
+        "off_label_peaks": 317.65625,
+        "_median": 12.069143295288086
+      },
+      "relative_error": {
+        "speckle_db": 0.17211722183326486,
+        "frame_change_db": 0.08337129897840695,
+        "brightest_db": 0.0017231669351747381,
+        "off_label_peaks": 0.4125041540840064
+      },
+      "score": 0.16742896045771324
+    },
+    "base_s60000_raw": {
+      "ckpt": "checkpoints/pretrain_engineer/epoch_0080.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.5837179198861122,
+        "frame_change_db": 2.2498249262571335,
+        "brightest_db": 45.97680068016052,
+        "off_label_peaks": 354.796875,
+        "_median": 12.055984497070312
+      },
+      "relative_error": {
+        "speckle_db": 0.1514698416444715,
+        "frame_change_db": 0.062336008923083275,
+        "brightest_db": 0.004886760732638286,
+        "off_label_peaks": 0.343813665852707
+      },
+      "score": 0.140626569288225
+    }
+  },
+  "references": {},
+  "real_select": {
+    "speckle_db": 1.866425022482872,
+    "frame_change_db": 2.399393543601036,
+    "brightest_db": 45.802734375,
+    "off_label_peaks": 540.6953125,
+    "_median": 12.046875
+  },
+  "real_gate": {
+    "speckle_db": 1.8561299964785576,
+    "frame_change_db": 2.288578078150749,
+    "brightest_db": 44.7586669921875,
+    "off_label_peaks": 509.796875,
+    "_median": 12.0
+  },
+  "steps": 250,
+  "eta": 1.0,
+  "select_val_idx": [
+    0,
+    16
+  ],
+  "gate_val_idx": [
+    16,
+    32
+  ],
+  "chosen": {
+    "key": "base_s30000_raw",
+    "ckpt": "checkpoints/pretrain_engineer/epoch_0040.pt",
+    "weights": "raw",
+    "steps": 250,
+    "eta": 1.0,
+    "select_score": 0.13968866667896163,
+    "gate_stats": {
+      "speckle_db": 1.7314825728535652,
+      "frame_change_db": 1.7654280066490173,
+      "brightest_db": 51.42110562324524,
+      "off_label_peaks": 501.3359375,
+      "_median": 11.700054168701172
+    },
+    "gate_relative_error": {
+      "speckle_db": 0.0671544686317623,
+      "frame_change_db": 0.22859175157548278,
+      "brightest_db": 0.21253564633802108,
+      "off_label_peaks": 0.01659668372820057
+    },
+    "gate_score": 0.1312196375683667,
+    "accepted": true
+  }
+}
