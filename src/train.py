@@ -223,6 +223,19 @@ def train(cfg, device=None, max_steps=None, _record_losses=False, resume=None,
         opt_params = list(model.parameters()) + list(encoder.parameters())
     else:
         opt_params = list(model.parameters())
+    trainable = tr.get("trainable")
+    if trainable:
+        # partial fine-tuning: only parameters whose name matches one of these
+        # regexes are updated; the rest keep their pretrained values. Full
+        # fine-tuning on 50 real RADIal sequences smoothed away the clutter
+        # the pretrained model could make (2026-10-24).
+        import re
+        pats = [re.compile(pat) for pat in trainable]
+        for name, prm in model.named_parameters():
+            prm.requires_grad_(any(pt.search(name) for pt in pats))
+        opt_params = [prm for prm in model.parameters() if prm.requires_grad]
+        if not opt_params:
+            raise ValueError(f"train.trainable {trainable} matches no parameter")
     diff = GaussianDiffusion(
         cfg["diffusion"]["timesteps"],
         x0_clamp=cfg["diffusion"].get("x0_clamp", DEFAULT_X0_CLAMP),
