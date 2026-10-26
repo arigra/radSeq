@@ -51,3 +51,29 @@ one of the suspected causes of the RADIal clutter gap.
 - (d) **Antenna gain.** No official figure for the board; TI's estimator default
   is 8 dBi. Accept, or leave the absolute level free (only relative levels then
   matter; each source is normalised by its own statistics anyway)?
+
+## Decisions taken (Ari, 2026-10-26: "do the recommendations")
+- (a) Looked up first. **Pedestrian:** RCS -10 to +5 dBsm at 77 GHz over a walking
+  stride (co-pol; ray tracing validated against 77 GHz measurements), torso
+  ~1.5 m/s, arms and legs up to 5 m/s, a range spread of ~1.5 m about the torso
+  (Deep et al., arXiv 1910.13706). Modelled: total RCS drawn uniform in that
+  range per frame, torso + four limbs, limb speed swinging to ~3.3x the body's.
+  **Cyclist:** no published dBsm value found (the 77 GHz measurements behind
+  MathWorks' backscatterBicyclist, Stolz et al. EURAD 2017, are not public).
+  Assumption, flagged: rider = the pedestrian model; bicycle frame as extra
+  scatterers at the rider's level; wheels from kinematics alone (a rolling rim
+  runs from 0 to 2x the bike's speed); pedal cadence = wheel rate / 1.5 (the
+  model's default gear ratio).
+- (b) Near-range high-pass: **left out** (its corner would have to be guessed;
+  the near-range dip stays a sim-to-real gap).
+- (c) Detector: **class-agnostic first**, three classes as a second readout.
+- (d) Antenna gain: **8 dBi Tx and Rx** (TI's estimator default, flagged).
+
+## Conventions measured (docs/notes/2026-10-26-carrada-raddet-facts.md)
+Approaching objects sit **above** bin 32. For slow objects the range change per
+frame per Doppler bin is -0.206 rows (the published grid predicts -0.21), which
+confirms 0.2 m, 0.42 m/s and 10 Hz together. Labels: the centre of the object's
+RD box (real) / the power-weighted centre of its visible returns (simulated).
+Empty frames: 43% of frames carry no object (paper Table II: 7,193 of 12,666
+with instances), so 43% of simulated sequences start with none; otherwise one
+or two objects, equally likely (paper: "one or two").
