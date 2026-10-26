@@ -29,13 +29,17 @@ def brightest_db(x):
     return float(np.percentile(x, 99.9))
 
 
-def off_label_peaks(x, traj, present):
+def off_label_peaks(x, traj, present, ddma_slot=DDMA_SLOT, peak_db=PEAK_DB):
     """Strong local maxima per frame that are not a labelled vehicle (or one of
-    its DDMA copies): the clutter a detector must learn to ignore."""
+    its DDMA copies): the clutter a detector must learn to ignore.
+
+    ddma_slot=None for a radar without DDMA copies (CARRADA): only the vehicle's
+    own cell is excluded, its Doppler distance wrapping around the axis. peak_db:
+    RADIal's 15 dB is 2.7 std of its real maps; CARRADA uses the same 2.7 std."""
     total = 0
     for t in range(x.shape[0]):
         e = x[t] - np.median(x[t], axis=1, keepdims=True)
-        peak = ((e > PEAK_DB) & (e >= np.roll(e, 1, 0)) & (e >= np.roll(e, -1, 0))
+        peak = ((e > peak_db) & (e >= np.roll(e, 1, 0)) & (e >= np.roll(e, -1, 0))
                 & (e >= np.roll(e, 1, 1)) & (e >= np.roll(e, -1, 1)))
         rr, dd = np.nonzero(peak)
         keep = np.ones(len(rr), bool)
@@ -43,8 +47,13 @@ def off_label_peaks(x, traj, present):
             if not present[m, t]:
                 continue
             r, d = float(traj[m, t, 0]), float(traj[m, t, 1])
-            off = (dd - d) % DDMA_SLOT
-            keep &= ~((np.abs(rr - r) <= 3) & ((off <= 2) | (off >= DDMA_SLOT - 2)))
+            if ddma_slot:
+                off = (dd - d) % ddma_slot
+                near = (off <= 2) | (off >= ddma_slot - 2)
+            else:
+                n = x.shape[2]
+                near = np.abs((dd - d + n / 2) % n - n / 2) <= 2
+            keep &= ~((np.abs(rr - r) <= 3) & near)
         total += int(keep.sum())
     return total / x.shape[0]
 
@@ -53,15 +62,16 @@ STATS = {"speckle_db": speckle_db, "frame_change_db": frame_change_db,
          "brightest_db": brightest_db}
 
 
-def realism(items):
-    """Mean of each statistic over a list of {"x", "traj", "present"} items."""
+def realism(items, **peaks_kw):
+    """Mean of each statistic over a list of {"x", "traj", "present"} items;
+    peaks_kw go to off_label_peaks."""
     out = {k: [] for k in (*STATS, "off_label_peaks")}
     for it in items:
         x = np.asarray(it["x"], dtype=np.float32)
         for k, f in STATS.items():
             out[k].append(f(x))
         out["off_label_peaks"].append(off_label_peaks(x, np.asarray(it["traj"]),
-                                                      np.asarray(it["present"])))
+                                                      np.asarray(it["present"]), **peaks_kw))
     return {k: float(np.mean(v)) for k, v in out.items()}
 
 

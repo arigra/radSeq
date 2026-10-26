@@ -15,6 +15,7 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import torch
 
 from src.eval.scene_realism import mismatch, realism, with_median
@@ -28,7 +29,7 @@ def items_of(ds, idx):
     return [{"x": ds.x[i], "traj": ds.traj[i], "present": ds.present[i]} for i in idx]
 
 
-def generated_stats(path, weights, ds, idx, device, steps, eta):
+def generated_stats(path, weights, ds, idx, device, steps, eta, **peaks_kw):
     model, cfg = load_trajectory_conditioned(path, device, weights=weights)
     labels = {"traj": ds.traj[idx], "present": ds.present[idx]}
     maps = torch.cat([sample_trajectory_conditioned(
@@ -38,7 +39,7 @@ def generated_stats(path, weights, ds, idx, device, steps, eta):
     torch.cuda.empty_cache()
     gen = [{"x": maps[j].numpy(), "traj": labels["traj"][j], "present": labels["present"][j]}
            for j in range(len(idx))]
-    return with_median(realism(gen), gen)
+    return with_median(realism(gen, **peaks_kw), gen)
 
 
 def main():
@@ -50,17 +51,26 @@ def main():
     ap.add_argument("--steps", type=int, default=250)
     ap.add_argument("--eta", type=float, default=1.0)
     ap.add_argument("--weights", default="ema,raw", help="which weights to score")
+    ap.add_argument("--ddma-slot", type=int, default=16, help="0: no DDMA copies (CARRADA)")
+    ap.add_argument("--peak-db", type=float, default=15.0)
+    ap.add_argument("--spread", action="store_true",
+                    help="halves from evenly spaced val sequences, alternating, instead of the first 2n")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     out = Path(a.out)
     rep = json.loads(out.read_text()) if out.exists() else {"candidates": {}, "references": {}}
     val = SceneSequenceDataset(a.cache, "val", normalise=False)
-    sel_idx, gate_idx = list(range(a.n)), list(range(a.n, 2 * a.n))
-    real_sel = with_median(realism(items_of(val, sel_idx)), items_of(val, sel_idx))
-    real_gate = with_median(realism(items_of(val, gate_idx)), items_of(val, gate_idx))
+    if a.spread:
+        idx = np.linspace(0, len(val) - 1, 2 * a.n).astype(int).tolist()
+        sel_idx, gate_idx = idx[0::2], idx[1::2]
+    else:
+        sel_idx, gate_idx = list(range(a.n)), list(range(a.n, 2 * a.n))
+    kw = {"ddma_slot": a.ddma_slot or None, "peak_db": a.peak_db}
+    real_sel = with_median(realism(items_of(val, sel_idx), **kw), items_of(val, sel_idx))
+    real_gate = with_median(realism(items_of(val, gate_idx), **kw), items_of(val, gate_idx))
     rep.update(real_select=real_sel, real_gate=real_gate, steps=a.steps, eta=a.eta,
-               select_val_idx=[0, a.n], gate_val_idx=[a.n, 2 * a.n])
+               select_val_idx=sel_idx, gate_val_idx=gate_idx, peaks=kw)
 
     def save():
         out.with_suffix(".tmp").write_text(json.dumps(rep, indent=2))
@@ -73,7 +83,7 @@ def main():
                 key = f"{label}_{weights}"
                 if key in rep[group]:
                     continue
-                gen = generated_stats(path, weights, val, sel_idx, device, a.steps, a.eta)
+                gen = generated_stats(path, weights, val, sel_idx, device, a.steps, a.eta, **kw)
                 rel, score = mismatch(gen, real_sel)
                 rep[group][key] = {"ckpt": path, "weights": weights, "stats": gen,
                                    "relative_error": rel, "score": score}
@@ -82,7 +92,7 @@ def main():
     best_key = min(rep["candidates"], key=lambda k: rep["candidates"][k]["score"])
     best = rep["candidates"][best_key]
     if rep.get("chosen", {}).get("key") != best_key:
-        gen = generated_stats(best["ckpt"], best["weights"], val, gate_idx, device, a.steps, a.eta)
+        gen = generated_stats(best["ckpt"], best["weights"], val, gate_idx, device, a.steps, a.eta, **kw)
         rel, score = mismatch(gen, real_gate)
         rep["chosen"] = {"key": best_key, "ckpt": best["ckpt"], "weights": best["weights"],
                          "steps": a.steps, "eta": a.eta, "select_score": best["score"],
