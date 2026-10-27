@@ -1,0 +1,188 @@
+{
+  "candidates": {
+    "p8_s30000_ema": {
+      "ckpt": "checkpoints/carrada_pre_p8/epoch_0040.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.8448137566447258,
+        "frame_change_db": 1.7116145119071007,
+        "brightest_db": 41.154011249542236,
+        "off_label_peaks": 47.23046875,
+        "_median": 8.83664321899414
+      },
+      "relative_error": {
+        "speckle_db": 0.00743760042870318,
+        "frame_change_db": 0.032911335440986414,
+        "brightest_db": 0.153814133705526,
+        "off_label_peaks": 0.09968167348794907
+      },
+      "score": 0.07346118576579116
+    },
+    "p8_s30000_raw": {
+      "ckpt": "checkpoints/carrada_pre_p8/epoch_0040.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.7261476628482342,
+        "frame_change_db": 1.6266282051801682,
+        "brightest_db": 35.84327220916748,
+        "off_label_peaks": 43.32421875,
+        "_median": 8.910432815551758
+      },
+      "relative_error": {
+        "speckle_db": 0.07128334224527456,
+        "frame_change_db": 0.08092991281725301,
+        "brightest_db": 0.03842755004675561,
+        "off_label_peaks": 0.008731241473397
+      },
+      "score": 0.049843011645670045
+    },
+    "p8_s60000_ema": {
+      "ckpt": "checkpoints/carrada_pre_p8/epoch_0080.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.7698856890201569,
+        "frame_change_db": 1.6506899818778038,
+        "brightest_db": 39.555211544036865,
+        "off_label_peaks": 42.68359375,
+        "_median": 8.89726448059082
+      },
+      "relative_error": {
+        "speckle_db": 0.047751037125936605,
+        "frame_change_db": 0.06733463693500655,
+        "brightest_db": 0.09456848709841995,
+        "off_label_peaks": 0.006184629376989541
+      },
+      "score": 0.05395969763408816
+    },
+    "p8_s60000_raw": {
+      "ckpt": "checkpoints/carrada_pre_p8/epoch_0080.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.7536610029637814,
+        "frame_change_db": 1.6325075663626194,
+        "brightest_db": 38.13162291049957,
+        "off_label_peaks": 44.85546875,
+        "_median": 8.895414352416992
+      },
+      "relative_error": {
+        "speckle_db": 0.05648038081518596,
+        "frame_change_db": 0.07760798284129035,
+        "brightest_db": 0.04380872286356268,
+        "off_label_peaks": 0.04438381082310141
+      },
+      "score": 0.0555702243357851
+    }
+  },
+  "references": {},
+  "real_select": {
+    "speckle_db": 1.858637560158968,
+    "frame_change_db": 1.7698630690574646,
+    "brightest_db": 36.94666290283203,
+    "off_label_peaks": 42.94921875,
+    "_median": 8.9375
+  },
+  "real_gate": {
+    "speckle_db": 1.857095517218113,
+    "frame_change_db": 1.7643264792859554,
+    "brightest_db": 36.666900634765625,
+    "off_label_peaks": 42.06640625,
+    "_median": 8.9296875
+  },
+  "steps": 250,
+  "eta": 1.0,
+  "select_val_idx": [
+    0,
+    9,
+    18,
+    28,
+    37,
+    47,
+    56,
+    66,
+    75,
+    85,
+    94,
+    104,
+    113,
+    123,
+    132,
+    142,
+    151,
+    161,
+    170,
+    180,
+    189,
+    199,
+    208,
+    218,
+    227,
+    237,
+    246,
+    256,
+    265,
+    275,
+    284,
+    294
+  ],
+  "gate_val_idx": [
+    4,
+    14,
+    23,
+    33,
+    42,
+    52,
+    61,
+    71,
+    80,
+    90,
+    99,
+    109,
+    118,
+    128,
+    137,
+    147,
+    156,
+    166,
+    175,
+    185,
+    194,
+    204,
+    213,
+    223,
+    232,
+    242,
+    251,
+    261,
+    270,
+    280,
+    289,
+    299
+  ],
+  "peaks": {
+    "ddma_slot": null,
+    "peak_db": 7.7
+  },
+  "chosen": {
+    "key": "p8_s30000_raw",
+    "ckpt": "checkpoints/carrada_pre_p8/epoch_0040.pt",
+    "weights": "raw",
+    "steps": 250,
+    "eta": 1.0,
+    "select_score": 0.049843011645670045,
+    "gate_stats": {
+      "speckle_db": 1.724784292280674,
+      "frame_change_db": 1.6233395896852016,
+      "brightest_db": 35.70944058895111,
+      "off_label_peaks": 42.8671875,
+      "_median": 8.90965747833252
+    },
+    "gate_relative_error": {
+      "speckle_db": 0.07124632185620597,
+      "frame_change_db": 0.07990975097636856,
+      "brightest_db": 0.03379683530542099,
+      "off_label_peaks": 0.019036122202618626
+    },
+    "gate_score": 0.05099725758515354,
+    "accepted": true
+  }
+}

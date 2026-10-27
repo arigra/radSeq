@@ -33,5 +33,23 @@ both halves span all six val recordings. Gate: every statistic within 25% on B.
 - Only 8x8 passes: patch size is the cause; RADIal is retried with 8x8.
 - Both fail: a generator problem in general; a different approach is needed.
 
-## Results
-(appended after the runs)
+## Results (2026-10-27)
+**Both patch sizes pass on held-out real data** -> by the rule above, the RADIal
+failure is RADIal-specific, not a property of the generator.
+
+Relative error on gate half B (limit 25%):
+
+| | speckle | frame change | brightest | clutter peaks |
+|---|---|---|---|---|
+| 16x16, simulator gate (30k raw) | 6% | 7% | 0.2% | 2% |
+| 16x16, real gate (ft epoch 32, EMA) | 2% | 11% | 0.3% | 6% |
+| 8x8, simulator gate (30k raw) | pass | | | |
+| 8x8, real gate (ft epoch 72, raw) | 1% | 9% | 2% | 8% |
+
+Fine-tuning does the work: the pretrained model alone is 54-69% off on real
+data (selection-half mean). Unlike RADIal, realism did not decay over
+fine-tuning (16x16: every epoch 16-72 within ~14% mean). Frame change is the
+largest residual (9-14%) at every epoch.
+
+Not done: the in-sample check against real training sequences (step 4). Realism
+is not usefulness: whether the maps help a detector is the detector study.

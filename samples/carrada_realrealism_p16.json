@@ -1,0 +1,477 @@
+{
+  "candidates": {
+    "p16_ft_ep8_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0008.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.0548048429191113,
+        "frame_change_db": 0.943394660949707,
+        "brightest_db": 54.81384527683258,
+        "off_label_peaks": 63.46875,
+        "_median": 40.59584426879883
+      },
+      "relative_error": {
+        "speckle_db": 0.03044978791589784,
+        "frame_change_db": 0.0280430474625374,
+        "brightest_db": 0.1600152222244759,
+        "off_label_peaks": 0.28544303797468357
+      },
+      "score": 0.1259877738943987
+    },
+    "p16_ft_ep8_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0008.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.0648295059800148,
+        "frame_change_db": 0.9216597601771355,
+        "brightest_db": 58.68215882778168,
+        "off_label_peaks": 65.984375,
+        "_median": 40.629722595214844
+      },
+      "relative_error": {
+        "speckle_db": 0.040242985201993875,
+        "frame_change_db": 0.05043599581497567,
+        "brightest_db": 0.06651924054241658,
+        "off_label_peaks": 0.33639240506329116
+      },
+      "score": 0.12339765665566932
+    },
+    "p16_ft_ep16_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0016.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.0359335206449032,
+        "frame_change_db": 0.8615438044071198,
+        "brightest_db": 56.79588508605957,
+        "off_label_peaks": 63.3046875,
+        "_median": 40.691551208496094
+      },
+      "relative_error": {
+        "speckle_db": 0.01201419751669686,
+        "frame_change_db": 0.112372027030459,
+        "brightest_db": 0.04857262946285704,
+        "off_label_peaks": 0.28212025316455697
+      },
+      "score": 0.11376977679364246
+    },
+    "p16_ft_ep16_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0016.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.0032573956996202,
+        "frame_change_db": 0.8317991029471159,
+        "brightest_db": 57.9778847694397,
+        "off_label_peaks": 44.1171875,
+        "_median": 40.94984436035156
+      },
+      "relative_error": {
+        "speckle_db": 0.019907447748599177,
+        "frame_change_db": 0.1430172814313032,
+        "brightest_db": 0.005998995983935743,
+        "off_label_peaks": 0.1064873417721519
+      },
+      "score": 0.06885276673399751
+    },
+    "p16_ft_ep24_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0024.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.0126758478581905,
+        "frame_change_db": 0.8435701951384544,
+        "brightest_db": 57.623886466026306,
+        "off_label_peaks": 54.82421875,
+        "_median": 40.80182647705078
+      },
+      "relative_error": {
+        "speckle_db": 0.010706464178561626,
+        "frame_change_db": 0.13088980671906203,
+        "brightest_db": 0.006170113957513556,
+        "off_label_peaks": 0.11036392405063292
+      },
+      "score": 0.06453257722644254
+    },
+    "p16_ft_ep24_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0024.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 0.9805536437779665,
+        "frame_change_db": 0.8970858436077833,
+        "brightest_db": 57.60328805446625,
+        "off_label_peaks": 53.15234375,
+        "_median": 41.04067611694336
+      },
+      "relative_error": {
+        "speckle_db": 0.04208697840738791,
+        "frame_change_db": 0.07575391423165694,
+        "brightest_db": 0.021498036196413037,
+        "off_label_peaks": 0.07650316455696203
+      },
+      "score": 0.053960523348104986
+    },
+    "p16_ft_ep32_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0032.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.0006602760404348,
+        "frame_change_db": 0.8406159337610006,
+        "brightest_db": 57.67362368106842,
+        "off_label_peaks": 49.79296875,
+        "_median": 40.790184020996094
+      },
+      "relative_error": {
+        "speckle_db": 0.022444600872198406,
+        "frame_change_db": 0.13393351154832034,
+        "brightest_db": 0.0025438665436155394,
+        "off_label_peaks": 0.008465189873417722
+      },
+      "score": 0.041846792209388
+    },
+    "p16_ft_ep32_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0032.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.003659661859274,
+        "frame_change_db": 0.8521307297050953,
+        "brightest_db": 57.493613958358765,
+        "off_label_peaks": 53.90625,
+        "_median": 40.83137512207031
+      },
+      "relative_error": {
+        "speckle_db": 0.019514469766289472,
+        "frame_change_db": 0.12207009272883475,
+        "brightest_db": 0.015612182174263835,
+        "off_label_peaks": 0.09177215189873418
+      },
+      "score": 0.06224222414203055
+    },
+    "p16_ft_ep40_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0040.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 0.9960670620203018,
+        "frame_change_db": 0.8415909614413977,
+        "brightest_db": 57.68071258068085,
+        "off_label_peaks": 48.28125,
+        "_median": 40.785606384277344
+      },
+      "relative_error": {
+        "speckle_db": 0.026931759273746775,
+        "frame_change_db": 0.13292896385252953,
+        "brightest_db": 0.0018546196570794963,
+        "off_label_peaks": 0.022151898734177215
+      },
+      "score": 0.04596681037938326
+    },
+    "p16_ft_ep40_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0040.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 0.963430168107152,
+        "frame_change_db": 0.8640750423073769,
+        "brightest_db": 57.45695745944977,
+        "off_label_peaks": 46.41796875,
+        "_median": 41.03895568847656
+      },
+      "relative_error": {
+        "speckle_db": 0.05881507933698041,
+        "frame_change_db": 0.10976415317074846,
+        "brightest_db": 0.030041455102114405,
+        "off_label_peaks": 0.059889240506329114
+      },
+      "score": 0.0646274820290431
+    },
+    "p16_ft_ep48_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0048.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 0.9903248939663172,
+        "frame_change_db": 0.8375696931034327,
+        "brightest_db": 57.676628947257996,
+        "off_label_peaks": 46.68359375,
+        "_median": 40.787696838378906
+      },
+      "relative_error": {
+        "speckle_db": 0.03254134278402998,
+        "frame_change_db": 0.1370719804296736,
+        "brightest_db": 0.0022193783551715278,
+        "off_label_peaks": 0.054509493670886075
+      },
+      "score": 0.056585548809940295
+    },
+    "p16_ft_ep48_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0048.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 0.9448239263147116,
+        "frame_change_db": 0.840996416285634,
+        "brightest_db": 57.70492172241211,
+        "off_label_peaks": 32.4609375,
+        "_median": 40.635902404785156
+      },
+      "relative_error": {
+        "speckle_db": 0.07699170986502438,
+        "frame_change_db": 0.13354150950459012,
+        "brightest_db": 0.00841998746951893,
+        "off_label_peaks": 0.3425632911392405
+      },
+      "score": 0.1403791244945935
+    },
+    "p16_ft_ep56_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0056.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 0.9818663261830807,
+        "frame_change_db": 0.8418781626969576,
+        "brightest_db": 57.72988212108612,
+        "off_label_peaks": 45.85546875,
+        "_median": 40.82139587402344
+      },
+      "relative_error": {
+        "speckle_db": 0.04080460535512979,
+        "frame_change_db": 0.13263306726897464,
+        "brightest_db": 0.0010641401182733177,
+        "off_label_peaks": 0.07128164556962026
+      },
+      "score": 0.0614458645779995
+    },
+    "p16_ft_ep56_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0056.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 0.9701696746051311,
+        "frame_change_db": 0.860669819638133,
+        "brightest_db": 57.029996037483215,
+        "off_label_peaks": 41.45703125,
+        "_median": 40.767147064208984
+      },
+      "relative_error": {
+        "speckle_db": 0.05223118555973786,
+        "frame_change_db": 0.11327247263163859,
+        "brightest_db": 0.03920772173993392,
+        "off_label_peaks": 0.1603639240506329
+      },
+      "score": 0.09126882599548582
+    },
+    "p16_ft_ep64_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0064.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 0.9812026042491198,
+        "frame_change_db": 0.848643098026514,
+        "brightest_db": 57.62560272216797,
+        "off_label_peaks": 45.29296875,
+        "_median": 40.79708480834961
+      },
+      "relative_error": {
+        "speckle_db": 0.041453002194295235,
+        "frame_change_db": 0.12566331622076593,
+        "brightest_db": 0.005788586444543607,
+        "off_label_peaks": 0.08267405063291139
+      },
+      "score": 0.06389473887312905
+    },
+    "p16_ft_ep64_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0064.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 0.9370451159775257,
+        "frame_change_db": 0.8966185040771961,
+        "brightest_db": 57.916292786598206,
+        "off_label_peaks": 39.390625,
+        "_median": 41.05157470703125
+      },
+      "relative_error": {
+        "speckle_db": 0.0845909103389322,
+        "frame_change_db": 0.07623540297094294,
+        "brightest_db": 0.003649918134941562,
+        "off_label_peaks": 0.20221518987341772
+      },
+      "score": 0.0916728553295586
+    },
+    "p16_ft_ep72_ema": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0072.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 0.9851886052638292,
+        "frame_change_db": 0.8412859253585339,
+        "brightest_db": 57.59782075881958,
+        "off_label_peaks": 45.44921875,
+        "_median": 40.766029357910156
+      },
+      "relative_error": {
+        "speckle_db": 0.03755903647370467,
+        "frame_change_db": 0.1332432352320345,
+        "brightest_db": 0.00559519221667816,
+        "off_label_peaks": 0.07950949367088607
+      },
+      "score": 0.06397673939832585
+    },
+    "p16_ft_ep72_raw": {
+      "ckpt": "checkpoints/carrada_ft_p16/epoch_0072.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.0440635327249765,
+        "frame_change_db": 0.8432951029390097,
+        "brightest_db": 58.07954978942871,
+        "off_label_peaks": 51.69921875,
+        "_median": 40.79175567626953
+      },
+      "relative_error": {
+        "speckle_db": 0.01995649061470809,
+        "frame_change_db": 0.13117322763175832,
+        "brightest_db": 0.021344975863048152,
+        "off_label_peaks": 0.04707278481012658
+      },
+      "score": 0.05488686972991028
+    }
+  },
+  "references": {
+    "p16_pre_ema": {
+      "ckpt": "checkpoints/carrada_pre_p16/epoch_0040.pt",
+      "weights": "ema",
+      "stats": {
+        "speckle_db": 1.7781742066144943,
+        "frame_change_db": 1.6981879137456417,
+        "brightest_db": 36.55432116985321,
+        "off_label_peaks": 68.390625,
+        "_median": 8.805072784423828
+      },
+      "relative_error": {
+        "speckle_db": 0.7371168196503425,
+        "frame_change_db": 0.7496023857274702,
+        "brightest_db": 0.6393968621399176,
+        "off_label_peaks": 0.385126582278481
+      },
+      "score": 0.6278106624490528
+    },
+    "p16_pre_raw": {
+      "ckpt": "checkpoints/carrada_pre_p16/epoch_0040.pt",
+      "weights": "raw",
+      "stats": {
+        "speckle_db": 1.7504764087498188,
+        "frame_change_db": 1.6548603028059006,
+        "brightest_db": 36.947455406188965,
+        "off_label_peaks": 62.8046875,
+        "_median": 8.850172996520996
+      },
+      "relative_error": {
+        "speckle_db": 0.7100585537284624,
+        "frame_change_db": 0.7049629846020438,
+        "brightest_db": 0.6599583519262234,
+        "off_label_peaks": 0.27199367088607596
+      },
+      "score": 0.5867433902857013
+    }
+  },
+  "real_select": {
+    "speckle_db": 1.0236353632062674,
+    "frame_change_db": 0.9706136249005795,
+    "brightest_db": 57.70774841308594,
+    "off_label_peaks": 49.375,
+    "_median": 40.78125
+  },
+  "real_gate": {
+    "speckle_db": 1.0282193273305893,
+    "frame_change_db": 0.9489988647401333,
+    "brightest_db": 57.63805389404297,
+    "off_label_peaks": 48.44921875,
+    "_median": 40.78125
+  },
+  "steps": 250,
+  "eta": 1.0,
+  "select_val_idx": [
+    0,
+    9,
+    19,
+    28,
+    38,
+    48,
+    57,
+    67,
+    76,
+    86,
+    96,
+    105,
+    115,
+    125,
+    134,
+    144,
+    153,
+    163,
+    173,
+    182,
+    192,
+    202,
+    211,
+    221,
+    230,
+    240,
+    250,
+    259,
+    269,
+    278,
+    288,
+    298
+  ],
+  "gate_val_idx": [
+    4,
+    14,
+    24,
+    33,
+    43,
+    52,
+    62,
+    72,
+    81,
+    91,
+    101,
+    110,
+    120,
+    129,
+    139,
+    149,
+    158,
+    168,
+    177,
+    187,
+    197,
+    206,
+    216,
+    226,
+    235,
+    245,
+    254,
+    264,
+    274,
+    283,
+    293,
+    303
+  ],
+  "peaks": {
+    "ddma_slot": null,
+    "peak_db": 5.0
+  },
+  "chosen": {
+    "key": "p16_ft_ep32_ema",
+    "ckpt": "checkpoints/carrada_ft_p16/epoch_0032.pt",
+    "weights": "ema",
+    "steps": 250,
+    "eta": 1.0,
+    "select_score": 0.041846792209388,
+    "gate_stats": {
+      "speckle_db": 1.004627875983715,
+      "frame_change_db": 0.8454708717763424,
+      "brightest_db": 57.70919096469879,
+      "off_label_peaks": 51.28125,
+      "_median": 40.79608154296875
+    },
+    "gate_relative_error": {
+      "speckle_db": 0.02294398745462329,
+      "frame_change_db": 0.10909179853670344,
+      "brightest_db": 0.003340225587305467,
+      "off_label_peaks": 0.05845359993549948
+    },
+    "gate_score": 0.04845740287853292,
+    "accepted": true
+  }
+}
