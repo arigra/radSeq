@@ -137,3 +137,17 @@ def test_sequence_detector_reads_all_frames_and_predicts_each():
     x2 = x.clone()
     x2[:, 0, 30, 10] = 5.0                     # a change in frame 0 reaches frame 7's output
     assert not torch.allclose(det(x)[:, 7], det(x2)[:, 7])
+
+
+def test_batches_take_their_grid_from_the_data():
+    """CARRADA maps are 256 x 64; targets built on RADIal's 512 x 256 grid
+    would not match the detector output."""
+    from scripts.radial_detector_arms import batch_from
+    pool = [{"x": torch.zeros(8, 256, 64, dtype=torch.float16),
+             "traj": torch.zeros(4, 8, 2), "present": torch.zeros(4, 8, dtype=torch.bool),
+             "stats": {"mean": 0.0, "std": 1.0}}]
+    pool[0]["traj"][0, :] = torch.tensor([100.0, 40.0])
+    pool[0]["present"][0, :] = True
+    x, heat = batch_from(pool, 4, torch.device("cpu"), torch.Generator().manual_seed(0))
+    assert x.shape == heat.shape == (4, 1, 256, 64)
+    assert int(heat.eq(1).sum()) == 4

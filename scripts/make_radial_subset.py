@@ -39,8 +39,11 @@ def main():
         sub[k] = x[i]
     sub.flush()
     labels = torch.load(full / "train_labels.pt")
-    torch.save({"traj": labels["traj"][idx], "present": labels["present"][idx],
-                "meta": [labels["meta"][i] for i in idx]}, out / "train_labels.pt")
+    sub_labels = {"traj": labels["traj"][idx], "present": labels["present"][idx],
+                  "meta": [labels["meta"][i] for i in idx]}
+    if "cls" in labels:                      # CARRADA: per-object class
+        sub_labels["cls"] = labels["cls"][idx]
+    torch.save(sub_labels, out / "train_labels.pt")
     arr = np.asarray(sub, dtype=np.float32)
     torch.save({"mean": float(arr.mean()), "std": float(arr.std())}, out / "stats.pt")
     for split in ("val", "test"):

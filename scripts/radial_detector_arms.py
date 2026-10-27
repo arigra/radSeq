@@ -95,7 +95,8 @@ def batch_from(pool, batch, device, generator):
     x = torch.stack([normalised(pool[i], t) for i, t in zip(idx, frames)])[:, None]
     traj = torch.stack([pool[i]["traj"][:, t] for i, t in zip(idx, frames)])[:, :, None]
     present = torch.stack([pool[i]["present"][:, t] for i, t in zip(idx, frames)])[:, :, None]
-    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device))
+    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device),
+                                               n_range=x.shape[-2], n_doppler=x.shape[-1])
 
 
 def train_detector(pool, device, seed, steps, batch, width):

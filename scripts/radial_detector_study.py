@@ -15,6 +15,8 @@ which was biased against any extra data:
 - test detections are saved per arm and seed, for bootstrap confidence
   intervals over test recordings (scripts/step6_score.py)
 
+The grid comes from the data: RADIal 512 x 256, CARRADA 256 x 64.
+
 --detector sequence (step 7) swaps the per-frame detector for one that reads
 all 8 frames at once (src.detector_scene.RadialSequenceDetector), so the study
 also tests whether the generated sequences behave like real ones over time.
@@ -65,7 +67,8 @@ def seq_batch_from(pool, n, device, generator):
                      for i in idx])
     traj = torch.stack([pool[i]["traj"] for i in idx])
     present = torch.stack([pool[i]["present"] for i in idx])
-    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device))
+    return x.to(device), scene_heatmap_targets(traj.to(device), present.to(device),
+                                               n_range=x.shape[-2], n_doppler=x.shape[-1])
 
 
 def draw_from(pool, n, device, generator):
@@ -94,7 +97,7 @@ def detections(model, pool, device):
 
 def ap(model, pool, device):
     dets, tgts, _ = detections(model, pool, device)
-    return average_precision_wrapped(dets, tgts, 256, radius=2.0)
+    return average_precision_wrapped(dets, tgts, pool[0]["x"].shape[-1], radius=2.0)
 
 
 def run_stage(model, lr, draw, val, device, gen, log):
@@ -139,6 +142,8 @@ def main():
     ap_.add_argument("--out", required=True)
     ap_.add_argument("--dets-dir", default="samples/step6_dets")
     ap_.add_argument("--detector", default="frame", choices=("frame", "sequence"))
+    ap_.add_argument("--val-spread", action="store_true",
+                     help="early-stopping val spread over all val recordings")
     a = ap_.parse_args()
     global SEQUENCE
     SEQUENCE = a.detector == "sequence"
@@ -147,7 +152,11 @@ def main():
     names = a.arms.split(",")
 
     real = dataset_pool(a.real, "train")
-    val = dataset_pool(a.real, "val", limit=N_VAL)
+    if a.val_spread:   # evenly spaced, so early stopping sees every val recording
+        full_val = dataset_pool(a.real, "val")
+        val = [full_val[int(i)] for i in np.linspace(0, len(full_val) - 1, N_VAL).round()]
+    else:              # the first N_VAL: one CARRADA recording, two RADIal ones
+        val = dataset_pool(a.real, "val", limit=N_VAL)
     test = dataset_pool(a.real, "test")
     n_extra = len(real) * a.repeats
     sources = {"sim": dataset_pool(a.sim_cache or f"data/scene_{a.variant}", "train", limit=n_extra),
@@ -167,6 +176,8 @@ def main():
                 "lr_ft": LR_FT, "val_every": VAL_EVERY, "patience": PATIENCE,
                 "max_steps": MAX_STEPS, "n_val": len(val), "n_test": len(test),
                 "detector": a.detector}
+    if a.val_spread:
+        settings["val_spread"] = True
     report = json.loads(out.read_text()) if out.exists() else {**settings, "arms": {}}
     stale = {k: (report.get(k), v) for k, v in settings.items() if report.get(k) != v}
     if stale:
@@ -212,7 +223,7 @@ def main():
                     model, lr, draw, val, device, gen,
                     lambda m: print(f"{name} seed {seed} {kind}{m}", flush=True)))
             dets, tgts, recs = detections(model, test, device)
-            run["test_ap"] = average_precision_wrapped(dets, tgts, 256, radius=2.0)
+            run["test_ap"] = average_precision_wrapped(dets, tgts, test[0]["x"].shape[-1], radius=2.0)
             torch.save({"dets": dets, "tgts": tgts, "recs": recs, "run": run}, det_path)
             arm["runs"][str(seed)] = run
             aps = [r["test_ap"] for r in arm["runs"].values()]

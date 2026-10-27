@@ -74,6 +74,7 @@ def main():
                          "cross-validation fold, disjoint test recordings) are pooled")
     ap.add_argument("--dets-dir", default="samples/step6_dets")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--n-doppler", type=int, default=256, help="CARRADA: 64")
     a = ap.parse_args()
 
     per_arm, recs = {}, []
@@ -88,7 +89,7 @@ def main():
                 d = torch.load(Path(a.dets_dir) / f"{tag}{cache}_{name}_s{seed}.pt")
                 fold_recs = fold_recs or d["recs"]
                 runs = per_arm.setdefault(name, {})
-                runs.setdefault(j, []).extend(frame_scores(d["dets"], d["tgts"]))
+                runs.setdefault(j, []).extend(frame_scores(d["dets"], d["tgts"], n_doppler=a.n_doppler))
         recs += fold_recs
     # an arm counts only seeds present in every report, so frames line up with recs
     per_arm = {n: [r for r in runs.values() if len(r) == len(recs)] for n, runs in per_arm.items()}
