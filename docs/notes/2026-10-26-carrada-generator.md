@@ -43,7 +43,7 @@ Relative error on gate half B (limit 25%):
 |---|---|---|---|---|
 | 16x16, simulator gate (30k raw) | 6% | 7% | 0.2% | 2% |
 | 16x16, real gate (ft epoch 32, EMA) | 2% | 11% | 0.3% | 6% |
-| 8x8, simulator gate (30k raw) | pass | | | |
+| 8x8, simulator gate (30k raw) | 7% | 8% | 3% | 2% |
 | 8x8, real gate (ft epoch 72, raw) | 1% | 9% | 2% | 8% |
 
 Fine-tuning does the work: the pretrained model alone is 54-69% off on real
